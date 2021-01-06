@@ -9,13 +9,14 @@ interface State {
     uid: string,
     idToken: string,
     name: string,
-    isLoaded: boolean
+    isLoaded: boolean,
+    employeeId: string
 }
 
 class Login extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
-        this.state = { idToken: '', isLoaded: false, uid: '', name: '' }
+        this.state = { idToken: '', isLoaded: false, uid: '', name: '', employeeId: '' }
     }
     componentDidMount() {
         if (client) {
@@ -26,20 +27,27 @@ class Login extends Component<Props, State> {
     googleSignIn = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         const provider = new firebase.auth.GoogleAuthProvider();
         firebase.auth().signInWithPopup(provider).then(async result => {
-            const eType = result.user?.email!.split('@')[1];
-
             this.setState({
-                idToken: await result.user?.getIdToken()!, name: result.user?.displayName!, uid: result.user?.uid!
+                idToken: await result.user?.getIdToken()!, name: result.user?.displayName!, uid: result.user?.uid!, employeeId: result.user?.email?.split('@')[0]!
             });
             fetch('http://localhost:5000/quickstart-1594476482074/us-central1/app/login', {
+                credentials: 'include',
+
                 headers: {
-                    'content-type': 'application/json'
+                    'content-type': 'application/json',
                 },
+                
                 method: 'POST',
                 body: JSON.stringify(this.state),
             }).then(res => {
-                return res.json();
+                if (res.ok)
+                    return res.json().then(result => { console.log(result) });
+                else {
+                    firebase.auth().currentUser?.delete();
+                    return res.json().then(result => { throw Error(result.error) });
+                }
             }).catch(e => {
+                firebase.auth().currentUser?.delete();
                 console.log(e);
             });
             event.preventDefault();
