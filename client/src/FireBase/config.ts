@@ -12,7 +12,7 @@ const firebaseConfig = {
 };
 
 const client = firebase.initializeApp(firebaseConfig);
-
+const db = firebase.database();
 console.log('connect');
 
-export { client }
+export { client, db }

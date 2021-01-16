@@ -1,5 +1,7 @@
 import React, { ChangeEvent, Component, useCallback, useContext } from 'react';
 import io from "socket.io-client";
+import { db, client } from '../FireBase/config';
+
 interface Props {
 }
 
@@ -11,38 +13,33 @@ interface State {
 let socket: SocketIOClient.Socket;
 
 class testML extends Component<Props, State> {
-
     constructor(props: Props) {
         super(props);
         this.state = { error: "", video: null };
     }
 
-    configureSocket = () => {
-        socket = io('http://localhost:5001', {autoConnect: true, reconnectionDelay:2000});
-    }
-
     componentDidMount() {
-        this.configureSocket();
         const video = document.getElementById('video') as HTMLVideoElement;
         const canvas = document.getElementById('canvas') as HTMLCanvasElement;
         const $this = this;
-
+        const date = new Date();
         navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-            const ctx = canvas.getContext('2d');
             video.srcObject = stream;
         }, e => {
             console.log(e);
             this.setState({ error: e.message! });
         }).then(() => {
-            video.addEventListener('play', () => {
+            const ctx = canvas.getContext('2d');
+            video.addEventListener('play', (event) => {
                 function computeFrame() {
-                    const ctx = canvas.getContext('2d');
-
-                    ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
-                    if (socket.connected) {
-                        let frame = ctx?.getImageData(0, 0, canvas.width, canvas.height);
-                        $this.sendData(canvas.toDataURL()!);
-                    }
+                    ctx?.drawImage(video, 0, 0);
+                    db.ref('video').set({
+                        frame: canvas.toDataURL()
+                    }).catch(e => {
+                        video.pause();
+                        video.currentTime = 0;
+                        console.log(e);
+                    });
                 }
                 function step() {
                     computeFrame();
@@ -51,22 +48,14 @@ class testML extends Component<Props, State> {
                 requestAnimationFrame(step);
             });
         }).catch(e => {
+            video.pause();
+            video.currentTime = 0;
             console.log(e);
         });
     }
 
     componentWillUnmount() {
-        socket.disconnect();
-    }
-
-    sendData = (frame: string) => {
-        console.log('1');
-        if (frame)
-        {
-            console.log(frame);
-            socket.emit('frame', frame);}
-        else
-            socket.emit('frame', "ERROR");
+        socket.close();
     }
 
     render() {
@@ -74,10 +63,10 @@ class testML extends Component<Props, State> {
             return (
                 <div>
                     <div id="container">
-                        <video autoPlay={true} id="video" width="480px" height="640px" hidden={true}>
+                        <video autoPlay={true} id="video" width="360px" height="520px" hidden={true}>
 
                         </video>
-                        <canvas id="canvas" height="480px" width="640px" />
+                        <canvas id="canvas" height="360" width="520px" />
                     </div>
                 </div>);
         }
