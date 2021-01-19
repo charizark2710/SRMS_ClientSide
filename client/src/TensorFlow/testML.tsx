@@ -1,5 +1,5 @@
+import { waitFor } from '@testing-library/react';
 import React, { ChangeEvent, Component, useCallback, useContext } from 'react';
-import io from "socket.io-client";
 import { db, client } from '../FireBase/config';
 
 interface Props {
@@ -10,19 +10,20 @@ interface State {
     video: any,
 }
 
-let socket: SocketIOClient.Socket;
-
 class testML extends Component<Props, State> {
+
     constructor(props: Props) {
         super(props);
+        db.goOnline();
         this.state = { error: "", video: null };
     }
 
+
     componentDidMount() {
+        db.goOnline();
         const video = document.getElementById('video') as HTMLVideoElement;
         const canvas = document.getElementById('canvas') as HTMLCanvasElement;
         const $this = this;
-        const date = new Date();
         navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
             video.srcObject = stream;
         }, e => {
@@ -33,13 +34,7 @@ class testML extends Component<Props, State> {
             video.addEventListener('play', (event) => {
                 function computeFrame() {
                     ctx?.drawImage(video, 0, 0);
-                    db.ref('video').set({
-                        frame: canvas.toDataURL()
-                    }).catch(e => {
-                        video.pause();
-                        video.currentTime = 0;
-                        console.log(e);
-                    });
+                    setTimeout(() => { $this.addToDB(canvas) }, 500);
                 }
                 function step() {
                     computeFrame();
@@ -54,8 +49,22 @@ class testML extends Component<Props, State> {
         });
     }
 
+    addToDB = async (canvas: HTMLCanvasElement) => {
+        if (canvas) {
+            if ((await db.ref('video/isDone').get()).val() != false) {
+                await db.ref('video').update({
+                    isDone: false
+                })
+                await db.ref('video').update({
+                    frame: canvas.toDataURL(),
+                });
+            }
+        }
+    }
+
     componentWillUnmount() {
-        socket.close();
+        (document.getElementById('video') as HTMLVideoElement).pause();
+        (document.getElementById('video') as HTMLVideoElement).currentTime = 0;
     }
 
     render() {
@@ -63,10 +72,10 @@ class testML extends Component<Props, State> {
             return (
                 <div>
                     <div id="container">
-                        <video autoPlay={true} id="video" width="360px" height="520px" hidden={true}>
+                        <video autoPlay={true} id="video" width="480px" height="640px" hidden={true}>
 
                         </video>
-                        <canvas id="canvas" height="360" width="520px" />
+                        <canvas id="canvas" height="480" width="640px" />
                     </div>
                 </div>);
         }
