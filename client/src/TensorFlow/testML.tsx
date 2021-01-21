@@ -14,13 +14,11 @@ class testML extends Component<Props, State> {
 
     constructor(props: Props) {
         super(props);
-        db.goOnline();
         this.state = { error: "", video: null };
     }
 
 
     componentDidMount() {
-        db.goOnline();
         const video = document.getElementById('video') as HTMLVideoElement;
         const canvas = document.getElementById('canvas') as HTMLCanvasElement;
         const $this = this;
@@ -34,11 +32,11 @@ class testML extends Component<Props, State> {
             video.addEventListener('play', (event) => {
                 function computeFrame() {
                     ctx?.drawImage(video, 0, 0);
-                    setTimeout(() => { $this.addToDB(canvas) }, 500);
+                    $this.addToDB(canvas);
                 }
                 function step() {
                     computeFrame();
-                    requestAnimationFrame(step);
+                    setTimeout(() => { requestAnimationFrame(step) }, 300);
                 }
                 requestAnimationFrame(step);
             });
@@ -51,7 +49,7 @@ class testML extends Component<Props, State> {
 
     addToDB = async (canvas: HTMLCanvasElement) => {
         if (canvas) {
-            if ((await db.ref('video/isDone').get()).val() != false) {
+            if ((await db.ref('video/isDone').get()).val() !== false) {
                 await db.ref('video').update({
                     isDone: false
                 })
