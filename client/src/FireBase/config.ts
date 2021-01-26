@@ -13,6 +13,7 @@ const firebaseConfig = {
 
 const client = firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+const messaging = firebase.messaging();
 console.log('connect');
 
-export { client, db }
+export { client, db, messaging }
