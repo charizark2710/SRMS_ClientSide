@@ -1,6 +1,7 @@
 import React, { ChangeEvent, Component } from 'react';
 import firebase from 'firebase'
 import { client, messaging } from './FireBase/config'
+import { Redirect } from 'react-router-dom'
 
 interface Props {
 }
@@ -40,21 +41,17 @@ class Login extends Component<Props, State> {
                 method: 'POST',
                 body: JSON.stringify(this.state),
             }).then(res => {
-                Notification.requestPermission().then(value => {
-                    messaging.getToken({ vapidKey: "BEBvnGJooiNm5wM4kOtwbeNyjLaKhbaKPdS8vadKB5Ekq1YdXzLLNDMaNYpA0nmR-q8Glvl2r473vPZ9z1_OZvU" }).then(token => {
-                        console.log(token);
-                    }).catch(e => { console.error(e) });
-                });
                 if (res.ok) {
-                    console.log(this.context.registerToken);
-                    return res.json().then(result => { console.log(result) });
+                    return res.json().then(result => {console.log(result)})
                 }
                 else {
                     firebase.auth().currentUser?.delete();
+                    firebase.auth().signOut();
                     return res.json().then(result => { throw Error(result.error) });
                 }
             }).catch(e => {
                 firebase.auth().currentUser?.delete();
+                firebase.auth().signOut();
                 console.log(e);
             });
             event.preventDefault();
