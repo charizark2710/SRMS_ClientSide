@@ -40,24 +40,26 @@ class App extends Component<Props, State>{
     fetch('http://localhost:5000/booming-pride-283013/us-central1/app', {
       credentials: 'include',
     }).then(res => {
+      this.setState({ isDone: true });
       if (res.ok) {
-        this.setState({ isDone: true });
         client.auth().onAuthStateChanged(user => {
           if (user) {
+            this.setState({message: []});
+            const userEmail = user.email?.split('@')[0] || ' ';
             this.setState({ isLogged: true });
-            db.ref('notification'.concat('/', user.uid)).on('child_added', snap => {
+            db.ref('notification'.concat('/', userEmail)).on('child_added', snap => {
               const mail: message = snap.val();
               if (!mail.isRead) {
                 this.setState({ message: [... this.state.message, mail] })
               }
             });
-            db.ref('notification'.concat('/', user.uid)).off('child_added', (snap) => {
+            db.ref('notification'.concat('/', userEmail)).off('child_added', (snap) => {
               const mail: message = snap.val();
               if (!mail.isRead) {
                 this.setState({ message: [... this.state.message, mail] })
               }
             });
-            db.ref('notification'.concat('/', user.uid)).on('child_changed', snap => {
+            db.ref('notification'.concat('/', userEmail)).on('child_changed', snap => {
               const mail: message = snap.val();
               if (mail.isRead) {
                 const arr = this.state.message;
@@ -67,7 +69,7 @@ class App extends Component<Props, State>{
                 this.setState({ message: newArr })
               }
             });
-            db.ref('notification'.concat('/', user.uid)).off('child_changed', (snap) => {
+            db.ref('notification'.concat('/', userEmail)).off('child_changed', (snap) => {
               const mail: message = snap.val();
               if (mail.isRead) {
                 const arr = this.state.message;
@@ -78,7 +80,7 @@ class App extends Component<Props, State>{
               }
             });
 
-            db.ref('notification'.concat('/', user.uid)).on('child_removed', snap => {
+            db.ref('notification'.concat('/', userEmail)).on('child_removed', snap => {
               const mail: message = snap.val();
               if (!mail.isRead) {
                 const arr = this.state.message;
@@ -89,7 +91,7 @@ class App extends Component<Props, State>{
               }
             });
 
-            db.ref('notification'.concat('/', user.uid)).off('child_removed', snap => {
+            db.ref('notification'.concat('/', userEmail)).off('child_removed', snap => {
               const mail: message = snap.val();
               if (!mail.isRead) {
                 const arr = this.state.message;
@@ -104,6 +106,9 @@ class App extends Component<Props, State>{
           }
         });
       }
+    }).catch(e => {
+      this.setState({ isDone: true, isLogged: false });
+      throw new Error(e);
     })
   }
 
