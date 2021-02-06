@@ -163,6 +163,7 @@ class App extends Component<Props, State>{
           return res.json().then(result => { throw Error(result.error) });
         }
       }).catch(e => {
+        this.setState({ isLogged: false, isDone: true });
         firebase.auth().currentUser?.delete();
         firebase.auth().signOut();
         console.log(e);
