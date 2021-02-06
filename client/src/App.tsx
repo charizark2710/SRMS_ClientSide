@@ -36,6 +36,67 @@ class App extends Component<Props, State>{
       this.state = { message: [], isLogged: false, idToken: '', uid: '', name: '', employeeId: '', isDone: false };
   }
 
+  notificationManagement = (user: firebase.User) => {
+    this.setState({ message: [] });
+    const userEmail = user.email?.split('@')[0] || ' ';
+    this.setState({ isLogged: true });
+    db.ref('notification'.concat('/', userEmail)).on('child_added', snap => {
+      const mail: message = snap.val();
+      if (!mail.isRead) {
+        this.setState({ message: [... this.state.message, mail] })
+      }
+    });
+    db.ref('notification'.concat('/', userEmail)).off('child_added', (snap) => {
+      const mail: message = snap.val();
+      if (!mail.isRead) {
+        this.setState({ message: [... this.state.message, mail] })
+      }
+    });
+    db.ref('notification'.concat('/', userEmail)).on('child_changed', snap => {
+      const mail: message = snap.val();
+      if (mail.isRead) {
+        const arr = this.state.message;
+        const newArr = arr.filter(mess => {
+          return (mess.sendAt !== mail.sendAt);
+        })
+        this.setState({ message: newArr })
+      }
+    });
+    db.ref('notification'.concat('/', userEmail)).off('child_changed', (snap) => {
+      const mail: message = snap.val();
+      if (mail.isRead) {
+        const arr = this.state.message;
+        const newArr = arr.filter(mess => {
+          return (mess.sendAt !== mail.sendAt);
+        })
+        this.setState({ message: newArr })
+      }
+    });
+
+    db.ref('notification'.concat('/', userEmail)).on('child_removed', snap => {
+      const mail: message = snap.val();
+      if (!mail.isRead) {
+        const arr = this.state.message;
+        const newArr = arr.filter(mess => {
+          return mess !== mail;
+        })
+        this.setState({ message: newArr })
+      }
+    });
+
+    db.ref('notification'.concat('/', userEmail)).off('child_removed', snap => {
+      const mail: message = snap.val();
+      if (!mail.isRead) {
+        const arr = this.state.message;
+        const newArr = arr.filter(mess => {
+          return mess !== mail;
+        })
+        this.setState({ message: newArr })
+      }
+    });
+
+  }
+
   componentDidMount() {
     fetch('http://localhost:5000/booming-pride-283013/us-central1/app', {
       credentials: 'include',
@@ -44,63 +105,7 @@ class App extends Component<Props, State>{
       if (res.ok) {
         client.auth().onAuthStateChanged(user => {
           if (user) {
-            this.setState({message: []});
-            const userEmail = user.email?.split('@')[0] || ' ';
-            this.setState({ isLogged: true });
-            db.ref('notification'.concat('/', userEmail)).on('child_added', snap => {
-              const mail: message = snap.val();
-              if (!mail.isRead) {
-                this.setState({ message: [... this.state.message, mail] })
-              }
-            });
-            db.ref('notification'.concat('/', userEmail)).off('child_added', (snap) => {
-              const mail: message = snap.val();
-              if (!mail.isRead) {
-                this.setState({ message: [... this.state.message, mail] })
-              }
-            });
-            db.ref('notification'.concat('/', userEmail)).on('child_changed', snap => {
-              const mail: message = snap.val();
-              if (mail.isRead) {
-                const arr = this.state.message;
-                const newArr = arr.filter(mess => {
-                  return (mess.sendAt !== mail.sendAt);
-                })
-                this.setState({ message: newArr })
-              }
-            });
-            db.ref('notification'.concat('/', userEmail)).off('child_changed', (snap) => {
-              const mail: message = snap.val();
-              if (mail.isRead) {
-                const arr = this.state.message;
-                const newArr = arr.filter(mess => {
-                  return (mess.sendAt !== mail.sendAt);
-                })
-                this.setState({ message: newArr })
-              }
-            });
-
-            db.ref('notification'.concat('/', userEmail)).on('child_removed', snap => {
-              const mail: message = snap.val();
-              if (!mail.isRead) {
-                const arr = this.state.message;
-                const newArr = arr.filter(mess => {
-                  return mess !== mail;
-                })
-                this.setState({ message: newArr })
-              }
-            });
-
-            db.ref('notification'.concat('/', userEmail)).off('child_removed', snap => {
-              const mail: message = snap.val();
-              if (!mail.isRead) {
-                const arr = this.state.message;
-                const newArr = arr.filter(mess => {
-                  return mess !== mail;
-                })
-                this.setState({ message: newArr })
-              }
-            });
+            this.notificationManagement(user);
           } else {
             this.setState({ isLogged: false });
           }
@@ -117,12 +122,12 @@ class App extends Component<Props, State>{
     fetch('http://localhost:5000/booming-pride-283013/us-central1/app/logout', {
       credentials: "include",
       method: 'POST',
-    }).then(res => {
+    }).then(async res => {
       try {
         if (res.ok) {
+          await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
           this.setState({ isLogged: false, isDone: true });
           firebase.auth().signOut();
-          console.log('Tra ve trang dang nhap');
         } else {
           res.json().then(result => {
             throw Error(result);
@@ -138,9 +143,13 @@ class App extends Component<Props, State>{
 
   googleSignIn = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
     client.auth().signInWithPopup(provider).then(async result => {
+      const user = result.user;
       this.setState({
-        isDone: false, idToken: await result.user?.getIdToken()!, name: result.user?.displayName!, uid: result.user?.uid!, employeeId: result.user?.email?.split('@')[0]!
+        isDone: false, idToken: await user?.getIdToken()!, name: user?.displayName!, uid: user?.uid!, employeeId: user?.email?.split('@')[0]!
       });
       fetch('http://localhost:5000/booming-pride-283013/us-central1/app/login', {
         credentials: 'include',
@@ -151,9 +160,10 @@ class App extends Component<Props, State>{
 
         method: 'POST',
         body: JSON.stringify(this.state),
-      }).then(res => {
+      }).then(async res => {
         if (res.ok) {
           this.setState({ isLogged: true, isDone: true });
+          this.notificationManagement(user!);
           return res.json().then(result => { console.log(result) })
         }
         else {
@@ -162,7 +172,7 @@ class App extends Component<Props, State>{
           this.setState({ isLogged: false });
           return res.json().then(result => { throw Error(result.error) });
         }
-      }).catch(e => {
+      }).catch(async e => {
         this.setState({ isLogged: false, isDone: true });
         firebase.auth().currentUser?.delete();
         firebase.auth().signOut();
