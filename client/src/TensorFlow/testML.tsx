@@ -1,7 +1,5 @@
-import { waitFor } from '@testing-library/react';
-import React, { ChangeEvent, Component, useCallback, useContext } from 'react';
-import { db, client } from '../FireBase/config';
-
+import { Component } from 'react';
+import { io, Socket } from 'socket.io-client'
 interface Props {
 }
 
@@ -10,18 +8,31 @@ interface State {
     video: any,
 }
 
-class testML extends Component<Props, State> {
+class TestML extends Component<Props, State> {
 
+    clientSocket: Socket;
     constructor(props: Props) {
         super(props);
         this.state = { error: "", video: null };
+        this.clientSocket = io('http://localhost:9001/', { autoConnect: true, withCredentials: true });
     }
-
 
     componentDidMount() {
         const video = document.getElementById('video') as HTMLVideoElement;
         const canvas = document.getElementById('canvas') as HTMLCanvasElement;
         const $this = this;
+        this.clientSocket.on('sendNoti', (event: string) => {
+            console.log(event);
+            if (event === 'done') {
+                this.sendToServer(canvas);
+            }
+        });
+        this.clientSocket.off('sendNoti', (event: string) => {
+            console.log(event);
+            if (event === 'done') {
+                this.sendToServer(canvas);
+            }
+        });
         navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
             video.srcObject = stream;
         }, e => {
@@ -32,7 +43,7 @@ class testML extends Component<Props, State> {
             video.addEventListener('play', (event) => {
                 function computeFrame() {
                     ctx?.drawImage(video, 0, 0);
-                    $this.addToDB(canvas);
+
                 }
                 function step() {
                     computeFrame();
@@ -47,22 +58,16 @@ class testML extends Component<Props, State> {
         });
     }
 
-    addToDB = async (canvas: HTMLCanvasElement) => {
+    sendToServer = async (canvas: HTMLCanvasElement) => {
         if (canvas) {
-            if ((await db.ref('video/isDone').get()).val() !== false) {
-                await db.ref('video').update({
-                    isDone: false
-                })
-                await db.ref('video').update({
-                    frame: canvas.toDataURL(),
-                });
-            }
+            this.clientSocket.emit('sendFPS', canvas.toDataURL());
         }
     }
 
     componentWillUnmount() {
         (document.getElementById('video') as HTMLVideoElement).pause();
         (document.getElementById('video') as HTMLVideoElement).currentTime = 0;
+        this.clientSocket.close();
     }
 
     render() {
@@ -82,4 +87,4 @@ class testML extends Component<Props, State> {
         }
     }
 }
-export default testML
+export default TestML
