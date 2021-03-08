@@ -3,17 +3,19 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link
-} from "react-router-dom";
+import { BrowserRouter } from 'react-router-dom';
+
+
+
+// const store = createStore(
+//   myReducer,
+//   composeWithDevTools(applyMiddleware(thunk))
+// );
 
 ReactDOM.render(
-    <Router>
+    <BrowserRouter>
       <App />
-    </Router>,
+    </BrowserRouter>,
   document.getElementById('root')
 );
 

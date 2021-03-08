@@ -1,0 +1,51 @@
+.userLoginName{
+    color: #ff9800;
+}
+.notiNumber{
+   margin-right: 67%;
+}
+.bgCard{
+    background-color: rgba(255, 255, 255, 0.9);
+}
+.dialogWidth{
+   width: 70%;
+}
+.textSpan{
+    font-weight: 800; 
+    font-size: 25px;
+}
+.textGetStarted{
+    padding-bottom: 5%;
+}
+.ruleFormat{
+    font-weight: 800;
+     font-size: 25px;
+}
+.pdBottom{
+    padding-bottom: 5%;
+}
+.dialogWidth80{
+    width: 80%
+}
+.mgTop3{
+    margin-top: -3%;
+}
+.width100{
+    width:800px;
+}
+.mainColor{
+    color: #ff9800;
+}
+.pdAll{
+    padding: 3px 5px 3px 5px;
+}
+.btnMarginNegetive{
+    margin-right: -520%;
+}
+.pdBottom5{
+    padding-bottom: 5%;
+}
+.validate-loadEmptyRoom{
+    font-size: smaller;
+    color: #ff9800;
+}

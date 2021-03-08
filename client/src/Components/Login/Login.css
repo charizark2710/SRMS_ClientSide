@@ -1,0 +1,30 @@
+.logoFPT{
+    width: 25%; 
+    margin-left: -10%;
+}
+.containerLoginWithGG{
+    border: 3px solid white;
+    height: 100px;
+    margin: auto;
+    width: 30%; 
+    margin-top: 32px;
+}
+.btnLoginWithGG{
+background-color: beige;
+width: 70%;
+height: 50%;
+margin-top: 7%;
+margin-left: 15%;
+}
+
+.textLoginWithGG{
+    color: black; 
+    font-weight: 600; 
+    font-size: larger; 
+    margin-left: 10%;
+}
+.imgLoginWithGG{
+    width: 20%; 
+    margin-left: -7%; 
+    margin-top: -5px;
+}

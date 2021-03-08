@@ -1,0 +1,32 @@
+.bg-panelbody{
+    background-color: rgb(245, 238, 223);
+}
+.height-img-70{
+    height: 70px;
+}
+.text-align-right-for-link{
+    text-align: left;
+}
+.fc-col-header-cell-cushion, .fc-daygrid-day-number {
+    color: #999999 !important;
+}
+.fc .fc-button-primary{
+    background-color: #ff9800 !important;
+    border-color: #ff9800 !important
+}
+
+.banned-width-100{
+    width: 100%;
+}
+.banned-width-40{
+    width: 40%;
+}
+.banned-width-30{
+    width: 30%;
+}
+.banned-width-20{
+    width: 20%;
+}
+.banned-width-10{
+    width: 10%;
+}
