@@ -3,7 +3,7 @@ export default interface message {
     sender: string,
     receiver: string,
     message: string,
-    sendAt: Date,
+    sendAt: string,
     isRead: boolean,
     status:string,
     typeRequest:string

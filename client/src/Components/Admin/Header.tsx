@@ -49,14 +49,14 @@ class Header extends Component<Props, State> {
   notificationManagement = (user: firebase.User) => {
     this.setState({ messages: [] });
     const userEmail = user.email?.split('@')[0] || ' ';
-    db.ref('notification'.concat('/', userEmail)).on('child_added', (snap: any) => {
+    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_added', (snap: any) => {
       console.log("child-add-on");
       const mail: message = snap.val();
       if (mail) {
         this.setState({ messages: [... this.state.messages, mail] })
       }
     });
-    db.ref('notification'.concat('/', userEmail)).off('child_added', (snap: any) => {
+    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_added', (snap: any) => {
       console.log("child-add-off");
 
       const mail: message = snap.val();
@@ -64,10 +64,10 @@ class Header extends Component<Props, State> {
         this.setState({ messages: [... this.state.messages, mail] })
       }
     });
-    db.ref('notification'.concat('/', userEmail)).on('child_changed', (snap: any) => {
+    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_changed', (snap: any) => {
       const mail: message = snap.val();
       console.log("child-change-on");
-      if (mail) {//đánh dấu ĐÃ ĐỌC
+      if (mail.isRead) {//đánh dấu ĐÃ ĐỌC
         const arr = this.state.messages;
         var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
         arr[changingIndex].isRead = true,
@@ -75,15 +75,31 @@ class Header extends Component<Props, State> {
           arr[changingIndex].sender = mail.sender,
           arr[changingIndex].sendAt = mail.sendAt,
           this.setState({ messages: arr })
-      }
-    });
-    db.ref('notification'.concat('/', userEmail)).off('child_changed', (snap: any) => {
-      const mail: message = snap.val();
-      console.log("child-change-off");
-      if (mail) {//đánh dấu ĐÃ ĐỌC
+      }else{
         const arr = this.state.messages;
         var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-        arr[changingIndex].isRead = mail.isRead,
+        arr[changingIndex].isRead = false,
+          arr[changingIndex].message = mail.message,
+          arr[changingIndex].sender = mail.sender,
+          arr[changingIndex].sendAt = mail.sendAt,
+          this.setState({ messages: arr })
+      }
+    });
+    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_changed', (snap: any) => {
+      const mail: message = snap.val();
+      console.log("child-change-on");
+      if (mail.isRead) {//đánh dấu ĐÃ ĐỌC
+        const arr = this.state.messages;
+        var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
+        arr[changingIndex].isRead = true,
+          arr[changingIndex].message = mail.message,
+          arr[changingIndex].sender = mail.sender,
+          arr[changingIndex].sendAt = mail.sendAt,
+          this.setState({ messages: arr })
+      }else{
+        const arr = this.state.messages;
+        var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
+        arr[changingIndex].isRead = false,
           arr[changingIndex].message = mail.message,
           arr[changingIndex].sender = mail.sender,
           arr[changingIndex].sendAt = mail.sendAt,
@@ -91,7 +107,7 @@ class Header extends Component<Props, State> {
       }
     });
 
-    db.ref('notification'.concat('/', userEmail)).on('child_removed', (snap: any) => {
+    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_removed', (snap: any) => {
       const mail: message = snap.val();
       console.log("child-remove-on");
       if (mail) {
@@ -105,7 +121,7 @@ class Header extends Component<Props, State> {
       }
     });
 
-    db.ref('notification'.concat('/', userEmail)).off('child_removed', (snap: any) => {
+    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_removed', (snap: any) => {
       const mail: message = snap.val();
       console.log("child-remove-off");
       if (mail) {

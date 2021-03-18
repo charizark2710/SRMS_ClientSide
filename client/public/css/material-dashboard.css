@@ -12584,6 +12584,12 @@ footer .btn {
     box-shadow: 0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(255, 152, 0, 0.4);
 }
 
+.card [data-background-color="orangeCustom"] {
+    background: linear-gradient(60deg, yellow, orange);
+    box-shadow: 0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(255, 152, 0, 0.4);
+}
+
+
 .card [data-icon-bg-color="orange"] i {
     color: #ff9800;
 }

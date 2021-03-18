@@ -15,7 +15,7 @@ $(document).ready(function() {
     });
 
 
-    var table = $('#datatables').DataTable();
+    var table = $('#longDatatables').DataTable();
 
     // Edit record
     table.on('click', '.edit', function() {

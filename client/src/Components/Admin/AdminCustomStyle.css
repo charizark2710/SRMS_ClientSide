@@ -30,3 +30,15 @@
 .banned-width-10{
     width: 10%;
 }
+.reportErr-mt-20{
+    margin-top: 20px;
+}
+.reportDevice-pd{
+    padding: 3px 5px 3px 5px;
+}
+.banned-pb-5{
+    padding-bottom: 5%;
+}
+.card-roomDevice-color{
+    background-color: rgba(255, 99, 71, 0.2)
+}

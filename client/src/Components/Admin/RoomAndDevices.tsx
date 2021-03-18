@@ -6,22 +6,81 @@ interface Props {
 }
 
 interface State {
+    onConditioner: string
+    onFan: string
+    onGround: string
+    onLight: string
+    totalConditioner: string
+    totalFan: string
+    totalGround: string
+    totalLight: string
 }
 
 class RoomAndDevices extends Component<Props, State> {
     constructor(props: Props) {
         super(props)
         this.state = {
+            onConditioner: '',
+            onFan: '',
+            onGround: '',
+            onLight: '',
+            totalConditioner: '',
+            totalFan: '',
+            totalGround: '',
+            totalLight: '',
         }
     }
     componentDidMount() {
+        this.getNumberOfDevices();
+    }
 
+    getNumberOfDevices = () => {
+        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/room/countNumberTurnOnDevices', {
+            credentials: "include",
+            method: 'GET',
+        }).then(async res => {
+            try {
+                if (res.ok) {
+                    //set state   
+                    await res.json().then(result => {
+                        this.setState({
+                            onConditioner: result.onConditioner,
+                            onFan: result.onFan,
+                            onGround: result.onGround,
+                            onLight: result.onLight,
+                            totalConditioner: result.totalConditioner,
+                            totalFan: result.totalFan,
+                            totalGround: result.totalGround,
+                            totalLight: result.totalLight
+                        })
+                        console.log(this.state);
+
+                    });
+
+                } else {
+                    res.json().then(result => {
+                        throw Error(result);
+                    });
+                }
+            } catch (error) {
+                throw Error(error);
+            }
+        }).catch(e => {
+            throw Error(e);
+        });
     }
 
 
-
     render() {
-
+        onConditioner: 2
+        onFan: 1
+        onGround: 2
+        onLight: 1
+        totalConditioner: 3
+        totalFan: 3
+        totalGround: 3
+        totalLight: 3
+        var { onConditioner,onConditioner, onFan,onGround,onLight,totalConditioner, totalFan,totalGround,totalLight} = this.state;
         return (
             <div className="content">
                 <div className="container-fluid">
@@ -35,7 +94,7 @@ class RoomAndDevices extends Component<Props, State> {
                                 </div>
                                 <div className="card-content">
                                     <p className="category">Light</p>
-                                    <h3 className="card-title">184/200</h3>
+                                    <h3 className="card-title">{onLight}/{totalLight}</h3>
                                 </div>
                                 <div className="card-footer">
                                     <div className="stats">
@@ -52,7 +111,7 @@ class RoomAndDevices extends Component<Props, State> {
                                 </div>
                                 <div className="card-content">
                                     <p className="category">Air-conditioner</p>
-                                    <h3 className="card-title">75/200</h3>
+                                    <h3 className="card-title">{onConditioner}/{totalConditioner}</h3>
                                 </div>
                                 <div className="card-footer">
                                     <div className="stats">
@@ -68,7 +127,7 @@ class RoomAndDevices extends Component<Props, State> {
                                 </div>
                                 <div className="card-content">
                                     <p className="category">Fan</p>
-                                    <h3 className="card-title">34/200</h3>
+                                    <h3 className="card-title">{onFan}/{totalFan}</h3>
                                 </div>
                                 <div className="card-footer">
                                     <div className="stats">
@@ -84,7 +143,7 @@ class RoomAndDevices extends Component<Props, State> {
                                 </div>
                                 <div className="card-content">
                                     <p className="category">Power Socket</p>
-                                    <h3 className="card-title">112/200</h3>
+                                    <h3 className="card-title">{onGround}/{totalGround}</h3>
                                 </div>
                                 <div className="card-footer">
                                     <div className="stats">

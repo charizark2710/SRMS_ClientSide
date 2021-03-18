@@ -4,7 +4,13 @@ import { client, db } from '../../FireBase/config';
 import './UserHomePage.css';
 import message from '../../model/Message';
 import moment from 'moment';
+import { loadTable } from "./loadTableA.js";
+//Datatable Modules
 
+// import 'datatables.net-dt/css/jquery.dataTables.css'
+// import 'datatables.net-bs/css/dataTables.bootstrap.css'
+const $ = require('jquery');
+$.DataTable = require('datatables.net');
 
 interface Props {
     // propsFromLoginToUser: any
@@ -40,6 +46,11 @@ interface State {
 
     //notification for user
     messageToUser: message[]
+
+    //report error
+    cbbDeviceToReport: string[]
+    cbbRoomToReport: string
+    txtDescriptionToReport: string
 }
 
 class UserHomePage extends Component<Props, State> {
@@ -69,13 +80,17 @@ class UserHomePage extends Component<Props, State> {
             isUpdateData: false,
             updatingIdBooking: '',
 
-            messageToUser: []
+            messageToUser: [],
+
+            cbbDeviceToReport: [],
+            cbbRoomToReport: '',
+            txtDescriptionToReport: '',
         }
 
     }
 
     createScript() {
-        const scripts = ["js/jquery.tagsinput.js", "js/material-dashboard.js?v=1.2.1", "customJS/loadBackground.js","customJS/loadTable.js"]
+        const scripts = ["js/jquery.tagsinput.js", "js/material-dashboard.js?v=1.2.1", "customJS/loadBackground.js"]//,"customJS/loadTable.js"
 
         for (let index = 0; index < scripts.length; ++index) {
             const script = document.createElement('script');
@@ -88,7 +103,6 @@ class UserHomePage extends Component<Props, State> {
 
     reloadScriptTable() {
         const loadTable = "customJS/loadTable.js"
-
         const script = document.createElement('script');
         script.src = loadTable
         script.async = true;
@@ -96,28 +110,7 @@ class UserHomePage extends Component<Props, State> {
         document.getElementsByTagName("body")[0].appendChild(script);
     }
 
-    componentDidUpdate(){
-        // this.reloadScriptTable();
-    }
     componentDidMount() {
-        this.createScript();
-        // const script = document.createElement("script");
-        // script.src = 'customJS/loadBackground.js';
-        // script.async = true;
-        // document.body.appendChild(script);
-
-        // const script1 = document.createElement("script");
-        // script.src = 'customJS/table.js';
-        // script.async = true;
-        // document.body.appendChild(script1);
-
-        // var localUser = localStorage.getItem('currentUser');
-        // if (localStorage && localUser) {
-        //     var currentUser = JSON.parse(localUser);
-        //     this.setState({
-        //         currentUser: currentUser
-        //     })
-        // }
         fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app', {
             credentials: 'include',
         }).then(res => {
@@ -133,85 +126,205 @@ class UserHomePage extends Component<Props, State> {
                         this.setState({
                             currentUser: currentUser
                         })
+                        this.createScript();
+                        // loadTable(user.email?.split('@')[0] || ' ');
                     }
                 });
             }
         }).catch(e => {
             throw new Error(e);
         })
-        console.log(this.state.currentUser);
 
     }
 
     notificationManagement = (user: firebase.User) => {
-        this.setState({ messageToUser: [] });
+        let _this = this;
+        var removedRow: any;//dòng đã xóa
+        var filaEditada: any; //dòng đang edit
+        var dataSet: message[] = []
+        var table = $('#datatables').DataTable({
+            "pagingType": "full_numbers",
+            "lengthMenu": [
+                [5, 10, 15, -1],
+                [5, 10, 15, "All"]
+            ],
+            "autoWidth": true,
+            data: dataSet,
+            responsive: true,
+            language: {
+                search: "_INPUT_",
+                searchPlaceholder: "Search records",
+            },
+
+            columnDefs: [
+                {
+                    "targets": [0],
+                    "visible": false,
+                    "searchable": false
+                },
+                {
+                    "targets": -1,
+                    "data": null,
+                    "defaultContent": "<button type='button' class='btnEditRequest btn btn-success btn-simple' data-original-title='' title='Update this request' data-toggle='modal' data-dismiss='modal' data-target='#updateBookRoomModal'><i class='material-icons'>edit</i><div class='ripple-container'></div></button><button type='button' class='btnRemoveRequest btn btn-danger btn-simple' data-original-title='' title='Delete this request'><i class='material-icons'>close</i></button>"
+                },
+                { className: "td-actions text-center", "targets": [5] },
+                {
+                    targets: [3],
+                    render: function (data: string) {
+                        return moment(data).calendar();
+                    }
+                }
+            ],
+
+            // columns: [
+            //     { title: "Tile", data: "message" },
+            //     { title: "Request Type", data: "typeRequest" },
+            //     { title: "Reply Time", data: "sendAt" },
+            //     { title: "Status", data: "status" },
+            //   ]
+
+        });
+
+        // this.setState({ messageToUser: [] });
         const userEmail = user.email?.split('@')[0] || ' ';
+
         db.ref('notification'.concat('/', userEmail)).on('child_added', snap => {
-            console.log("child-add-on");
-            const mail: message = snap.val();
-            if (mail) {
-                this.setState({ messageToUser: [... this.state.messageToUser, mail] })
-            }
-        });
+            dataSet = [snap.child('id').val(), snap.child('message').val(), snap.child('typeRequest').val(), snap.child('sendAt').val(), snap.child('status').val()]
+            table.rows.add([dataSet]).draw();
+
+        })
+
         db.ref('notification'.concat('/', userEmail)).off('child_added', (snap) => {
-            console.log("child-add-off");
-
-            const mail: message = snap.val();
-            if (mail) {
-                this.setState({ messageToUser: [... this.state.messageToUser, mail] })
-            }
+            dataSet = [snap.child('id').val(), snap.child('message').val(), snap.child('typeRequest').val(), snap.child('sendAt').val(), snap.child('status').val()]
+            table.rows.add([dataSet]).draw();
         });
+
+
         db.ref('notification'.concat('/', userEmail)).on('child_changed', snap => {
-            const mail: message = snap.val();
-            console.log("child-change-on");
-            if (mail) {
-                const arr = this.state.messageToUser;
-                var changingIndex = arr.findIndex(x => x.id == mail.id);
-                arr[changingIndex].message = mail.message,
-                    arr[changingIndex].sendAt = mail.sendAt,
-                    arr[changingIndex].status = mail.status,
-
-                    this.setState({ messageToUser: arr })
+            dataSet = [snap.child('id').val(), snap.child('message').val(), snap.child('typeRequest').val(), snap.child('sendAt').val(), snap.child('status').val()]
+            for (let row in $('#datatables').dataTable().fnGetData()){
+                if(table.row(row).data()[0]===dataSet[0]){
+                    filaEditada = table.row(row);
+                    break;
+                }
             }
-        });
-        db.ref('notification'.concat('/', userEmail)).off('child_changed', (snap) => {
-            const mail: message = snap.val();
-            console.log("child-change-off");
-            if (mail) {
-                const arr = this.state.messageToUser;
-                var changingIndex = arr.findIndex(x => x.id == mail.id);
-                arr[changingIndex].message = mail.message,
-                    arr[changingIndex].sendAt = mail.sendAt,
-                    arr[changingIndex].status = mail.status,
-
-                    this.setState({ messageToUser: arr })
-            }
+            table.row(filaEditada).data(dataSet).draw();
         });
 
-        // db.ref('notification'.concat('/', userEmail)).on('child_removed', snap => {
-        //   const mail: message = snap.val();
-        //   console.log("child-remove-on");
-        //   if (mail) {
-        //     const arr = this.state.message;
-        //     const newArr = arr.filter(mess => {
-        //       return mess !== mail;
-        //     })
-        //     this.setState({ message: newArr })
-        //   }
-        // });
+        db.ref('notification'.concat('/', userEmail)).off('child_changed', snap => {
+            dataSet = [snap.child('id').val(), snap.child('message').val(), snap.child('typeRequest').val(), snap.child('sendAt').val(), snap.child('status').val()]
+            for (let row in $('#datatables').dataTable().fnGetData()){
+                if(table.row(row).data()[0]===dataSet[0]){
+                    filaEditada = table.row(row);
+                    break;
+                }
+            }
+            table.row(filaEditada).data(dataSet).draw();
+        });
 
-        // db.ref('notification'.concat('/', userEmail)).off('child_removed', snap => {
-        //   const mail: message = snap.val();
-        //   console.log("child-remove-off");
-        //   if (mail) {
-        //     const arr = this.state.message;
-        //     const newArr = arr.filter(mess => {
-        //       return mess !== mail;
-        //     })
-        //     this.setState({ message: newArr })
-        //   }
-        // });
+
+        db.ref('notification'.concat('/', userEmail)).on('child_removed', snap => {
+            dataSet = [snap.child('id').val(), snap.child('message').val(), snap.child('typeRequest').val(), snap.child('sendAt').val(), snap.child('status').val()]
+            // for (let row in $('#datatables').dataTable().fnGetData()){
+            //     if(table.row(row).data()[0]===dataSet[0]){
+            //         filaEditada = table.row(row);
+            //         break;
+            //     }
+            // }
+            table.row(removedRow.parents('tr')).remove().draw();
+        })
+        db.ref('notification'.concat('/', userEmail)).off('child_removed', snap => {
+            dataSet = [snap.child('id').val(), snap.child('message').val(), snap.child('typeRequest').val(), snap.child('sendAt').val(), snap.child('status').val()]
+            // for (let row in $('#datatables').dataTable().fnGetData()){
+            //     if(table.row(row).data()[0]===dataSet[0]){
+            //         filaEditada = table.row(row);
+            //         break;
+            //     }
+            // }
+            table.row(removedRow.parents('tr')).remove().draw();       
+        })
+
+        $('.card .material-datatables label').addClass('form-group');
+
+        $("#datatables").on("click", ".btnRemoveRequest", function (e: any) {
+            removedRow = $(e.target);
+            // Swal.fireClick({
+            // title: '¿Está seguro de eliminar el producto?',
+            // text: "¡Está operación no se puede revertir!",
+            // icon: 'warning',
+            // showCancelButton: true,
+            // confirmButtonColor: '#d33',
+            // cancelButtonColor: '#3085d6',
+            // confirmButtonText: 'Borrar'
+            // }).then((result) => {
+            // if (result.value) {
+            //     let fila = $('#datatables').dataTable().fnGetData($(this).closest('tr'));            
+            //     let id = fila[0];            
+            //     db.ref(`productos/${id}`).remove()
+            //     Swal.fire('¡Eliminado!', 'El producto ha sido eliminado.','success')
+            // }
+            // })  
+            let fila = $('#datatables').dataTable().fnGetData($(e.target).closest('tr'));
+            let id = fila[0];
+            let typeRequest = fila[2];
+            let message = fila[1];
+            if ((typeRequest === 'bookRoomRequest')) {
+                var result = window.confirm('Are you sure to cancel ' + message + ' ?')
+                if (result) {
+                    //delete booking in db
+                    fetch(`http://localhost:5000/capstone-srms-thanhnt/us-central1/app/bookRoom/delete/${id}`, {
+                        credentials: 'include',
+                        headers: {
+                            'content-type': 'application/json',
+                        },
+                        method: 'DELETE',
+                    }).then(res => {
+                        if (res.status === 200) {
+                            return res.json().then(result => { console.log(result) })
+                        }
+                        else {
+                            return res.json().then(result => { throw Error(result.error) });
+                        }
+                    }).catch(e => {
+                        console.log(e);
+                    });
+
+                }
+            }
+
+            if ((typeRequest === 'reportErrorRequest')) {
+                var result = window.confirm('Are you sure to delete ' + message + ' ?')
+                if (result) {
+                    //delete booking in db
+                    fetch(`http://localhost:5000/capstone-srms-thanhnt/us-central1/app/reportError/delete/${id}`, {
+                        credentials: 'include',
+                        headers: {
+                            'content-type': 'application/json',
+                        },
+                        method: 'DELETE',
+                    }).then(res => {
+                        if (res.status === 200) {
+                            return res.json().then(result => { console.log(result) })
+                        }
+                        else {
+                            return res.json().then(result => { throw Error(result.error) });
+                        }
+                    }).catch(e => {
+                        console.log(e);
+                    });
+
+                }
+            }
+        });
+        $("#datatables").on("click", ".btnEditRequest", function (e: any) {
+            filaEditada = table.row($(e.target).parents('tr'));
+            let fila = $('#datatables').dataTable().fnGetData($(e.target).closest('tr'));
+            let id = fila[0];
+            _this.onGetValueToUpdateForm(id);
+
+        });
     }
+
 
     logout = () => {
         fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/logout', {
@@ -522,7 +635,6 @@ class UserHomePage extends Component<Props, State> {
             this.updateBookingRequest(bookRoom);
         } else {
             //insert
-
             // this.props.(bookRoom);
             this.createBookingRoom(bookRoom);
         }
@@ -573,17 +685,15 @@ class UserHomePage extends Component<Props, State> {
     }
 
     onDeleteRequest = (typeRquest: string, id: string, message: string) => {
-        if ((typeRquest = 'bookRoomRequest')) {
-            var result = window.confirm('Are you sure to cancel ' + message + ' ?')
-            if (result) {
-                //delete booking in db
-                this.deleteBookingRequest(id);
-                //update state
-                const newArr = this.state.messageToUser.filter(mess => {
-                    return mess.id !== id;
-                })
-                this.setState({ messageToUser: newArr })
-            }
+        var result = window.confirm('Are you sure to delete ' + message + ' ?')
+        if (result) {
+            //delete booking in db
+            this.deleteBookingRequest(id);
+            //update state
+            const newArr = this.state.messageToUser.filter(mess => {
+                return mess.id !== id;
+            })
+            this.setState({ messageToUser: newArr })
         }
     }
 
@@ -652,7 +762,66 @@ class UserHomePage extends Component<Props, State> {
 
     // }
 
+    sendReportError = (reportError: any) => {
+        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/reportError/sendReportError', {
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+            method: 'POST',
+            body: JSON.stringify(reportError)
+        }).then(res => {
+            if (res.status === 200) {
+                return res.json().then(result => { console.log(result) })
+            }
+            else {
+                return res.json().then(result => { throw Error(result.error) });
+            }
+        }).catch(e => {
+            console.log(e);
+        });
+
+    }
+
+    onHandleChangeReportErrorForm = async (event: any) => {
+        var target = event.target;
+        var name = target.name;
+        var value = target.type == 'select-multiple' ? Array.from(target.selectedOptions, (option: any) => option.value) : target.value;
+        await this.setState({
+            [name]: value
+        } as Pick<State, keyof State>);
+
+        console.log(this.state);
+
+    }
+
+    onSubmitReportErrorForm = (event: any) => {
+        event.preventDefault();
+        var errorReport = {
+            roomName: this.state.cbbRoomToReport,
+            deviceNames: this.state.cbbDeviceToReport,
+            description: this.state.txtDescriptionToReport,
+            status: 'pending',
+            userId: this.state.currentUser.employeeId,
+            id: '',
+        }
+        if (this.state.updatingIdBooking) {
+            //update
+            // errorReport["id"] = this.state.updatingIdBooking
+            // this.updateBookingRequest(errorReport);
+        } else {
+            //insert
+            // this.props.(errorReport);
+            this.sendReportError(errorReport);
+            console.log('rperr');
+            
+        }
+
+
+    }
+
     render() {
+        console.log(this.state.messageToUser);
 
         var { messageToUser, lightOn, fanOn, conditionerOn, groundOn, currentUser, isDisableBookingBtn, isAllowToLoadEmptyRooms, isShowValidateLoadEmptyRoom } = this.state;
         return (
@@ -1125,69 +1294,59 @@ class UserHomePage extends Component<Props, State> {
 
                                     <div className="col-md-5">
 
-                                        <form className="form" method="" action="">
+                                        <form className="form" method="" action="" onSubmit={this.onSubmitReportErrorForm}>
 
                                             <div className="card-content">
 
                                                 <div className="form-group">
                                                     <label className="label-control">Room Name</label>
-                                                    <select className="selectpicker" data-style="select-with-transition" multiple
-                                                        title="Choose Room" data-size="7">
+                                                    <select className="selectpicker" data-style="select-with-transition" name="cbbRoomToReport" title="Choose Room"
+                                                        value={this.state.cbbRoomToReport} onChange={this.onHandleChangeReportErrorForm}>
+                                                        {/* update */}
+                                                        {/* name="cbbRoomToBook" value={this.state.cbbRoomToBook} onChange={this.onHandleChangeUpdateBookingForm} */}
                                                         <option disabled> Choose room</option>
-                                                        {/* <option value="2">Room 201 </option>
-                                                        <option value="3">Room 202</option>
-                                                        <option value="4">Room 203</option>
-                                                        <option value="5">Room 204</option>
-                                                        <option value="6">Room 205 </option>
-                                                        <option value="7">Room 206</option>
-                                                        <option value="8">Room 207 </option>
-                                                        <option value="9">Room 208</option>
-                                                        <option value="10">Room 209</option>
-                                                        <option value="11">Room 210</option>
-                                                        <option value="12">Room 211</option>
-                                                        <option value="13">Room 212</option>
-                                                        <option value="14">Room 213 </option>
-                                                        <option value="15">Room 214</option>
-                                                        <option value="16">Room 215</option>
-                                                        <option value="17">Room 216</option>
-                                                        <option value="18">Room 216</option>
-                                                        <option value="19">Room 217</option> */}
+                                                        <option value="201">Room 201 </option>
+                                                        <option value="202">Room 202</option>
+                                                        <option value="203">Room 203</option>
+                                                        <option value="204">Room 204</option>
+                                                        <option value="205">Room 205 </option>
+                                                        <option value="206">Room 206</option>
+                                                        <option value="207">Room 207 </option>
+                                                        <option value="208">Room 208</option>
+                                                        <option value="209">Room 209</option>
+                                                        <option value="210">Room 210</option>
+                                                        <option value="211">Room 211</option>
+                                                        <option value="212">Room 212</option>
+                                                        <option value="213">Room 213 </option>
+                                                        <option value="214">Room 214</option>
+                                                        <option value="215">Room 215</option>
+                                                        <option value="216">Room 216</option>
+                                                        <option value="217">Room 217</option>
+                                                        <option value="218">Room 218</option>
                                                     </select>
                                                 </div>
                                                 <div className="form-group">
                                                     <label className="label-control">Device Name</label>
-                                                    <select className="selectpicker" data-style="select-with-transition" multiple
-                                                        title="Choose Device" data-size="7">
-                                                        <option disabled> Choose device</option>
-                                                        {/* <option value="2">Light 201 </option>
-                                                        <option value="3">Light 202</option>
-                                                        <option value="4">Light 203</option>
-                                                        <option value="5">Light 204</option>
-                                                        <option value="6">Light 205 </option>
-                                                        <option value="7">Light 206</option>
-                                                        <option value="8">Air Conditioner 207 </option>
-                                                        <option value="9">Air Conditioner 208</option>
-                                                        <option value="10">Air Conditioner 209</option>
-                                                        <option value="11">Air Conditioner 210</option>
-                                                        <option value="12">Air Conditioner 211</option>
-                                                        <option value="13">Fan 212</option>
-                                                        <option value="14">Fan 213 </option>
-                                                        <option value="15">Fan 214</option>
-                                                        <option value="16">Socket Power 215</option>
-                                                        <option value="17">Socket Power 216</option>
-                                                        <option value="18">Socket Power 216</option>
-                                                        <option value="19">Socket Power 217</option> */}
+                                                    <select className="selectpicker" data-style="select-with-transition" multiple title="Choose Device" data-size="7" name="cbbDeviceToReport"
+                                                        onChange={this.onHandleChangeReportErrorForm}>
+                                                        {/* update */}
+                                                        {/* name="cbbRoomToBook" value={this.state.cbbRoomToBook} onChange={this.onHandleChangeUpdateBookingForm} */}
+                                                        <option disabled> Choose Device</option>
+                                                        <option value="light">Light </option>
+                                                        <option value="fan">Fan</option>
+                                                        <option value="ground">PowerSocket</option>
+                                                        <option value="airConditioner">Air-Conditioner</option>
                                                     </select>
                                                 </div>
                                                 <div className="form-group label-floating is-empty">
                                                     <label className="control-label">Description</label>
-                                                    <textarea className="form-control"></textarea>
+                                                    <textarea className="form-control" name="txtDescriptionToReport" value={this.state.txtDescriptionToReport} onChange={this.onHandleChangeReportErrorForm}></textarea>
                                                     <span className="material-input"></span>
                                                 </div>
 
                                             </div>
                                             <div className="footer text-center textGetStarted">
-                                                <a href="#pablo" className="btn btn-primary btn-round">Get Started</a>
+                                                <button type="submit" className="btn btn-primary btn-round">Report now</button>
                                             </div>
                                         </form>
                                     </div>
@@ -1327,6 +1486,7 @@ class UserHomePage extends Component<Props, State> {
                                                         width="100%">
                                                         <thead>
                                                             <tr>
+                                                                <th>Id</th>
                                                                 <th>Title</th>
                                                                 <th>Request Type</th>
                                                                 <th>Reply Time</th>
@@ -1336,6 +1496,7 @@ class UserHomePage extends Component<Props, State> {
                                                         </thead>
                                                         <tfoot>
                                                             <tr>
+                                                                <th>Id</th>
                                                                 <th>Title</th>
                                                                 <th>Request Type</th>
                                                                 <th>Reply Time</th>
@@ -1344,20 +1505,21 @@ class UserHomePage extends Component<Props, State> {
                                                             </tr>
 
                                                         </tfoot>
-                                                        {/* <tbody>
-                                                            {messageToUser && messageToUser.map((message) => {
-                                                                var typeRequest = ''
-                                                                if (message.typeRequest = 'bookRoomRequest') {
-                                                                    typeRequest = 'Book Room';
-                                                                } else if (message.typeRequest = 'reportErrorRequest') {
-                                                                    typeRequest = 'Report Error'
-                                                                } else if (message.typeRequest = 'changeRoom') {
-                                                                    typeRequest = 'Change Room'
-                                                                }
+                                                        <tbody>
+                                                            {/* {messageToUser.map((message) => {
+                                                                // var typeRequest = ''
+                                                                // if (message.typeRequest = 'bookRoomRequest') {
+                                                                //     typeRequest = 'Book Room';
+                                                                // } else if (message.typeRequest = 'reportErrorRequest') {
+                                                                //     typeRequest = 'Report Error'
+                                                                // } else if (message.typeRequest = 'changeRoom') {
+                                                                //     typeRequest = 'Change Room'
+                                                                // }
 
-                                                                return <tr className="mainColor" key={message.id}>
+                                                                return( 
+                                                                <tr className="mainColor" key={message.id}>
                                                                     <td>{message.message}</td>
-                                                                    <td>{typeRequest}</td>
+                                                                    <td>{message.typeRequest}</td>
                                                                     <td>{moment(message.sendAt).calendar()}</td>
                                                                     <td><span className="label label-warning pdAll"
                                                                     >{message.status}</span></td>
@@ -1381,12 +1543,12 @@ class UserHomePage extends Component<Props, State> {
                                                                         </button>
                                                                     </td>
                                                                 </tr>
-                                                            })}
+                                                                )
+                                                            })} */}
 
                                                         </tbody>
-                                                     */}
 
-                                                    <tbody></tbody>
+
                                                     </table>
                                                 </div>
                                             </div>

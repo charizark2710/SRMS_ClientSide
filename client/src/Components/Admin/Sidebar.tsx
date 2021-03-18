@@ -1,13 +1,14 @@
 import React, { ChangeEvent, Component } from 'react';
 import { client, messaging } from './../../FireBase/config'
+import { NavLink, RouteComponentProps, Router, Route } from 'react-router-dom';
 
 
 interface Props {
-
+    match: any,
 }
 
 interface State {
-    currentAdmin:any
+    currentAdmin: any
 }
 
 class AdminHomePage extends Component<Props, State> {
@@ -15,38 +16,39 @@ class AdminHomePage extends Component<Props, State> {
     constructor(props: Props) {
         super(props)
         this.state = {
-            currentAdmin:{}
+            currentAdmin: {}
         }
     }
     componentDidMount() {
         fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app', {
             credentials: 'include',
-          }).then(res => {
+        }).then(res => {
             if (res.ok) {
-              client.auth().onAuthStateChanged(user => {
-                if (user) {
-                  var currentUser={
-                      name:user.displayName,
-                      employeeId:user.email?.split('@')[0] || ' '
-                  }
-                    
-                  //this.notificationManagement(user);
-                  this.setState({
-                      currentAdmin:currentUser
-                  })
-                } 
-              });
+                client.auth().onAuthStateChanged(user => {
+                    if (user) {
+                        var currentUser = {
+                            name: user.displayName,
+                            employeeId: user.email?.split('@')[0] || ' '
+                        }
+
+                        //this.notificationManagement(user);
+                        this.setState({
+                            currentAdmin: currentUser
+                        })
+                    }
+                });
             }
-          }).catch(e => {
+        }).catch(e => {
             throw new Error(e);
-          })
-          console.log('sidebar');
-          
+        })
+        console.log('sidebar');
+
     }
 
 
 
     render() {
+        var { match } = this.props;
 
         return (
             <div className="sidebar" data-active-color="orange" data-background-color="white" data-image="/img/sidebar-1.jpg">
@@ -73,22 +75,22 @@ class AdminHomePage extends Component<Props, State> {
                     </div>
                     <ul className="nav">
                         <li className="active text-align-right-for-link">
-                            <a href="./dashboard.html">
+                            <NavLink to={match.url + '/adminHomePage'}>
                                 <i className="material-icons">dashboard</i>
                                 <p> Rooms & Devices </p>
-                            </a>
+                            </NavLink>
                         </li>
                         <li>
-                            <a href="./calendar.html" className="text-align-right-for-link">
+                            <NavLink to={match.url + '/calendar'}>
                                 <i className="material-icons">date_range</i>
                                 <p> Calendar </p>
-                            </a>
+                            </NavLink>
                         </li>
                         <li>
-                            <a href="./bannedList.html" className="text-align-right-for-link">
+                            <NavLink to={match.url + '/bannedList'}>
                                 <i className="material-icons">subtitles_off</i>
                                 <p> Banned List </p>
-                            </a>
+                            </NavLink>
                         </li>
                         <li>
                             <a href="./uploadData.html" className="text-align-right-for-link">

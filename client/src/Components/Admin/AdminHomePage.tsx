@@ -8,7 +8,8 @@ import Calendar from './Calendar';
 import BannedList from './BannedList';
 import RoomAndDevices from './RoomAndDevices';
 import message from '../../model/Message';
-import BookRoom from './BookRoomDetails';
+import BookRoomDetail from './BookRoomDetails';
+import ReportErrorDetail from './ReportErrorDetail';
 import {
     BrowserRouter as Router,
     Redirect,
@@ -63,14 +64,15 @@ class AdminHomePage extends Component<Props, State> {
     render() {
         return (
             <div className="wrapper">
-                <Sidebar />
+                <Sidebar match={this.props.match}/>
                 <div className="main-panel">
                     
                     <Header messagesToAdmin={this.state.messages} match={this.props.match} />
                     {/* <Calendar/> */}
                     {/* <BookRoom/> */}
                     <Route path='/adminHomePage' exact component={RoomAndDevices}></Route>
-                    <Route path='/adminHomePage/bookRoomRequest/:id' match={this.props.match} component={BookRoom}></Route>
+                    <Route path='/adminHomePage/bookRoomRequest/:id' match={this.props.match} component={BookRoomDetail}></Route>
+                    <Route path='/adminHomePage/reportErrorRequest/:id' match={this.props.match} component={ReportErrorDetail}></Route>
                     <Route path='/adminHomePage/calendar' component={Calendar}></Route>
                     <Route path='/adminHomePage/bannedList' component={BannedList}></Route>
                 </div>
