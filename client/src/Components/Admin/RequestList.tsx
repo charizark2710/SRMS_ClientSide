@@ -65,7 +65,7 @@ class BannedList extends Component<Props, State> {
             data.forEach((request: any) => {
                 deleteIDs+=request.id+','
             });
-            fetch('http://localhost:5000/requestList/delete/'+deleteIDs, {
+            fetch('http://localhost:5000/requestList/delete?'+deleteIDs, {
                 credentials: 'include',
                 headers: {
                     'content-type': 'application/json',

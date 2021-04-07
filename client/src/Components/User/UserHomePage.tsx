@@ -1464,7 +1464,7 @@ class UserHomePage extends Component<Props, State> {
                                                             title: "Reply Time", field: "sendAt",
                                                             render: (rowData: message) => {
                                                                 console.log(formatDateTime(rowData.sendAt));
-                                                                
+
                                                                 return <small>{moment(formatDateTime(rowData.sendAt)).calendar()}</small>
                                                             }
                                                         },
@@ -1489,7 +1489,7 @@ class UserHomePage extends Component<Props, State> {
                                                                         </span>
                                                                         <span className="MuiTouchRipple-root"></span>
                                                                     </button>
-                                                                    <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button"  onClick={(e)=>this.onDeleteRequest((rowData as message).typeRequest.toString(), (rowData as message).id.toString(), (rowData as message).message.toString())}>
+                                                                    <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" onClick={(e) => this.onDeleteRequest((rowData as message).typeRequest.toString(), (rowData as message).id.toString(), (rowData as message).message.toString())}>
                                                                         <span className="MuiIconButton-label">
                                                                             <span className="material-icons MuiIcon-root btn-delete-color" aria-hidden="true">delete</span>
                                                                         </span>

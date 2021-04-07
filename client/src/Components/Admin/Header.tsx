@@ -3,7 +3,8 @@ import message from '../../model/Message';
 import moment from 'moment';
 import { NavLink, RouteComponentProps, Router, Route } from 'react-router-dom';
 import firebase from 'firebase'
-import { db, client } from './../../FireBase/config'
+import { db, client } from './../../FireBase/config';
+import { formatDateTime } from "../Common/formatDateTime";
 
 interface Props {
   messagesToAdmin: message[],
@@ -48,7 +49,7 @@ class Header extends Component<Props, State> {
 
   notificationManagement = (user: firebase.User) => {
     this.setState({ messages: [] });
-    const userEmail = user.email?.split('@')[0] || ' ';
+    const userEmail = "admin";
     db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_added', (snap: any) => {
       console.log("child-add-on");
       const mail: message = snap.val();
@@ -191,7 +192,7 @@ class Header extends Component<Props, State> {
 
                               <td>
                                 <span className="noti-info"><strong>{message.sender}</strong>{message.message}</span>
-                                <p className="noti-time"><small>{moment(message.sendAt).calendar()}</small></p>
+                                <p className="noti-time"><small>{moment(formatDateTime(message.sendAt)).calendar()}</small></p>
                               </td>
                               <td>
                                 <div className={!message.isRead ? "unread" : ""}></div>
