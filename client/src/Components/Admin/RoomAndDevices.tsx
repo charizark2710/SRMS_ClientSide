@@ -8,34 +8,72 @@ interface Props {
 interface State {
     onConditioner: string
     onFan: string
-    onGround: string
+    onPowerPlug: string
     onLight: string
     totalConditioner: string
     totalFan: string
-    totalGround: string
+    totalPowerPlug: string
     totalLight: string
+
+
+    //devices status
+    lightOn: boolean,
+    fanOn: boolean,
+    conditionerOn: boolean,
+    powerPlugOn: boolean,
+
+    //checkbox turn on/off all devices
+    isTurnOnAllDevices: boolean
+    //room đang được điều khiển
+    controllingRoom:string
 }
 
 class RoomAndDevices extends Component<Props, State> {
     constructor(props: Props) {
         super(props)
         this.state = {
+            //dash board
             onConditioner: '',
             onFan: '',
-            onGround: '',
+            onPowerPlug: '',
             onLight: '',
             totalConditioner: '',
             totalFan: '',
-            totalGround: '',
+            totalPowerPlug: '',
             totalLight: '',
+
+            //
+            lightOn: false,
+            fanOn: false,
+            conditionerOn: false,
+            powerPlugOn: false,
+
+            isTurnOnAllDevices: false,
+
+            controllingRoom:"",
+
         }
     }
+
+    createScript() {
+        const scripts = ["js/jquery.tagsinput.js"]//,"customJS/loadTable.js"
+
+        for (let index = 0; index < scripts.length; ++index) {
+            const script = document.createElement('script');
+            script.src = scripts[index];
+            script.async = true;
+            script.type = 'text/javascript';
+            document.getElementsByTagName("body")[0].appendChild(script);
+        }
+    }
+
     componentDidMount() {
         this.getNumberOfDevices();
+        this.createScript();
     }
 
     getNumberOfDevices = () => {
-        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/room/countNumberTurnOnDevices', {
+        fetch('http://localhost:5000/room/countNumberTurnOnDevices', {
             credentials: "include",
             method: 'GET',
         }).then(async res => {
@@ -46,11 +84,11 @@ class RoomAndDevices extends Component<Props, State> {
                         this.setState({
                             onConditioner: result.onConditioner,
                             onFan: result.onFan,
-                            onGround: result.onGround,
+                            onPowerPlug: result.onPowerPlug,
                             onLight: result.onLight,
                             totalConditioner: result.totalConditioner,
                             totalFan: result.totalFan,
-                            totalGround: result.totalGround,
+                            totalPowerPlug: result.totalPowerPlug,
                             totalLight: result.totalLight
                         })
                         console.log(this.state);
@@ -71,16 +109,190 @@ class RoomAndDevices extends Component<Props, State> {
     }
 
 
+
+
+    onControlDevices = (room: string) => {
+        this.setState({
+            controllingRoom:room
+        })
+        var roomName = {
+            roomName: room
+        }
+        fetch('http://localhost:5000/room/sendDevicesStatus', {
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+            method: 'POST',
+            body: JSON.stringify(roomName)
+        }).then(res => {
+            if (res.status === 200) {
+
+                res.json().then((result) => {
+                    this.setState({
+                        lightOn: result.light === 1 ? true : false,
+                        fanOn: result.fan === 1 ? true : false,
+                        powerPlugOn: result.powerPlug === 1 ? true : false,
+                        conditionerOn: result.conditioner === 1 ? true : false,
+                    })
+                    if (this.state.lightOn && this.state.fanOn && this.state.powerPlugOn && this.state.conditionerOn) {
+                        this.setState({
+                            isTurnOnAllDevices: true
+                        })
+                    } else {
+                        this.setState({
+                            isTurnOnAllDevices: false
+                        })
+                    }
+                })
+            }
+            else {
+                return res.json().then(result => { throw Error(result.error) });
+            }
+        }).catch(e => {
+            console.log(e);
+        });
+    }
+    toggleDeviceStatus = (device: string) => {
+        switch (device) {
+            case "light":
+                this.setState({
+                    lightOn: !this.state.lightOn
+                })
+                var lightUpdating = {
+                    roomName: this.state.controllingRoom,
+                    device: {
+                        light: (this.state.lightOn) ? 0 : 1,
+                    }
+                }
+                this.updateDeviceStatus(lightUpdating);
+                break;
+            case "fan":
+                this.setState({
+                    fanOn: !this.state.fanOn
+                })
+                var fanUpdating = {
+                    roomName: this.state.controllingRoom,
+                    device: {
+                        fan: (this.state.fanOn) ? 0 : 1,
+                    }
+                }
+                this.updateDeviceStatus(fanUpdating);
+                break;
+            case "conditioner":
+                this.setState({
+                    conditionerOn: !this.state.conditionerOn
+                })
+                var conditionerUpdating = {
+                    roomName: this.state.controllingRoom,
+                    device: {
+                        conditioner: (this.state.conditionerOn) ? 0 : 1,
+                    }
+                }
+                this.updateDeviceStatus(conditionerUpdating);
+                break;
+            case "powerPlug":
+                this.setState({
+                    powerPlugOn: !this.state.powerPlugOn
+                })
+                var powerPlugUpdating = {
+                    roomName: this.state.controllingRoom,
+                    device: {
+                        powerPlug: (this.state.powerPlugOn) ? 0 : 1,
+                    }
+                }
+                this.updateDeviceStatus(powerPlugUpdating);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    updateDeviceStatus = (updatingDevice: any) => {
+        fetch('http://localhost:5000/room/switchDeviceStatus', {
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+            method: 'PATCH',
+            body: JSON.stringify(updatingDevice),
+        }).then(res => {
+            if (res.ok) {
+                return res.json().then(result => { console.log(result) })
+            }
+            else {
+                return res.json().then(result => { throw Error(result.error) });
+            }
+        }).catch(e => {
+            console.log(e);
+        });
+    }
+
+    //turn on/off all devices
+    onChange = async (event: any) => {
+        await this.setState({
+            isTurnOnAllDevices: event.target.checked
+        })
+        var isTurnOn = this.state.isTurnOnAllDevices ? 1 : 0
+        var data = {
+            roomName: this.state.controllingRoom,
+            devices: {
+                light: isTurnOn,
+                powerPlug: isTurnOn,
+                fan: isTurnOn,
+                conditioner: isTurnOn,
+            }
+        }
+        this.UpdateAllDevicesStatus(data);
+    }
+
+    UpdateAllDevicesStatus = (data: any) => {
+        fetch('http://localhost:5000/room/switchAllDevicesStatus', {
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+            method: 'PUT',
+            body: JSON.stringify(data),
+        }).then(res => {
+            if (res.ok) {
+                if (this.state.isTurnOnAllDevices) {
+                    this.setState({
+                        lightOn: true,
+                        fanOn: true,
+                        powerPlugOn: true,
+                        conditionerOn: true
+                    })
+                } else {
+                    this.setState({
+                        lightOn: false,
+                        fanOn: false,
+                        powerPlugOn: false,
+                        conditionerOn: false
+                    })
+                }
+                return res.json().then(result => { console.log(result) })
+            }
+            else {
+                return res.json().then(result => { throw Error(result.error) });
+            }
+        }).catch(e => {
+            console.log(e);
+        });
+    }
+
     render() {
         onConditioner: 2
         onFan: 1
-        onGround: 2
+        onPowerPlug: 2
         onLight: 1
         totalConditioner: 3
         totalFan: 3
-        totalGround: 3
+        totalPowerPlug: 3
         totalLight: 3
-        var { onConditioner,onConditioner, onFan,onGround,onLight,totalConditioner, totalFan,totalGround,totalLight} = this.state;
+        var { onConditioner, onConditioner, onFan, onPowerPlug, onLight, totalConditioner, totalFan, totalPowerPlug, totalLight, lightOn, fanOn, conditionerOn, powerPlugOn } = this.state;
+
         return (
             <div className="content">
                 <div className="container-fluid">
@@ -142,8 +354,8 @@ class RoomAndDevices extends Component<Props, State> {
                                     <i className="material-icons">settings_input_svideo</i>
                                 </div>
                                 <div className="card-content">
-                                    <p className="category">Power Socket</p>
-                                    <h3 className="card-title">{onGround}/{totalGround}</h3>
+                                    <p className="category">Power Plug</p>
+                                    <h3 className="card-title">{onPowerPlug}/{totalPowerPlug}</h3>
                                 </div>
                                 <div className="card-footer">
                                     <div className="stats">
@@ -174,28 +386,36 @@ class RoomAndDevices extends Component<Props, State> {
                                                 <tbody>
                                                     <tr>
                                                         <td><button className="btn btn-success btn-lg" data-toggle="modal"
-                                                            data-target="#myModal">218</button></td>
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('218') }}>218</button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className="btn btn-default btn-lg">219</button></td>
-                                                        <td><button className="btn btn-default btn-lg">201</button></td>
-                                                        <td><button className="btn btn-success btn-lg">203</button></td>
+                                                        <td><button className="btn btn-default btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('219') }}>219</button></td>
+                                                        <td><button className="btn btn-default btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('201') }}>201</button></td>
+                                                        <td><button className="btn btn-success btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('203') }}>203</button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className="btn btn-success btn-lg">204</button></td>
+                                                        <td><button className="btn btn-success btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('204') }}>204</button></td>
                                                     </tr>
                                                     <tr>
-                                                        <td><button className="btn-margin-top btn btn-success btn-lg">217
+                                                        <td><button className="btn-margin-top btn btn-success btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('217') }}>217
                                             <div className="ripple-container"></div>
                                                         </button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className="btn-margin-top btn btn-success btn-lg">220
+                                                        <td><button className="btn-margin-top btn btn-success btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('220') }}>220
                                             <div className="ripple-container"></div>
                                                         </button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className="btn-margin-top btn btn-default btn-lg">202
+                                                        <td><button className="btn-margin-top btn btn-default btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('202') }}>202
                                             <div className="ripple-container"></div>
                                                         </button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className="btn-margin-top btn btn-success btn-lg">205
+                                                        <td><button className="btn-margin-top btn btn-success btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('205') }}>205
                                             <div className="ripple-container"></div>
                                                         </button></td>
                                                     </tr>
@@ -209,13 +429,15 @@ class RoomAndDevices extends Component<Props, State> {
                                                         <td className="td-height"></td>
                                                     </tr>
                                                     <tr>
-                                                        <td><button className="btn btn-success btn-lg">216</button></td>
+                                                        <td><button className="btn btn-success btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('216') }}>216</button></td>
                                                         <td className="td-width"></td>
                                                         <td className="td-width"></td>
                                                         <td className="td-width"></td>
                                                         <td className="td-width"></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className="btn btn-default btn-lg">WC</button></td>
+                                                        <td><button className="btn btn-default btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('WC') }}>WC</button></td>
                                                     </tr>
                                                     <tr>
                                                         <td className="td-height"><img className="height-img-70" src="/img/stair.png"
@@ -229,13 +451,15 @@ class RoomAndDevices extends Component<Props, State> {
                                                             className="height-img-70" /></td>
                                                     </tr>
                                                     <tr>
-                                                        <td><button className="btn btn-default btn-lg">215</button></td>
+                                                        <td><button className="btn btn-default btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('215') }}>215</button></td>
                                                         <td className="td-width"></td>
                                                         <td className="td-width"></td>
                                                         <td className="td-width"></td>
                                                         <td className="td-width"></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className="btn btn-success btn-lg">WC</button></td>
+                                                        <td><button className="btn btn-success btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('WC') }}>WC</button></td>
                                                     </tr>
                                                     <tr>
                                                         <td className="td-height"></td>
@@ -247,31 +471,40 @@ class RoomAndDevices extends Component<Props, State> {
                                                         <td className="td-height"></td>
                                                     </tr>
                                                     <tr>
-                                                        <td><button className="btn btn-success btn-lg">214</button></td>
+                                                        <td><button className="btn btn-success btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('214') }}>214</button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className="btn btn-success btn-lg">211</button></td>
+                                                        <td><button className="btn btn-success btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('211') }}>211</button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className="btn btn-success btn-lg">209</button></td>
+                                                        <td><button className="btn btn-success btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('209') }}>209</button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className="btn btn-success btn-lg">206</button></td>
+                                                        <td><button className="btn btn-success btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('206') }}>206</button></td>
                                                     </tr>
                                                     <tr>
-                                                        <td><button className="btn-margin-top btn btn-success btn-lg">213
-                                            <div className="ripple-container"></div>
+                                                        <td><button className="btn-margin-top btn btn-success btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('213') }}>213
+                                                            <div className="ripple-container"></div>
                                                         </button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className="btn-margin-top btn btn-success btn-lg">212
-                                            <div className="ripple-container"></div>
+                                                        <td><button className="btn-margin-top btn btn-success btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('212') }}>212
+                                                            <div className="ripple-container"></div>
                                                         </button></td>
-                                                        <td><button className="btn-margin-top btn btn-success btn-lg">210
-                                            <div className="ripple-container"></div>
+                                                        <td><button className="btn-margin-top btn btn-success btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('210') }}>210
+                                                            <div className="ripple-container"></div>
                                                         </button></td>
-                                                        <td><button className="btn-margin-top btn btn-success btn-lg">208
-                                            <div className="ripple-container"></div>
+                                                        <td><button className="btn-margin-top btn btn-success btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('208') }}>208
+                                                            <div className="ripple-container"></div>
                                                         </button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className="btn-margin-top btn btn-success btn-lg">207
-                                            <div className="ripple-container"></div>
+                                                        <td><button className="btn-margin-top btn btn-success btn-lg" data-toggle="modal"
+                                                            data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('207') }}>207
+                                                            <div className="ripple-container"></div>
                                                         </button></td>
                                                     </tr>
                                                 </tbody>
@@ -362,6 +595,69 @@ class RoomAndDevices extends Component<Props, State> {
 
 
                 </div>
+
+                <div id="controlDevicesModal" className="modal fade blur" role="dialog">
+                    <div className="modal-dialog">
+
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <button type="button" className="close" data-dismiss="modal">&times;</button>
+                                <h4 className="modal-title">Room 218 - Control devices</h4>
+                            </div>
+                            <div className="modal-body">
+                                <div className="nav-center">
+                                    <ul className="nav nav-pills nav-pills-warning nav-pills-icons" role="tablist">
+                                        <li className={lightOn ? "active" : ""} onClick={() => this.toggleDeviceStatus('light')}>
+                                            <a>
+                                                <i className="material-icons">online_prediction</i> Light
+                                            </a>
+                                        </li>
+                                        <li className={conditionerOn ? "active" : ""} onClick={() => this.toggleDeviceStatus('conditioner')}>
+                                            <a>
+                                                <i className="material-icons">ac_unit</i> Conditioner
+                                            </a>
+                                        </li>
+                                        <li className={fanOn ? "active" : ""} onClick={() => this.toggleDeviceStatus('fan')}>
+                                            <a>
+                                                <i className="material-icons">settings_input_antenna</i> Fan
+                                            </a>
+                                        </li>
+                                        <li className={powerPlugOn ? "active" : ""} onClick={() => this.toggleDeviceStatus('powerPlug')}>
+                                            <a>
+                                                <i className="material-icons">settings_input_svideo</i> Power Plug
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                            </div>
+                            <div className="pd-left-5">
+                                <table>
+                                    <tbody>
+                                        <tr>
+                                            <td className="modal-footer">
+                                                <div className="checkbox width-turnOnOff">
+                                                    <label>
+                                                        <input type="checkbox" checked={this.state.isTurnOnAllDevices} onChange={this.onChange} /> Turn on all devices {this.state.isTurnOnAllDevices ? "ok" : "no"}
+                                                    </label>
+                                                </div>
+                                            </td>
+                                            <td className="modal-footer">
+                                                {/* <button type="button" className="btn btn-warning btnMarginNegetive"
+                                                data-dismiss="modal">Save</button> */}
+
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+
+
             </div>
 
 

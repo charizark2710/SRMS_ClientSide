@@ -20,7 +20,7 @@ class AdminHomePage extends Component<Props, State> {
         }
     }
     componentDidMount() {
-        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app', {
+        fetch('http://localhost:5000', {
             credentials: 'include',
         }).then(res => {
             if (res.ok) {
@@ -75,7 +75,7 @@ class AdminHomePage extends Component<Props, State> {
                     </div>
                     <ul className="nav">
                         <li className="active text-align-right-for-link">
-                            <NavLink to={match.url + '/adminHomePage'}>
+                            <NavLink to={match.url}>
                                 <i className="material-icons">dashboard</i>
                                 <p> Rooms & Devices </p>
                             </NavLink>

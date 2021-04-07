@@ -1,9 +1,9 @@
 {
-    "api_key": "AIzaSyCKmJrVcph0FFbZgRvEt2a7XbNqCtCpbrE",
-    "auth_domain": "capstone-srms-thanhnt.firebaseapp.com",
-    "database_url": "https://capstone-srms-thanhnt-default-rtdb.firebaseio.com/",
-    "project_id": "capstone-srms-thanhnt",
-    "storage_bucket": "capstone-srms-thanhnt.appspot.com",
-    "messaging_sender_id": "459925130341",
-    "app_id": "1:459925130341:web:72c54106bc458107380a8c"
+    "api_key": "AIzaSyA9YL43stkgX6qDReZTRqjiiJ_uiXmuM9k",
+    "auth_domain": "learning-5071c.firebaseapp.com",
+    "database_url": "https://learning-5071c.firebaseio.com",
+    "project_id": "learning-5071c",
+    "storage_bucket": "learning-5071c.appspot.com",
+    "messaging_sender_id": "779866741740",
+    "app_id": "1:779866741740:web:de8158ed8c7e3ceb873ec9"
 }

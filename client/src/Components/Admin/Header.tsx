@@ -22,7 +22,7 @@ class Header extends Component<Props, State> {
     }
   }
   componentDidMount() {
-    fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app', {
+    fetch('http://localhost:5000', {
       credentials: 'include',
     }).then(res => {
       if (res.ok) {

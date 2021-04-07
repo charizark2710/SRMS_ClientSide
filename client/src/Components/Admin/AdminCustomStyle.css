@@ -42,3 +42,10 @@
 .card-roomDevice-color{
     background-color: rgba(255, 99, 71, 0.2)
 }
+.MuiDataGrid-root{
+    font-size: 13px !important;
+    
+}
+.MuiTypography-body2 {
+    font-size: 13px !important;
+}

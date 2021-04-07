@@ -1,5 +1,8 @@
 import React, { ChangeEvent, Component } from 'react';
 import bannedList from "./../../model/BannedList";
+import MaterialTable from 'material-table';
+import Checkbox from '@material-ui/core/Checkbox';
+
 
 interface Props {
 
@@ -8,9 +11,14 @@ interface Props {
 interface State {
     bannedList: bannedList[]
     unbannedList: string[]
-    selectedUserToBan: string[] 
+    selectedUserToBan: any[]
 }
-
+var columns = [
+    // { title: "Avatar", render: rowData => <Avataratar maxInitials={1} size={40} round={true} name={rowData === undefined ? " " : rowData.first_name} /> },
+    { title: "Account", field: "email" },
+    { title: "Role", field: "role" },
+    { title: "Banned Date", field: "bannedAt" },
+]
 class BannedList extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
@@ -24,31 +32,12 @@ class BannedList extends Component<Props, State> {
     componentDidMount() {
         this.getUnbannedList();
         this.getBannedList();
+
     }
 
-    createScript() {
-        var scripts = [
 
-
-            //  "js/perfect-scrollbar.jquery.min.js",
-            //    "js/moment.min.js", "js/jquery.select-bootstrap.js", "js/jquery.datatables.js",
-            //    "js/fullcalendar.min.js",
-            // "/js/jquery.select-bootstrap.js", 
-            // "/js/jquery.tagsinput.js",
-            "/customJS/loadLongTable.js"];
-
-        for (var index = 0; index < scripts.length; ++index) {
-            var script = document.createElement('script');
-            script.src = scripts[index];
-            // script.async = true;
-            // script.type = 'text/javascript';
-            document.getElementsByTagName("body")[0].appendChild(script);
-        }
-    }
-
-   
     getBannedList = () => {
-        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/blackList/banned', {
+        fetch('http://localhost:5000/users/banned', {
             credentials: "include",
             method: 'GET',
         }).then(async res => {
@@ -60,7 +49,7 @@ class BannedList extends Component<Props, State> {
                             bannedList: result
                         })
                         if (this.state.bannedList) {
-                            this.createScript();
+                            // this.createScript();
 
                         }
                     });
@@ -80,7 +69,7 @@ class BannedList extends Component<Props, State> {
 
 
     getUnbannedList = () => {
-        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/blackList/unbanned', {
+        fetch('http://localhost:5000/users/unbanned', {
             credentials: "include",
             method: 'GET',
         }).then(res => {
@@ -107,15 +96,35 @@ class BannedList extends Component<Props, State> {
     }
 
     banUser = () => {
-        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/blackList/banUser', {
+        console.log(this.state.selectedUserToBan);
+        fetch('http://localhost:5000/users/banUser', {
             credentials: "include",
             method: 'PATCH',
-            body:JSON.stringify(this.state.selectedUserToBan)
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(this.state.selectedUserToBan)
         }).then(async res => {
             try {
                 if (res.ok) {
-                    res.json().then(result => {
-                        
+                    res.json().then((result: bannedList[]) => {//nhung thang bi ban
+                        let newBannedList = [...this.state.bannedList];
+                        newBannedList.push(...result)
+
+                        let unbanArr = this.state.unbannedList;
+
+
+                        var newUbanArr = unbanArr.filter(function (unban_el) {
+                            return result.filter(function (anotherOne_el) {
+                                return anotherOne_el.email == unban_el;
+                            }).length == 0
+                        });
+
+                        this.setState({
+                            bannedList: newBannedList,
+                            unbannedList: newUbanArr
+                        })
+
                     });
                 } else {
                     res.json().then(result => {
@@ -132,36 +141,42 @@ class BannedList extends Component<Props, State> {
 
 
     unbanUser = (email: string) => {
-        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/blackList/unbanUser', {
-            credentials: "include",
-            method: 'PATCH',
-            body: email
-        }).then(async res => {
-            try {
-                if (res.ok) {
-                    res.json().then(result => {
-                        console.log(result);
+        if (!email) console.log('ddmmm');
+        else
+            fetch(`http://localhost:5000/users/unbanUser?id=${email}`, {
+                credentials: "include",
+                method: 'PATCH',
+            }).then(async res => {
+                try {
+                    if (res.ok) {
+                        res.json().then((result: string) => {
+                            let arr = this.state.bannedList;
+                            let newArr = arr.filter(user => {
+                                return user.email !== result
+                            })
 
-                        const arr = this.state.bannedList;
-                        const newArr = arr.filter(user => {
-                            return user.email !== result
-                        })
+                            let arrUnban = this.state.unbannedList;
+                            arrUnban.push(result)
 
-                        this.setState({
-                            bannedList: newArr
-                        })
-                    });
-                } else {
-                    res.json().then(result => {
-                        throw Error(result);
-                    });
+                            this.setState({
+                                bannedList: newArr,
+                                unbannedList: arrUnban
+                            })
+
+                            console.log(this.state);
+
+                        });
+                    } else {
+                        res.json().then(result => {
+                            throw Error(result);
+                        });
+                    }
+                } catch (error) {
+                    throw Error(error);
                 }
-            } catch (error) {
-                throw Error(error);
-            }
-        }).catch(e => {
-            throw Error(e);
-        });
+            }).catch(e => {
+                throw Error(e);
+            });
     }
 
 
@@ -177,9 +192,8 @@ class BannedList extends Component<Props, State> {
     }
 
 
-
     render() {
-        console.log(this.state.bannedList);
+        console.log(this.state);
 
         return (
 
@@ -197,41 +211,24 @@ class BannedList extends Component<Props, State> {
                                     <div className="toolbar">
                                     </div>
                                     <div className="material-datatables">
-                                        <table id="longDatatables" className="table table-striped table-no-bordered table-hover" width="100%">
-                                            <thead>
-                                                <tr>
-                                                    <th className="banned-width-40">Account</th>
-                                                    <th className="banned-width-20">Role</th>
-                                                    <th className="banned-width-30">Banned date</th>
-                                                    <th className="banned-width-10 text-center">Unban</th>
-                                                </tr>
-                                            </thead>
-                                            <tfoot>
-                                                <tr>
-                                                    <th className="banned-width-40">Account</th>
-                                                    <th className="banned-width-20">Role</th>
-                                                    <th className="banned-width-30">Banned date</th>
-                                                    <th className="banned-width-10 text-center">Unban</th>
-                                                </tr>
-                                            </tfoot>
-                                            <tbody>
-                                                {this.state.bannedList.map((u, index) => {
-                                                    return (
-                                                        <tr key={index}>
-                                                            <td>{u.email}</td>
-                                                            <td>{u.role}</td>
-                                                            <td>{u.bannedAt}</td>
-                                                            <td className="td-actions text-center">
-                                                                <button type="button" className="btn btn-danger" data-original-title="" title="Unban" onClick={() => this.unbanUser(u.email)}>
-                                                                    <i className="material-icons">close</i></button>
-                                                            </td>
-                                                        </tr>
-                                                    )
-                                                })}
+                                        <MaterialTable
 
+                                            columns={columns}
+                                            data={this.state.bannedList}
+                                            actions={[
+                                                // {
+                                                //     icon:'edit',
+                                                //     tooltip:'Edit',
+                                                //     onClick:(event, rowData)=>alert((rowData as bannedList).id)
+                                                // },
+                                                {
+                                                    icon: 'delete',
+                                                    tooltip: 'Unban',
+                                                    onClick: (event, rowData) => this.unbanUser((rowData as bannedList).email)
+                                                }
+                                            ]}
+                                        />
 
-                                            </tbody>
-                                        </table>
                                     </div>
                                 </div>
                             </div>
@@ -278,19 +275,24 @@ class BannedList extends Component<Props, State> {
 
                                             <select className="form-control" multiple onChange={this.onHandleChangeBannedList} name="selectedUserToBan">
                                                 {
-                                                     this.state.unbannedList.map((email, i) =>
-                                                     (<option key={i} value={email}>{email}</option>))
+                                                    this.state.unbannedList && this.state.unbannedList.map((mail, i) => {
+                                                        var value = {
+                                                            email: mail
+                                                        }
+                                                        return <option key={i} value={JSON.stringify(value)}>{mail}</option>
+                                                    })
+
                                                 }
                                             </select>
-                                            
-                                          
-                                            
+
+
+
 
                                         </div>
 
                                     </div>
                                     <div className="footer text-center banned-pb-5">
-                                        <a href="#pablo" className="btn btn-primary btn-round" onClick={()=>this.banUser()}>Ban</a>
+                                        <a href="#pablo" className="btn btn-primary btn-round" onClick={() => this.banUser()}>Ban</a>
                                     </div>
                                 </form>
 

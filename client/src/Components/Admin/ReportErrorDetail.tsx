@@ -54,7 +54,7 @@ class ReportErrorDetail extends Component<Props, State> {
 
 
     viewReportErrorDetail = (id: string) => {
-        fetch(`http://localhost:5000/capstone-srms-thanhnt/us-central1/app/reportError/${id}`, {
+        fetch(`http://localhost:5000/reportError/${id}`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -94,7 +94,7 @@ class ReportErrorDetail extends Component<Props, State> {
             description: this.state.description,
             deviceNames: this.state.deviceNames,
         }
-        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/reportError/acceptOrRejectReportError', {
+        fetch('http://localhost:5000/reportError/acceptOrRejectReportError', {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',

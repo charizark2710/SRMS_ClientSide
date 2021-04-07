@@ -46,7 +46,7 @@ class Login extends Component<Props, State> {
             this.setState({
                 idToken: await result.user?.getIdToken()!, name: result.user?.displayName!, uid: result.user?.uid!, employeeId: result.user?.email?.split('@')[0]!
             });
-            fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/login', {
+            fetch('http://localhost:5000/login', {
                 credentials: 'include',
 
                 headers: {
@@ -58,10 +58,9 @@ class Login extends Component<Props, State> {
             }).then( async res => {
                 if (res.ok) {
                     await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-                    if(this.state.employeeId==='thanhntse63563'){
-                        
+                    if(this.state.employeeId === 'dangduchieudn99' || this.state.employeeId === 'pbt.anh1999' || this.state.employeeId === 'winnguyenthongminhghe' || this.state.employeeId === 'thanhngo100298'){
                          this.props.history.push("/adminHomePage");
-                     }else{
+                    }else{
                         this.props.history.push("/userHomePage");
                     }
                     return res.json().then(result => { console.log(result) })

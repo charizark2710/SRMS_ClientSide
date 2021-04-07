@@ -62,7 +62,7 @@ class BookRoomDetail extends Component<Props, State> {
 
     viewDetailBookingRoom = (id: string) => {
         // bookingRoomData.clear();
-        fetch(`http://localhost:5000/capstone-srms-thanhnt/us-central1/app/bookRoom/${id}`, {
+        fetch(`http://localhost:5000/bookRoom/${id}`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -105,7 +105,7 @@ class BookRoomDetail extends Component<Props, State> {
             // date: this.state.date,
             // time: this.state.time,
         }
-        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/bookRoom/acceptOrRejectBooking', {
+        fetch('http://localhost:5000/bookRoom/acceptOrRejectBooking', {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',

@@ -48,7 +48,7 @@ class App extends Component<Props, State>{
 
   
   componentDidMount() {
-    fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app', {
+    fetch('http://localhost:5000', {
       credentials: 'include',
     }).then(res => {
       this.setState({ isDone: true });
@@ -69,7 +69,7 @@ class App extends Component<Props, State>{
 
   // logout = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
   //   this.setState({ isDone: false });
-  //   fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/logout', {
+  //   fetch('http://localhost:5000/logout', {
   //     credentials: "include",
   //     method: 'POST',
   //   }).then(async res => {
@@ -102,7 +102,7 @@ class App extends Component<Props, State>{
   //     this.setState({
   //       isDone: false, idToken: await user?.getIdToken()!, name: user?.displayName!, uid: user?.uid!, employeeId: user?.email?.split('@')[0]!
   //     });
-  //     fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/login', {
+  //     fetch('http://localhost:5000/login', {
   //       credentials: 'include',
 
   //       headers: {

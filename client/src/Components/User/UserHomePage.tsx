@@ -4,13 +4,13 @@ import { client, db } from '../../FireBase/config';
 import './UserHomePage.css';
 import message from '../../model/Message';
 import moment from 'moment';
-import { loadTable } from "./loadTableA.js";
-//Datatable Modules
+import MaterialTable from 'material-table';
+import Button from "@material-ui/core/Button";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { formatDateTime, formatTime, formatDate } from "../Common/formatDateTime";
 
-// import 'datatables.net-dt/css/jquery.dataTables.css'
-// import 'datatables.net-bs/css/dataTables.bootstrap.css'
-const $ = require('jquery');
-$.DataTable = require('datatables.net');
+
 
 interface Props {
     // propsFromLoginToUser: any
@@ -25,7 +25,7 @@ interface State {
     lightOn: boolean,
     fanOn: boolean,
     conditionerOn: boolean,
-    groundOn: boolean,
+    powerPlugOn: boolean,
 
     //checkbox turn on/off all devices
     isTurnOnAllDevices: boolean
@@ -51,8 +51,40 @@ interface State {
     cbbDeviceToReport: string[]
     cbbRoomToReport: string
     txtDescriptionToReport: string
+
+
 }
 
+
+// var columns = [
+//     { title: "ID", field: "id", hidden: true },
+//     { title: "Title", field: "message" },
+//     {
+//         title: "Request Type", field: "typeRequest",
+//         render: (rowData: message) => {
+//             return rowData.typeRequest == "bookRoomRequest" ? <p style={{ color: "#E87722", fontWeight: "bold" }}>Book room request</p> :
+//                 rowData.typeRequest == "reportErrorRequest" ? <p style={{ color: "#008240", fontWeight: "bold" }}>Report Error Request</p> :
+//                     <p style={{ color: "#B0B700", fontWeight: "bold" }}>Change Room Request</p>
+//         }
+//     },
+//     {
+//         title: "Reply Time", field: "sendAt",
+//         render: (rowData: message) => {
+//             return <small>{moment(rowData.sendAt).calendar()}</small>
+//         }
+//     },
+//     {
+//         title: "Status", field: "status",
+//         render: (rowData: message) => {
+//             return rowData.status == "accepted" ? <span className="label label-success" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
+//                 rowData.status == "pending" ? <span className="label label-warning" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
+//                     <span className="label label-default" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span>
+//         }
+//     },
+//     { title: "Action custon", render: (data:message) => <button type="button" className="btn btn-danger" onClick={this.onGetValueToUpdateForm}>button</button>
+//      },
+
+// ]
 class UserHomePage extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
@@ -63,7 +95,7 @@ class UserHomePage extends Component<Props, State> {
             lightOn: false,
             fanOn: false,
             conditionerOn: false,
-            groundOn: false,
+            powerPlugOn: false,
 
             isTurnOnAllDevices: false,
 
@@ -85,9 +117,13 @@ class UserHomePage extends Component<Props, State> {
             cbbDeviceToReport: [],
             cbbRoomToReport: '',
             txtDescriptionToReport: '',
+
+
         }
 
     }
+
+    notification: message[] = [];
 
     createScript() {
         const scripts = ["js/jquery.tagsinput.js", "js/material-dashboard.js?v=1.2.1", "customJS/loadBackground.js"]//,"customJS/loadTable.js"
@@ -101,21 +137,13 @@ class UserHomePage extends Component<Props, State> {
         }
     }
 
-    reloadScriptTable() {
-        const loadTable = "customJS/loadTable.js"
-        const script = document.createElement('script');
-        script.src = loadTable
-        script.async = true;
-        script.type = 'text/javascript';
-        document.getElementsByTagName("body")[0].appendChild(script);
-    }
 
     componentDidMount() {
-        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app', {
+        fetch('http://localhost:5000', {
             credentials: 'include',
         }).then(res => {
             if (res.ok) {
-                client.auth().onAuthStateChanged(user => {
+                client.auth().onAuthStateChanged(async user => {
                     if (user) {
                         const currentUser = {
                             name: user.displayName,
@@ -127,207 +155,91 @@ class UserHomePage extends Component<Props, State> {
                             currentUser: currentUser
                         })
                         this.createScript();
-                        // loadTable(user.email?.split('@')[0] || ' ');
                     }
                 });
             }
         }).catch(e => {
             throw new Error(e);
         })
-
     }
 
-    notificationManagement = (user: firebase.User) => {
-        let _this = this;
-        var removedRow: any;//dòng đã xóa
-        var filaEditada: any; //dòng đang edit
-        var dataSet: message[] = []
-        var table = $('#datatables').DataTable({
-            "pagingType": "full_numbers",
-            "lengthMenu": [
-                [5, 10, 15, -1],
-                [5, 10, 15, "All"]
-            ],
-            "autoWidth": true,
-            data: dataSet,
-            responsive: true,
-            language: {
-                search: "_INPUT_",
-                searchPlaceholder: "Search records",
-            },
+    notiReady: boolean = false;
 
-            columnDefs: [
-                {
-                    "targets": [0],
-                    "visible": false,
-                    "searchable": false
-                },
-                {
-                    "targets": -1,
-                    "data": null,
-                    "defaultContent": "<button type='button' class='btnEditRequest btn btn-success btn-simple' data-original-title='' title='Update this request' data-toggle='modal' data-dismiss='modal' data-target='#updateBookRoomModal'><i class='material-icons'>edit</i><div class='ripple-container'></div></button><button type='button' class='btnRemoveRequest btn btn-danger btn-simple' data-original-title='' title='Delete this request'><i class='material-icons'>close</i></button>"
-                },
-                { className: "td-actions text-center", "targets": [5] },
-                {
-                    targets: [3],
-                    render: function (data: string) {
-                        return moment(data).calendar();
-                    }
-                }
-            ],
-
-            // columns: [
-            //     { title: "Tile", data: "message" },
-            //     { title: "Request Type", data: "typeRequest" },
-            //     { title: "Reply Time", data: "sendAt" },
-            //     { title: "Status", data: "status" },
-            //   ]
-
-        });
-
-        // this.setState({ messageToUser: [] });
+    notificationManagement = async (user: firebase.User) => {
+        this.setState({ messageToUser: [] });
         const userEmail = user.email?.split('@')[0] || ' ';
-
-        db.ref('notification'.concat('/', userEmail)).on('child_added', snap => {
-            dataSet = [snap.child('id').val(), snap.child('message').val(), snap.child('typeRequest').val(), snap.child('sendAt').val(), snap.child('status').val()]
-            table.rows.add([dataSet]).draw();
-
-        })
-
-        db.ref('notification'.concat('/', userEmail)).off('child_added', (snap) => {
-            dataSet = [snap.child('id').val(), snap.child('message').val(), snap.child('typeRequest').val(), snap.child('sendAt').val(), snap.child('status').val()]
-            table.rows.add([dataSet]).draw();
+        await db.ref('notification'.concat('/', userEmail)).limitToLast(100).on('child_added', snap => {
+            if (this.notiReady) {
+                const mail: message = snap.val();
+                if (mail) {
+                    this.setState({ messageToUser: [... this.state.messageToUser, mail] })
+                }
+            }
         });
-
-
+        db.ref('notification'.concat('/', userEmail)).limitToLast(100).off('child_added', (snap) => {
+            if (this.notiReady) {
+                const mail: message = snap.val();
+                if (mail) {
+                    this.setState({ messageToUser: [... this.state.messageToUser, mail] })
+                }
+            }
+        });
         db.ref('notification'.concat('/', userEmail)).on('child_changed', snap => {
-            dataSet = [snap.child('id').val(), snap.child('message').val(), snap.child('typeRequest').val(), snap.child('sendAt').val(), snap.child('status').val()]
-            for (let row in $('#datatables').dataTable().fnGetData()){
-                if(table.row(row).data()[0]===dataSet[0]){
-                    filaEditada = table.row(row);
-                    break;
+            const mail: message = snap.val();
+            const arr = this.state.messageToUser;
+            for (let i = 0; i < arr.length; i++) {
+                if (arr[i].id === mail.id) {
+                    arr[i] = JSON.parse(JSON.stringify(mail));
                 }
             }
-            table.row(filaEditada).data(dataSet).draw();
+            this.setState({ messageToUser: arr });
         });
-
-        db.ref('notification'.concat('/', userEmail)).off('child_changed', snap => {
-            dataSet = [snap.child('id').val(), snap.child('message').val(), snap.child('typeRequest').val(), snap.child('sendAt').val(), snap.child('status').val()]
-            for (let row in $('#datatables').dataTable().fnGetData()){
-                if(table.row(row).data()[0]===dataSet[0]){
-                    filaEditada = table.row(row);
-                    break;
+        db.ref('notification'.concat('/', userEmail)).off('child_changed', (snap) => {
+            const mail: message = snap.val();
+            const arr = this.state.messageToUser;
+            for (let i = 0; i < arr.length; i++) {
+                if (arr[i].id === mail.id) {
+                    arr[i] = JSON.parse(JSON.stringify(mail));
                 }
             }
-            table.row(filaEditada).data(dataSet).draw();
+            this.setState({ messageToUser: arr });
         });
-
 
         db.ref('notification'.concat('/', userEmail)).on('child_removed', snap => {
-            dataSet = [snap.child('id').val(), snap.child('message').val(), snap.child('typeRequest').val(), snap.child('sendAt').val(), snap.child('status').val()]
-            // for (let row in $('#datatables').dataTable().fnGetData()){
-            //     if(table.row(row).data()[0]===dataSet[0]){
-            //         filaEditada = table.row(row);
-            //         break;
-            //     }
-            // }
-            table.row(removedRow.parents('tr')).remove().draw();
-        })
-        db.ref('notification'.concat('/', userEmail)).off('child_removed', snap => {
-            dataSet = [snap.child('id').val(), snap.child('message').val(), snap.child('typeRequest').val(), snap.child('sendAt').val(), snap.child('status').val()]
-            // for (let row in $('#datatables').dataTable().fnGetData()){
-            //     if(table.row(row).data()[0]===dataSet[0]){
-            //         filaEditada = table.row(row);
-            //         break;
-            //     }
-            // }
-            table.row(removedRow.parents('tr')).remove().draw();       
-        })
-
-        $('.card .material-datatables label').addClass('form-group');
-
-        $("#datatables").on("click", ".btnRemoveRequest", function (e: any) {
-            removedRow = $(e.target);
-            // Swal.fireClick({
-            // title: '¿Está seguro de eliminar el producto?',
-            // text: "¡Está operación no se puede revertir!",
-            // icon: 'warning',
-            // showCancelButton: true,
-            // confirmButtonColor: '#d33',
-            // cancelButtonColor: '#3085d6',
-            // confirmButtonText: 'Borrar'
-            // }).then((result) => {
-            // if (result.value) {
-            //     let fila = $('#datatables').dataTable().fnGetData($(this).closest('tr'));            
-            //     let id = fila[0];            
-            //     db.ref(`productos/${id}`).remove()
-            //     Swal.fire('¡Eliminado!', 'El producto ha sido eliminado.','success')
-            // }
-            // })  
-            let fila = $('#datatables').dataTable().fnGetData($(e.target).closest('tr'));
-            let id = fila[0];
-            let typeRequest = fila[2];
-            let message = fila[1];
-            if ((typeRequest === 'bookRoomRequest')) {
-                var result = window.confirm('Are you sure to cancel ' + message + ' ?')
-                if (result) {
-                    //delete booking in db
-                    fetch(`http://localhost:5000/capstone-srms-thanhnt/us-central1/app/bookRoom/delete/${id}`, {
-                        credentials: 'include',
-                        headers: {
-                            'content-type': 'application/json',
-                        },
-                        method: 'DELETE',
-                    }).then(res => {
-                        if (res.status === 200) {
-                            return res.json().then(result => { console.log(result) })
-                        }
-                        else {
-                            return res.json().then(result => { throw Error(result.error) });
-                        }
-                    }).catch(e => {
-                        console.log(e);
-                    });
-
-                }
-            }
-
-            if ((typeRequest === 'reportErrorRequest')) {
-                var result = window.confirm('Are you sure to delete ' + message + ' ?')
-                if (result) {
-                    //delete booking in db
-                    fetch(`http://localhost:5000/capstone-srms-thanhnt/us-central1/app/reportError/delete/${id}`, {
-                        credentials: 'include',
-                        headers: {
-                            'content-type': 'application/json',
-                        },
-                        method: 'DELETE',
-                    }).then(res => {
-                        if (res.status === 200) {
-                            return res.json().then(result => { console.log(result) })
-                        }
-                        else {
-                            return res.json().then(result => { throw Error(result.error) });
-                        }
-                    }).catch(e => {
-                        console.log(e);
-                    });
-
-                }
+            const mail: message = snap.val();
+            if (mail) {
+                const arr = this.state.messageToUser;
+                const newArr = arr.filter(mess => {
+                    return mess !== mail;
+                })
+                this.setState({ messageToUser: newArr });
             }
         });
-        $("#datatables").on("click", ".btnEditRequest", function (e: any) {
-            filaEditada = table.row($(e.target).parents('tr'));
-            let fila = $('#datatables').dataTable().fnGetData($(e.target).closest('tr'));
-            let id = fila[0];
-            _this.onGetValueToUpdateForm(id);
 
+        db.ref('notification'.concat('/', userEmail)).off('child_removed', snap => {
+            const mail: message = snap.val();
+            if (mail) {
+                const arr = this.state.messageToUser;
+                const newArr = arr.filter(mess => {
+                    return mess !== mail;
+                })
+                this.setState({ messageToUser: newArr });
+            }
+        });
+
+        db.ref('notification'.concat('/', userEmail)).once('value', snap => {
+            const val = snap.val();
+            if (val) {
+                this.setState({ messageToUser: Object.values(val) });
+                this.notification = Object.values(val);
+                this.notiReady = true;
+            }
         });
     }
 
 
     logout = () => {
-        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/logout', {
+        fetch('http://localhost:5000/logout', {
             credentials: "include",
             method: 'POST',
         }).then(async res => {
@@ -356,7 +268,7 @@ class UserHomePage extends Component<Props, State> {
         var roomName = {
             roomName: '201'
         }
-        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/room/sendDevicesStatus', {
+        fetch('http://localhost:5000/room/sendDevicesStatus', {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -370,10 +282,10 @@ class UserHomePage extends Component<Props, State> {
                     this.setState({
                         lightOn: result.light === 1 ? true : false,
                         fanOn: result.fan === 1 ? true : false,
-                        groundOn: result.ground === 1 ? true : false,
+                        powerPlugOn: result.powerPlug === 1 ? true : false,
                         conditionerOn: result.conditioner === 1 ? true : false,
                     })
-                    if (this.state.lightOn && this.state.fanOn && this.state.groundOn && this.state.conditionerOn) {
+                    if (this.state.lightOn && this.state.fanOn && this.state.powerPlugOn && this.state.conditionerOn) {
                         this.setState({
                             isTurnOnAllDevices: true
                         })
@@ -433,17 +345,17 @@ class UserHomePage extends Component<Props, State> {
                 }
                 this.updateDeviceStatus(conditionerUpdating);
                 break;
-            case "ground":
+            case "powerPlug":
                 this.setState({
-                    groundOn: !this.state.groundOn
+                    powerPlugOn: !this.state.powerPlugOn
                 })
-                var groundUpdating = {
+                var powerPlugUpdating = {
                     roomName: '201',
                     device: {
-                        ground: (this.state.groundOn) ? 0 : 1,
+                        powerPlug: (this.state.powerPlugOn) ? 0 : 1,
                     }
                 }
-                this.updateDeviceStatus(groundUpdating);
+                this.updateDeviceStatus(powerPlugUpdating);
                 break;
 
             default:
@@ -452,7 +364,7 @@ class UserHomePage extends Component<Props, State> {
     }
 
     updateDeviceStatus = (updatingDevice: any) => {
-        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/room/switchDeviceStatus', {
+        fetch('http://localhost:5000/room/switchDeviceStatus', {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -461,6 +373,15 @@ class UserHomePage extends Component<Props, State> {
             body: JSON.stringify(updatingDevice),
         }).then(res => {
             if (res.ok) {
+                if (this.state.lightOn && this.state.fanOn && this.state.powerPlugOn && this.state.conditionerOn) {
+                    this.setState({
+                        isTurnOnAllDevices: true
+                    })
+                } else {
+                    this.setState({
+                        isTurnOnAllDevices: false
+                    })
+                }
                 return res.json().then(result => { console.log(result) })
             }
             else {
@@ -470,46 +391,53 @@ class UserHomePage extends Component<Props, State> {
             console.log(e);
         });
     }
+
+
+
+    isTurnOn: number | undefined = undefined;
     //turn on/off all devices
     onChange = async (event: any) => {
         await this.setState({
             isTurnOnAllDevices: event.target.checked
         })
-        var isTurnOn = this.state.isTurnOnAllDevices ? 1 : 0
-        var data = {
+        this.isTurnOn = this.state.isTurnOnAllDevices ? 1 : 0;
+        var data;
+        if (this.isTurnOn)
+            console.log('aaaa');
+        data = {
             roomName: '201',
             devices: {
-                light: isTurnOn,
-                ground: isTurnOn,
-                fan: isTurnOn,
-                conditioner: isTurnOn,
+                light: this.isTurnOn,
+                powerPlug: this.isTurnOn,
+                fan: this.isTurnOn,
+                conditioner: this.isTurnOn,
             }
         }
         this.UpdateAllDevicesStatus(data);
     }
 
     UpdateAllDevicesStatus = (data: any) => {
-        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/room/switchAllDevicesStatus', {
+        const url = 'http://localhost:5000/room/switchAllDevicesStatus/' + data.roomName + '?q=' + this.isTurnOn;
+        fetch(url, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
             },
             method: 'PUT',
-            body: JSON.stringify(data),
         }).then(res => {
             if (res.ok) {
                 if (this.state.isTurnOnAllDevices) {
                     this.setState({
                         lightOn: true,
                         fanOn: true,
-                        groundOn: true,
+                        powerPlugOn: true,
                         conditionerOn: true
                     })
                 } else {
                     this.setState({
                         lightOn: false,
                         fanOn: false,
-                        groundOn: false,
+                        powerPlugOn: false,
                         conditionerOn: false
                     })
                 }
@@ -578,7 +506,7 @@ class UserHomePage extends Component<Props, State> {
     }
 
     createBookingRoom = (bookingRoom: any) => {
-        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/bookRoom', {
+        fetch('http://localhost:5000/bookRoom/add', {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -588,7 +516,7 @@ class UserHomePage extends Component<Props, State> {
         }).then(res => {
             if (res.status === 200) {
                 // return res.json().then(result => { console.log(result) })
-                console.log(res);
+                //make form empty
                 this.setState({
                     txtDateToBook: '',
                     txtStartTime: '',
@@ -601,9 +529,9 @@ class UserHomePage extends Component<Props, State> {
                     isAllowToLoadEmptyRooms: true,
 
                 })
-                // Array.from(document.querySelectorAll("input")).forEach(
-                //     input => (input.value = "")
-                //   );
+
+
+
             }
             else {
                 return res.json().then(result => { throw Error(result.error) });
@@ -637,6 +565,15 @@ class UserHomePage extends Component<Props, State> {
             //insert
             // this.props.(bookRoom);
             this.createBookingRoom(bookRoom);
+
+
+            //đóng form
+
+            document.getElementById('closeBookRoomModal')?.click();
+            // document.getElementById("bookRoomModal")?.setAttribute("style", "display:none");
+
+            //thông báo đặt phòng thành công
+            this.notify();
         }
 
 
@@ -645,7 +582,7 @@ class UserHomePage extends Component<Props, State> {
 
     //get empty room
     getEmptyRooms = (data: any) => {
-        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/bookRoom/getEmptyRooms', {
+        fetch('http://localhost:5000/bookRoom/getEmptyRooms', {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -665,7 +602,27 @@ class UserHomePage extends Component<Props, State> {
     }
 
     deleteBookingRequest = (idBooking: any) => {
-        fetch(`http://localhost:5000/capstone-srms-thanhnt/us-central1/app/bookRoom/delete/${idBooking}`, {
+        fetch(`http://localhost:5000/bookRoom/delete/${idBooking}`, {
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+            method: 'DELETE',
+        }).then(res => {
+            if (res.status === 200) {
+                return res.json().then(result => { console.log(result) })
+            }
+            else {
+                return res.json().then(result => { throw Error(result.error) });
+            }
+        }).catch(e => {
+            console.log(e);
+        });
+
+    }
+
+    deleteReportErrorRequest = (idReport: any) => {
+        fetch(`http://localhost:5000/reportError/delete/${idReport}`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -688,7 +645,13 @@ class UserHomePage extends Component<Props, State> {
         var result = window.confirm('Are you sure to delete ' + message + ' ?')
         if (result) {
             //delete booking in db
-            this.deleteBookingRequest(id);
+            if (typeRquest === "bookRoomRequest") {
+                this.deleteBookingRequest(id);
+            }
+            //delete reporterror in db
+            if (typeRquest === "reportErrorRequest") {
+                this.deleteReportErrorRequest(id);
+            }
             //update state
             const newArr = this.state.messageToUser.filter(mess => {
                 return mess.id !== id;
@@ -699,7 +662,7 @@ class UserHomePage extends Component<Props, State> {
 
     onGetValueToUpdateForm = (id: string) => {
         //lấy data từ db->gán vào state
-        fetch(`http://localhost:5000/capstone-srms-thanhnt/us-central1/app/bookRoom/editting/${id}`, {
+        fetch(`http://localhost:5000/bookRoom/edit/${id}`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -709,9 +672,9 @@ class UserHomePage extends Component<Props, State> {
             if (res.status === 200) {
                 return res.json().then(result => {
                     this.setState({
-                        txtDateToBook: result.date,
-                        txtStartTime: result.startTime,
-                        txtEndTime: result.endTime,
+                        txtDateToBook: formatDate(result.date),
+                        txtStartTime: formatTime(result.startTime),
+                        txtEndTime: formatTime(result.endTime),
                         cbbRoomToBook: result.roomName,
                         txtReasonToBook: result.reason,
                         isDisableBookingBtn: false,
@@ -720,7 +683,7 @@ class UserHomePage extends Component<Props, State> {
                         isAllowToLoadEmptyRooms: false,
                         updatingIdBooking: id
                     })
-                    console.log(this.state.cbbRoomToBook);
+                    console.log(result);
 
                 })
             }
@@ -734,7 +697,7 @@ class UserHomePage extends Component<Props, State> {
 
     updateBookingRequest = (booking: any) => {
         //dựa vào id trên state, update thông tin thay đổi trong form
-        fetch(`http://localhost:5000/capstone-srms-thanhnt/us-central1/app/bookRoom/updating`, {
+        fetch(`http://localhost:5000/bookRoom/updating`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -763,7 +726,7 @@ class UserHomePage extends Component<Props, State> {
     // }
 
     sendReportError = (reportError: any) => {
-        fetch('http://localhost:5000/capstone-srms-thanhnt/us-central1/app/reportError/sendReportError', {
+        fetch('http://localhost:5000/reportError/sendReportError', {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -814,18 +777,21 @@ class UserHomePage extends Component<Props, State> {
             // this.props.(errorReport);
             this.sendReportError(errorReport);
             console.log('rperr');
-            
+
         }
 
 
     }
 
+    notify = () => toast.success("Sent booking room request successfully!");
+
     render() {
         console.log(this.state.messageToUser);
 
-        var { messageToUser, lightOn, fanOn, conditionerOn, groundOn, currentUser, isDisableBookingBtn, isAllowToLoadEmptyRooms, isShowValidateLoadEmptyRoom } = this.state;
+        var { messageToUser, lightOn, fanOn, conditionerOn, powerPlugOn, currentUser, isDisableBookingBtn, isAllowToLoadEmptyRooms, isShowValidateLoadEmptyRoom } = this.state;
         return (
             <div>
+                <ToastContainer />
                 <nav className="navbar navbar-primary navbar-transparent navbar-absolute">
                     <div className="container">
                         <div className="navbar-header">
@@ -976,9 +942,9 @@ class UserHomePage extends Component<Props, State> {
                                                 <i className="material-icons">settings_input_antenna</i> Fan
                                             </a>
                                         </li>
-                                        <li className={groundOn ? "active" : ""} onClick={() => this.toggleDeviceStatus('ground')}>
+                                        <li className={powerPlugOn ? "active" : ""} onClick={() => this.toggleDeviceStatus('powerPlug')}>
                                             <a>
-                                                <i className="material-icons">settings_input_svideo</i> Power Socket
+                                                <i className="material-icons">settings_input_svideo</i> Power Plug
                                             </a>
                                         </li>
                                     </ul>
@@ -992,7 +958,7 @@ class UserHomePage extends Component<Props, State> {
                                             <td className="modal-footer">
                                                 <div className="checkbox width-turnOnOff">
                                                     <label>
-                                                        <input type="checkbox" checked={this.state.isTurnOnAllDevices} onChange={this.onChange} /> Turn on all devices {this.state.isTurnOnAllDevices ? "ok" : "no"}
+                                                        <input type="checkbox" checked={this.state.isTurnOnAllDevices} onChange={this.onChange} /> Turn on all devices
                                                     </label>
                                                 </div>
                                             </td>
@@ -1015,7 +981,7 @@ class UserHomePage extends Component<Props, State> {
 
                         <div className="modal-content">
                             <div className="modal-header">
-                                <button type="button" className="close" data-dismiss="modal">&times;</button>
+                                <button type="button" className="close" data-dismiss="modal" id="closeBookRoomModal">&times;</button>
                                 <h2 className="modal-title text-center">Book room</h2>
                             </div>
                             <div className="modal-body">
@@ -1116,6 +1082,7 @@ class UserHomePage extends Component<Props, State> {
                                             </div>
                                             <div className="footer text-center pdBottom5">
                                                 <button type="submit" className="btn btn-primary btn-round" disabled={isDisableBookingBtn}>Book now</button>
+
                                             </div>
                                         </form>
                                     </div>
@@ -1334,7 +1301,7 @@ class UserHomePage extends Component<Props, State> {
                                                         <option disabled> Choose Device</option>
                                                         <option value="light">Light </option>
                                                         <option value="fan">Fan</option>
-                                                        <option value="ground">PowerSocket</option>
+                                                        <option value="powerPlug">Power Plug</option>
                                                         <option value="airConditioner">Air-Conditioner</option>
                                                     </select>
                                                 </div>
@@ -1368,11 +1335,14 @@ class UserHomePage extends Component<Props, State> {
                             </div>
                             <div className="modal-body">
                                 <div className="row">
-                                    <div className="col-md-5 col-md-offset-1">
+                                    <h3 className="mg-20">Your Booked Room(s)</h3>
+                                    <div className="col-md-5 col-md-offset-1 scroll-change-room fix-size-change-room-modal">
+
                                         <div className="card-content">
                                             <div className="info info-horizontal">
                                                 <div className="icon icon-rose">
-                                                    <i className="material-icons">gavel</i><span className="ruleFormat">Rules</span>
+                                                    <i className="material-icons">
+                                                        flutter_dash</i><span className="textSpan">Thank you for feedback error</span>
                                                 </div>
                                                 <div className="description">
                                                     <h4 className="info-title">Date and Time</h4>
@@ -1401,6 +1371,7 @@ class UserHomePage extends Component<Props, State> {
                                                 </div>
                                             </div>
                                         </div>
+
                                     </div>
 
                                     <div className="col-md-5">
@@ -1409,11 +1380,7 @@ class UserHomePage extends Component<Props, State> {
 
                                             <div className="card-content">
                                                 <div className="form-group">
-                                                    <label className="label-control">Datetime</label>
-                                                    <input type="text" className="form-control datetimepicker" />{/* value="10/05/2016" */}
-                                                </div>
-                                                <div className="form-group">
-                                                    <label className="label-control">Destination Room</label>
+                                                    <label className="label-control">You can change from room 201 to: </label>
                                                     <select className="selectpicker" data-style="select-with-transition" multiple
                                                         title="Choose Room" data-size="7">
                                                         {/* <option disabled> Choose room</option>
@@ -1460,6 +1427,8 @@ class UserHomePage extends Component<Props, State> {
                                     </div>
                                 </div>
                             </div>
+                            <br></br>
+                            <br></br>
                         </div>
                     </div>
                 </div>
@@ -1478,91 +1447,77 @@ class UserHomePage extends Component<Props, State> {
                                 <div className="row mgTop3">
                                     <div className="col-md-12">
                                         <div className="card">
+                                            <MaterialTable
+                                                columns={
+                                                    [
+                                                        { title: "ID", field: "id", hidden: true },
+                                                        { title: "Title", field: "message" },
+                                                        {
+                                                            title: "Request Type", field: "typeRequest",
+                                                            render: (rowData: message) => {
+                                                                return rowData.typeRequest == "bookRoomRequest" ? <p style={{ color: "#E87722", fontWeight: "bold" }}>Book room request</p> :
+                                                                    rowData.typeRequest == "reportErrorRequest" ? <p style={{ color: "#008240", fontWeight: "bold" }}>Report Error Request</p> :
+                                                                        <p style={{ color: "#B0B700", fontWeight: "bold" }}>Change Room Request</p>
+                                                            }
+                                                        },
+                                                        {
+                                                            title: "Reply Time", field: "sendAt",
+                                                            render: (rowData: message) => {
+                                                                console.log(formatDateTime(rowData.sendAt));
+                                                                
+                                                                return <small>{moment(formatDateTime(rowData.sendAt)).calendar()}</small>
+                                                            }
+                                                        },
+                                                        {
+                                                            title: "Status", field: "status",
+                                                            render: (rowData: message) => {
+                                                                return rowData.status == "accepted" ? <span className="label label-success" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
+                                                                    rowData.status == "pending" ? <span className="label label-warning" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
+                                                                        <span className="label label-default" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span>
+                                                            }
+                                                        },
+                                                        {
+                                                            title: "Actions", render: (rowData: message) => (
+                                                                // <span className="btn-action-container">
+                                                                //     <button title="edit" type="button" className="btn btn-warning btn-simple" data-toggle="modal" data-dismiss="modal" data-target="#updateBookRoomModal" onClick={(e) => this.onGetValueToUpdateForm(data.id)}><i className="material-icons">edit</i><div className="ripple-container"></div></button>
+                                                                //     <button title="delete" type="button" className="btn btn-danger btn-simple" ><i className="material-icons">delete</i><div className="ripple-container"></div></button>
+                                                                // </span>
+                                                                <div className="btn-action-container-flex">
+                                                                    <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" title="Edit" data-toggle="modal" data-dismiss="modal" data-target="#updateBookRoomModal" onClick={(e) => this.onGetValueToUpdateForm(rowData.id)}>
+                                                                        <span className="MuiIconButton-label">
+                                                                            <span className="material-icons MuiIcon-root btn-edit-color" aria-hidden="true">edit</span>
+                                                                        </span>
+                                                                        <span className="MuiTouchRipple-root"></span>
+                                                                    </button>
+                                                                    <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button"  onClick={(e)=>this.onDeleteRequest((rowData as message).typeRequest.toString(), (rowData as message).id.toString(), (rowData as message).message.toString())}>
+                                                                        <span className="MuiIconButton-label">
+                                                                            <span className="material-icons MuiIcon-root btn-delete-color" aria-hidden="true">delete</span>
+                                                                        </span>
+                                                                        <span className="MuiTouchRipple-root"></span>
+                                                                    </button>
+                                                                </div>
 
-                                            <div className="card-content">
+                                                            )
+                                                        },
 
-                                                <div className="material-datatables">
-                                                    <table id="datatables" className="table table-striped table-no-bordered table-hover"
-                                                        width="100%">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Id</th>
-                                                                <th>Title</th>
-                                                                <th>Request Type</th>
-                                                                <th>Reply Time</th>
-                                                                <th>Status</th>
-                                                                <th className="text-center">Actions</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tfoot>
-                                                            <tr>
-                                                                <th>Id</th>
-                                                                <th>Title</th>
-                                                                <th>Request Type</th>
-                                                                <th>Reply Time</th>
-                                                                <th>Status</th>
-                                                                <th className="text-center">Actions</th>
-                                                            </tr>
+                                                    ]
+                                                }
+                                                data={this.state.messageToUser}
 
-                                                        </tfoot>
-                                                        <tbody>
-                                                            {/* {messageToUser.map((message) => {
-                                                                // var typeRequest = ''
-                                                                // if (message.typeRequest = 'bookRoomRequest') {
-                                                                //     typeRequest = 'Book Room';
-                                                                // } else if (message.typeRequest = 'reportErrorRequest') {
-                                                                //     typeRequest = 'Report Error'
-                                                                // } else if (message.typeRequest = 'changeRoom') {
-                                                                //     typeRequest = 'Change Room'
-                                                                // }
-
-                                                                return( 
-                                                                <tr className="mainColor" key={message.id}>
-                                                                    <td>{message.message}</td>
-                                                                    <td>{message.typeRequest}</td>
-                                                                    <td>{moment(message.sendAt).calendar()}</td>
-                                                                    <td><span className="label label-warning pdAll"
-                                                                    >{message.status}</span></td>
-                                                                    <td className="td-actions text-center">
-                                                                        <button type="button"
-                                                                            className="btn btn-success btn-simple" data-original-title=""
-                                                                            title="Update this request" data-toggle="modal"
-                                                                            data-dismiss="modal"
-                                                                            data-target="#updateBookRoomModal"
-                                                                            onClick={() => this.onGetValueToUpdateForm(message.id)}
-                                                                        >
-                                                                            <i className="material-icons">edit</i>
-                                                                            <div className="ripple-container"></div>
-                                                                        </button>
-                                                                        <button type="button"
-                                                                            className="btn btn-danger btn-simple" data-original-title=""
-                                                                            title="Delete this request" onClick={
-                                                                                () => { this.onDeleteRequest(message.typeRequest, message.id, message.message) }
-                                                                            }>
-                                                                            <i className="material-icons">close</i>
-                                                                        </button>
-                                                                    </td>
-                                                                </tr>
-                                                                )
-                                                            })} */}
-
-                                                        </tbody>
+                                            />
 
 
-                                                    </table>
-                                                </div>
-                                            </div>
-                                            {/* <!-- end content--> */}
                                         </div>
-                                        {/* <!--  end card  --> */}
+                                        {/* <!-- end content--> */}
                                     </div>
+                                    {/* <!--  end card  --> */}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
+
         )
     }
 }
