@@ -29,7 +29,7 @@ class Header extends Component<Props, State> {
       if (res.ok) {
         client.auth().onAuthStateChanged((user: any) => {
           if (user) {
-            this.notificationManagement(user);
+            this.notificationManagement();
           }
         });
       }
@@ -47,7 +47,7 @@ class Header extends Component<Props, State> {
 
   // }
 
-  notificationManagement = (user: firebase.User) => {
+  notificationManagement = () => {
     this.setState({ messages: [] });
     const userEmail = "admin";
     db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_added', (snap: any) => {
@@ -181,12 +181,12 @@ class Header extends Component<Props, State> {
                   <div className="noti">Notifications</div>
                   {messages && messages.map((message, index) => {
                     return <li key={index}>
-                      <NavLink to={match.url+'/'+message.typeRequest+'/'+message.id}>
+                      <NavLink to={match.url+message.url}>
                         <table className="tbl-width">
                           <tbody>
                             <tr>
                               <td><img className="noti-img"
-                                src="https://cdn.psychologytoday.com/sites/default/files/styles/article-inline-half-caption/public/field_blog_entry_images/2020-06/angry_chihuahua.png?itok=TWxYDbOT"
+                                src="https://i.guim.co.uk/img/media/20098ae982d6b3ba4d70ede3ef9b8f79ab1205ce/0_0_969_1005/master/969.jpg?width=700&quality=85&auto=format&fit=max&s=470657ebd2a0e704df88997d393aea15"
                                 alt="" />
                               </td>
 

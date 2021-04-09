@@ -9,6 +9,7 @@ import Button from "@material-ui/core/Button";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { formatDateTime, formatTime, formatDate } from "../Common/formatDateTime";
+import { report } from 'process';
 
 
 
@@ -43,9 +44,13 @@ interface State {
     //tracking update or insert
     isUpdateData: boolean
     updatingIdBooking: string
+    updatingIdReport: string
 
     //notification for user
     messageToUser: message[]
+
+    //history request
+    historyRequest: any[]
 
     //report error
     cbbDeviceToReport: string[]
@@ -55,36 +60,6 @@ interface State {
 
 }
 
-
-// var columns = [
-//     { title: "ID", field: "id", hidden: true },
-//     { title: "Title", field: "message" },
-//     {
-//         title: "Request Type", field: "typeRequest",
-//         render: (rowData: message) => {
-//             return rowData.typeRequest == "bookRoomRequest" ? <p style={{ color: "#E87722", fontWeight: "bold" }}>Book room request</p> :
-//                 rowData.typeRequest == "reportErrorRequest" ? <p style={{ color: "#008240", fontWeight: "bold" }}>Report Error Request</p> :
-//                     <p style={{ color: "#B0B700", fontWeight: "bold" }}>Change Room Request</p>
-//         }
-//     },
-//     {
-//         title: "Reply Time", field: "sendAt",
-//         render: (rowData: message) => {
-//             return <small>{moment(rowData.sendAt).calendar()}</small>
-//         }
-//     },
-//     {
-//         title: "Status", field: "status",
-//         render: (rowData: message) => {
-//             return rowData.status == "accepted" ? <span className="label label-success" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
-//                 rowData.status == "pending" ? <span className="label label-warning" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
-//                     <span className="label label-default" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span>
-//         }
-//     },
-//     { title: "Action custon", render: (data:message) => <button type="button" className="btn btn-danger" onClick={this.onGetValueToUpdateForm}>button</button>
-//      },
-
-// ]
 class UserHomePage extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
@@ -111,8 +86,11 @@ class UserHomePage extends Component<Props, State> {
 
             isUpdateData: false,
             updatingIdBooking: '',
+            updatingIdReport: '',
 
             messageToUser: [],
+
+            historyRequest: [],
 
             cbbDeviceToReport: [],
             cbbRoomToReport: '',
@@ -154,6 +132,7 @@ class UserHomePage extends Component<Props, State> {
                         this.setState({
                             currentUser: currentUser
                         })
+                        this.getHistoryRequest(currentUser.employeeId)
                         this.createScript();
                     }
                 });
@@ -165,76 +144,190 @@ class UserHomePage extends Component<Props, State> {
 
     notiReady: boolean = false;
 
-    notificationManagement = async (user: firebase.User) => {
+    // notificationManagement = async (user: firebase.User) => {
+    //     this.setState({ messageToUser: [] });
+    //     const userEmail = user.email?.split('@')[0] || ' ';
+    //     db.ref('notification'.concat('/', userEmail)).limitToLast(100).on('child_added', snap => {
+    //         if (this.notiReady) {
+    //             const mail: message = snap.val();
+    //             if (mail) {
+    //                 this.setState({ messageToUser: [... this.state.messageToUser, mail] })
+    //             }
+    //         }
+    //     });
+    //     db.ref('notification'.concat('/', userEmail)).limitToLast(100).off('child_added', (snap) => {
+    //         if (this.notiReady) {
+    //             const mail: message = snap.val();
+    //             if (mail) {
+    //                 this.setState({ messageToUser: [... this.state.messageToUser, mail] })
+    //             }
+    //         }
+    //     });
+    //     db.ref('notification'.concat('/', userEmail)).on('child_changed', snap => {
+    //         const mail: message = snap.val();
+    //         const arr = this.state.messageToUser;
+    //         for (let i = 0; i < arr.length; i++) {
+    //             if (arr[i].id === mail.id) {
+    //                 arr[i] = JSON.parse(JSON.stringify(mail));
+    //             }
+    //         }
+    //         this.setState({ messageToUser: arr });
+    //     });
+    //     db.ref('notification'.concat('/', userEmail)).off('child_changed', (snap) => {
+    //         const mail: message = snap.val();
+    //         const arr = this.state.messageToUser;
+    //         for (let i = 0; i < arr.length; i++) {
+    //             if (arr[i].id === mail.id) {
+    //                 arr[i] = JSON.parse(JSON.stringify(mail));
+    //             }
+    //         }
+    //         this.setState({ messageToUser: arr });
+    //     });
+
+    //     db.ref('notification'.concat('/', userEmail)).on('child_removed', snap => {
+    //         const mail: message = snap.val();
+    //         if (mail) {
+    //             const arr = this.state.messageToUser;
+    //             const newArr = arr.filter(mess => {
+    //                 return mess !== mail;
+    //             })
+    //             this.setState({ messageToUser: newArr });
+    //         }
+    //     });
+
+    //     db.ref('notification'.concat('/', userEmail)).off('child_removed', snap => {
+    //         const mail: message = snap.val();
+    //         if (mail) {
+    //             const arr = this.state.messageToUser;
+    //             const newArr = arr.filter(mess => {
+    //                 return mess !== mail;
+    //             })
+    //             this.setState({ messageToUser: newArr });
+    //         }
+    //     });
+
+    //     db.ref('notification'.concat('/', userEmail)).once('value', snap => {
+    //         const val = snap.val();
+    //         if (val) {
+    //             this.setState({ messageToUser: Object.values(val) });
+    //             this.notification = Object.values(val);
+    //             this.notiReady = true;
+    //         }
+    //     });
+    // }
+
+    getHistoryRequest = (currentUser: string) => {
+        fetch(`http://localhost:5000/requestList/${currentUser}`, {
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+            method: 'GET',
+        }).then(res => {
+            if (res.status === 200) {
+                return res.json().then(result => {
+                    this.setState({
+                        historyRequest: result
+                    })
+                    console.log(result);
+
+                })
+            }
+            else {
+                return res.json().then(result => { throw Error(result.error) });
+            }
+        }).catch(e => {
+            console.log(e);
+        });
+    }
+
+    notificationManagement = (user: firebase.User) => {
         this.setState({ messageToUser: [] });
-        const userEmail = user.email?.split('@')[0] || ' ';
-        await db.ref('notification'.concat('/', userEmail)).limitToLast(100).on('child_added', snap => {
-            if (this.notiReady) {
-                const mail: message = snap.val();
-                if (mail) {
-                    this.setState({ messageToUser: [... this.state.messageToUser, mail] })
-                }
-            }
-        });
-        db.ref('notification'.concat('/', userEmail)).limitToLast(100).off('child_added', (snap) => {
-            if (this.notiReady) {
-                const mail: message = snap.val();
-                if (mail) {
-                    this.setState({ messageToUser: [... this.state.messageToUser, mail] })
-                }
-            }
-        });
-        db.ref('notification'.concat('/', userEmail)).on('child_changed', snap => {
+        const userEmail = user.email?.split("@")[0] || '';
+        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_added', (snap: any) => {
+            console.log("child-add-on");
             const mail: message = snap.val();
-            const arr = this.state.messageToUser;
-            for (let i = 0; i < arr.length; i++) {
-                if (arr[i].id === mail.id) {
-                    arr[i] = JSON.parse(JSON.stringify(mail));
-                }
+            if (mail) {
+                this.setState({ messageToUser: [... this.state.messageToUser, mail] })
             }
-            this.setState({ messageToUser: arr });
         });
-        db.ref('notification'.concat('/', userEmail)).off('child_changed', (snap) => {
+        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_added', (snap: any) => {
+            console.log("child-add-off");
+
             const mail: message = snap.val();
-            const arr = this.state.messageToUser;
-            for (let i = 0; i < arr.length; i++) {
-                if (arr[i].id === mail.id) {
-                    arr[i] = JSON.parse(JSON.stringify(mail));
-                }
+            if (mail) {
+                this.setState({ messageToUser: [... this.state.messageToUser, mail] })
             }
-            this.setState({ messageToUser: arr });
+        });
+        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_changed', (snap: any) => {
+            const mail: message = snap.val();
+            console.log("child-change-on");
+            if (mail.isRead) {//đánh dấu ĐÃ ĐỌC
+                const arr = this.state.messageToUser;
+                var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
+                arr[changingIndex].isRead = true,
+                    arr[changingIndex].message = mail.message,
+                    arr[changingIndex].sender = mail.sender,
+                    arr[changingIndex].sendAt = mail.sendAt,
+                    this.setState({ messageToUser: arr })
+            } else {
+                const arr = this.state.messageToUser;
+                var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
+                arr[changingIndex].isRead = false,
+                    arr[changingIndex].message = mail.message,
+                    arr[changingIndex].sender = mail.sender,
+                    arr[changingIndex].sendAt = mail.sendAt,
+                    this.setState({ messageToUser: arr })
+            }
+        });
+        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_changed', (snap: any) => {
+            const mail: message = snap.val();
+            console.log("child-change-on");
+            if (mail.isRead) {//đánh dấu ĐÃ ĐỌC
+                const arr = this.state.messageToUser;
+                var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
+                arr[changingIndex].isRead = true,
+                    arr[changingIndex].message = mail.message,
+                    arr[changingIndex].sender = mail.sender,
+                    arr[changingIndex].sendAt = mail.sendAt,
+                    this.setState({ messageToUser: arr })
+            } else {
+                const arr = this.state.messageToUser;
+                var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
+                arr[changingIndex].isRead = false,
+                    arr[changingIndex].message = mail.message,
+                    arr[changingIndex].sender = mail.sender,
+                    arr[changingIndex].sendAt = mail.sendAt,
+                    this.setState({ messageToUser: arr })
+            }
         });
 
-        db.ref('notification'.concat('/', userEmail)).on('child_removed', snap => {
+        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_removed', (snap: any) => {
             const mail: message = snap.val();
+            console.log("child-remove-on");
             if (mail) {
                 const arr = this.state.messageToUser;
                 const newArr = arr.filter(mess => {
-                    return mess !== mail;
+                    return mess.id !== mail.id;
                 })
-                this.setState({ messageToUser: newArr });
+                console.log(newArr);
+
+                this.setState({ messageToUser: newArr })
             }
         });
 
-        db.ref('notification'.concat('/', userEmail)).off('child_removed', snap => {
+        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_removed', (snap: any) => {
             const mail: message = snap.val();
+            console.log("child-remove-off");
             if (mail) {
                 const arr = this.state.messageToUser;
                 const newArr = arr.filter(mess => {
-                    return mess !== mail;
+                    return mess.id !== mail.id;
                 })
-                this.setState({ messageToUser: newArr });
+                this.setState({ messageToUser: newArr })
             }
         });
 
-        db.ref('notification'.concat('/', userEmail)).once('value', snap => {
-            const val = snap.val();
-            if (val) {
-                this.setState({ messageToUser: Object.values(val) });
-                this.notification = Object.values(val);
-                this.notiReady = true;
-            }
-        });
     }
 
 
@@ -530,7 +623,13 @@ class UserHomePage extends Component<Props, State> {
 
                 })
 
+                //đóng form
 
+                document.getElementById('closeBookRoomModal')?.click();
+                // document.getElementById("bookRoomModal")?.setAttribute("style", "display:none");
+
+                //thông báo đặt phòng thành công
+                this.notifyBookingRoomSuccess();
 
             }
             else {
@@ -553,8 +652,6 @@ class UserHomePage extends Component<Props, State> {
             startTime: this.state.txtStartTime,
             endTime: this.state.txtEndTime,
             reason: this.state.txtReasonToBook,
-            status: 'pending',
-            userId: this.state.currentUser.employeeId,
             id: '',
         }
         if (this.state.updatingIdBooking) {
@@ -565,15 +662,6 @@ class UserHomePage extends Component<Props, State> {
             //insert
             // this.props.(bookRoom);
             this.createBookingRoom(bookRoom);
-
-
-            //đóng form
-
-            document.getElementById('closeBookRoomModal')?.click();
-            // document.getElementById("bookRoomModal")?.setAttribute("style", "display:none");
-
-            //thông báo đặt phòng thành công
-            this.notify();
         }
 
 
@@ -601,16 +689,16 @@ class UserHomePage extends Component<Props, State> {
         });
     }
 
-    deleteBookingRequest = (idBooking: any) => {
-        fetch(`http://localhost:5000/bookRoom/delete/${idBooking}`, {
+    deleteBookingRequest = (idBooking: string, message: string) => {
+        fetch(`http://localhost:5000/bookRoom/delete/${idBooking}/?message=${message}`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
             },
-            method: 'DELETE',
+            method: 'PATCH',
         }).then(res => {
             if (res.status === 200) {
-                return res.json().then(result => { console.log(result) })
+                toast.success("Delete booking successfully!")
             }
             else {
                 return res.json().then(result => { throw Error(result.error) });
@@ -621,16 +709,16 @@ class UserHomePage extends Component<Props, State> {
 
     }
 
-    deleteReportErrorRequest = (idReport: any) => {
-        fetch(`http://localhost:5000/reportError/delete/${idReport}`, {
+    deleteReportErrorRequest = (idReport: string, message: string) => {
+        fetch(`http://localhost:5000/reportError/delete/${idReport}?message=${message}`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
             },
-            method: 'DELETE',
+            method: 'PATCH',
         }).then(res => {
             if (res.status === 200) {
-                return res.json().then(result => { console.log(result) })
+                toast.success("Delete report error request successfully!")
             }
             else {
                 return res.json().then(result => { throw Error(result.error) });
@@ -646,58 +734,87 @@ class UserHomePage extends Component<Props, State> {
         if (result) {
             //delete booking in db
             if (typeRquest === "bookRoomRequest") {
-                this.deleteBookingRequest(id);
+                this.deleteBookingRequest(id, message);
             }
             //delete reporterror in db
             if (typeRquest === "reportErrorRequest") {
-                this.deleteReportErrorRequest(id);
+                this.deleteReportErrorRequest(id, message);
             }
             //update state
-            const newArr = this.state.messageToUser.filter(mess => {
+            const newArr = this.state.historyRequest.filter(mess => {
                 return mess.id !== id;
             })
-            this.setState({ messageToUser: newArr })
+            this.setState({ historyRequest: newArr })
         }
     }
 
-    onGetValueToUpdateForm = (id: string) => {
+    onGetValueToUpdateForm = (id: string, requestType: string) => {
         //lấy data từ db->gán vào state
-        fetch(`http://localhost:5000/bookRoom/edit/${id}`, {
-            credentials: 'include',
-            headers: {
-                'content-type': 'application/json',
-            },
-            method: 'GET',
-        }).then(res => {
-            if (res.status === 200) {
-                return res.json().then(result => {
-                    this.setState({
-                        txtDateToBook: formatDate(result.date),
-                        txtStartTime: formatTime(result.startTime),
-                        txtEndTime: formatTime(result.endTime),
-                        cbbRoomToBook: result.roomName,
-                        txtReasonToBook: result.reason,
-                        isDisableBookingBtn: false,
-                        isAgreeRuleBooking: true,
-                        isShowValidateLoadEmptyRoom: true,
-                        isAllowToLoadEmptyRooms: false,
-                        updatingIdBooking: id
-                    })
-                    console.log(result);
+        if (requestType === "bookRoomRequest") {
+            fetch(`http://localhost:5000/bookRoom/edit/${id}`, {
+                credentials: 'include',
+                headers: {
+                    'content-type': 'application/json',
+                },
+                method: 'GET',
+            }).then(res => {
+                if (res.status === 200) {
+                    return res.json().then(result => {
+                        this.setState({
+                            txtDateToBook: formatDate(result.date),
+                            txtStartTime: formatTime(result.startTime),
+                            txtEndTime: formatTime(result.endTime),
+                            cbbRoomToBook: result.roomName,
+                            txtReasonToBook: result.reason,
+                            isDisableBookingBtn: false,
+                            isAgreeRuleBooking: true,
+                            isShowValidateLoadEmptyRoom: true,
+                            isAllowToLoadEmptyRooms: false,
+                            updatingIdBooking: id
+                        })
+                        console.log(result);
 
-                })
-            }
-            else {
-                return res.json().then(result => { throw Error(result.error) });
-            }
-        }).catch(e => {
-            console.log(e);
-        });
+                    })
+                }
+                else {
+                    return res.json().then(result => { throw Error(result.error) });
+                }
+            }).catch(e => {
+                console.log(e);
+            });
+        }
+        if (requestType === "reportErrorRequest") {
+            fetch(`http://localhost:5000/reportError/edit/${id}`, {
+                credentials: 'include',
+                headers: {
+                    'content-type': 'application/json',
+                },
+                method: 'GET',
+            }).then(res => {
+                if (res.status === 200) {
+                    return res.json().then(result => {
+                        this.setState({
+                            cbbDeviceToReport: result.deviceNames,
+                            cbbRoomToReport: result.roomName,
+                            txtDescriptionToReport: result.description,
+                            updatingIdReport: id
+                        })
+                        console.log(result);
+
+                    })
+                }
+                else {
+                    return res.json().then(result => { throw Error(result.error) });
+                }
+            }).catch(e => {
+                console.log(e);
+            });
+        }
     }
 
     updateBookingRequest = (booking: any) => {
         //dựa vào id trên state, update thông tin thay đổi trong form
-        fetch(`http://localhost:5000/bookRoom/updating`, {
+        fetch(`http://localhost:5000/bookRoom/update`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -706,8 +823,25 @@ class UserHomePage extends Component<Props, State> {
             body: JSON.stringify(booking),
         }).then(res => {
             if (res.status === 200) {
-                return res.json().then(result => {
-                    console.log(result);
+                toast.success("Update booking request successfully!");
+
+                //close form
+                document.getElementById('closeBookRoomUpdateModal')?.click();
+                //update history form
+                let arr = this.state.historyRequest;
+                let changingIndex = arr.findIndex((x: any) => x.id == this.state.updatingIdBooking);
+
+                arr[changingIndex].title = "request to book room " + booking.roomName + " at " + booking.date + " " + booking.startTime + "-" + booking.endTime,
+                    this.setState({ historyRequest: arr })
+
+                //make form empty
+                this.setState({
+                    cbbRoomToBook: "",
+                    txtDateToBook: "",
+                    txtStartTime: "",
+                    txtEndTime: "",
+                    txtReasonToBook: "",
+                    updatingIdBooking: "",
                 })
             }
             else {
@@ -735,7 +869,19 @@ class UserHomePage extends Component<Props, State> {
             body: JSON.stringify(reportError)
         }).then(res => {
             if (res.status === 200) {
-                return res.json().then(result => { console.log(result) })
+                //make form empty
+                this.setState({
+                    cbbDeviceToReport: [],
+                    cbbRoomToReport: "",
+                    txtDescriptionToReport: "",
+                })
+                //đóng form
+                document.getElementById('closeReportErrorModal')?.click();
+                //thông báo gửi thành công
+                this.notifyReportErrorSuccess();
+
+
+
             }
             else {
                 return res.json().then(result => { throw Error(result.error) });
@@ -764,26 +910,63 @@ class UserHomePage extends Component<Props, State> {
             roomName: this.state.cbbRoomToReport,
             deviceNames: this.state.cbbDeviceToReport,
             description: this.state.txtDescriptionToReport,
-            status: 'pending',
             userId: this.state.currentUser.employeeId,
             id: '',
         }
-        if (this.state.updatingIdBooking) {
+        if (this.state.updatingIdReport) {
             //update
-            // errorReport["id"] = this.state.updatingIdBooking
-            // this.updateBookingRequest(errorReport);
+            errorReport["id"] = this.state.updatingIdReport
+            this.updateReportErrorRequest(errorReport);
         } else {
             //insert
-            // this.props.(errorReport);
             this.sendReportError(errorReport);
-            console.log('rperr');
 
         }
 
 
     }
 
-    notify = () => toast.success("Sent booking room request successfully!");
+    
+    updateReportErrorRequest = (reportError: any) => {
+        //dựa vào id trên state, update thông tin thay đổi trong form
+        fetch(`http://localhost:5000/reportError/update`, {
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+            method: 'PUT',
+            body: JSON.stringify(reportError),
+        }).then(res => {
+            if (res.status === 200) {
+               
+                //close form
+                document.getElementById('closeUpdateReportErrorModal')?.click();
+                //update history form
+                let arr = this.state.historyRequest;
+                let changingIndex = arr.findIndex((x: any) => x.id == this.state.updatingIdReport);
+                arr[changingIndex].title = "request to report error at room " + reportError.roomName;
+                this.setState({ historyRequest: arr })
+
+                //make form empty
+                this.setState({
+                    cbbDeviceToReport: [],
+                    cbbRoomToReport: "",
+                    txtDescriptionToReport: "",
+                    updatingIdReport: "",
+                })
+                toast.success("Update report error request successfully!");
+
+            }
+            else {
+                return res.json().then(result => { throw Error(result.error) });
+            }
+        }).catch(e => {
+            console.log(e);
+        });
+    }
+
+    notifyBookingRoomSuccess = () => toast.success("Sent booking room request successfully!");
+    notifyReportErrorSuccess = () => toast.success("Sent report error request successfully!");
 
     render() {
         console.log(this.state.messageToUser);
@@ -812,10 +995,54 @@ class UserHomePage extends Component<Props, State> {
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" data-toggle="modal" data-target="#historyRequestModal">
-                                        <i className="material-icons">notifications</i> HIStory request
-                            <span className="notification notiNumber">1</span>
+                                    <a>
+                                        <i className="material-icons">event_available</i> Calendar
                                     </a>
+                                </li>
+                                <li>
+                                    <a href="#" data-toggle="modal" data-target="#historyRequestModal">
+                                        <i className="material-icons">history</i> History request
+                                    </a>
+                                </li>
+
+                                <li className="dropdown">
+                                    <a href="#" className="dropdown-toggle" data-toggle="dropdown">
+                                        <i className="material-icons">notifications</i>Notification
+                                    <span className="notification notiNumber">1</span>
+                                        <p className="hidden-lg hidden-md">
+                                            Notifications
+                                        <b className="caret"></b>
+                                        </p>
+                                    </a>
+                                    <ul className="dropdown-menu menu-user-height">
+                                        {
+                                            messageToUser && messageToUser.map((message: message, index) => {
+                                                return <li key={index}>
+                                                    <a>
+                                                        <table className="tbl-width">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td><img className="noti-img"
+                                                                        src="https://steamusercontent-a.akamaihd.net/ugc/797620606620125695/1ABBE563C02FFDDFC3200B514FECDBBFCBE7A63B/"
+                                                                        alt="" />
+                                                                    </td>
+
+                                                                    <td>
+                                                                        <span className="noti-info-user">{message.message}</span>
+                                                                        <p className="noti-time"><small>{moment(formatDateTime(message.sendAt)).calendar()}</small></p>
+                                                                    </td>
+                                                                    <td>
+                                                                        <div className={!message.isRead ? "unread" : ""}></div>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </a>
+                                                </li>
+                                            })
+                                        }
+
+                                    </ul>
                                 </li>
 
                                 <li>
@@ -1099,7 +1326,7 @@ class UserHomePage extends Component<Props, State> {
 
                         <div className="modal-content">
                             <div className="modal-header">
-                                <button type="button" className="close" data-dismiss="modal">&times;</button>
+                                <button id="closeBookRoomUpdateModal" type="button" className="close" data-dismiss="modal">&times;</button>
                                 <h2 className="modal-title text-center">Update booking room</h2>
                             </div>
                             <div className="modal-body">
@@ -1214,11 +1441,9 @@ class UserHomePage extends Component<Props, State> {
 
                 <div id="reportErrorModal" className="modal fade blur" role="dialog">
                     <div className="modal-dialog dialogWidth">
-
-
                         <div className="modal-content">
                             <div className="modal-header">
-                                <button type="button" className="close" data-dismiss="modal">&times;</button>
+                                <button id="closeReportErrorModal" type="button" className="close" data-dismiss="modal">&times;</button>
                                 <h2 className="modal-title text-center">Report Error</h2>
                             </div>
                             <div className="modal-body">
@@ -1314,6 +1539,116 @@ class UserHomePage extends Component<Props, State> {
                                             </div>
                                             <div className="footer text-center textGetStarted">
                                                 <button type="submit" className="btn btn-primary btn-round">Report now</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="updateReportErrorModal" className="modal fade blur" role="dialog">
+                    <div className="modal-dialog dialogWidth">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <button id="closeUpdateReportErrorModal" type="button" className="close" data-dismiss="modal">&times;</button>
+                                <h2 className="modal-title text-center">Update Report Error</h2>
+                            </div>
+                            <div className="modal-body">
+                                <div className="row">
+                                    <div className="col-md-5 col-md-offset-1">
+                                        <div className="card-content">
+                                            <div className="info info-horizontal">
+                                                <div className="icon icon-rose">
+                                                    <i className="material-icons">
+                                                        flutter_dash</i><span className="textSpan">Thank you for feedback error</span>
+                                                </div>
+                                                <div className="description">
+                                                    <h4 className="info-title">Date and Time</h4>
+                                                    <p className="description">
+                                                        You can book room all day in a week from 7:00 - 22:00
+                                        </p>
+                                                </div>
+                                            </div>
+                                            <div className="info info-horizontal">
+                                                <div className="description">
+                                                    <h4 className="info-title">Rule two</h4>
+                                                    <p className="description">
+                                                        This is rule two 's content. We've developed the website with HTML5 and CSS3.
+                                                        The client has access to the
+                                                        code using GitHub.
+                                        </p>
+                                                </div>
+                                            </div>
+                                            <div className="info info-horizontal">
+                                                <div className="description">
+                                                    <h4 className="info-title">Rule three</h4>
+                                                    <p className="description">
+                                                        This is rule 3's contents. There is also a Fully Customizable CMS Admin
+                                                        Dashboard for this product.
+                                        </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="col-md-5">
+
+                                        <form className="form" method="" action="" onSubmit={this.onSubmitReportErrorForm}>
+
+                                            <div className="card-content">
+
+                                                <div className="form-group">
+                                                    <label className="label-control">Room Name</label>
+                                                    <select className="selectpicker" data-style="select-with-transition" name="cbbRoomToReport" title="Choose Room"
+                                                        value={this.state.cbbRoomToReport} onChange={this.onHandleChangeReportErrorForm}>
+                                                        {/* update */}
+                                                        {/* name="cbbRoomToBook" value={this.state.cbbRoomToBook} onChange={this.onHandleChangeUpdateBookingForm} */}
+                                                        <option disabled> Choose room</option>
+                                                        <option value="201">Room 201 </option>
+                                                        <option value="202">Room 202</option>
+                                                        <option value="203">Room 203</option>
+                                                        <option value="204">Room 204</option>
+                                                        <option value="205">Room 205 </option>
+                                                        <option value="206">Room 206</option>
+                                                        <option value="207">Room 207 </option>
+                                                        <option value="208">Room 208</option>
+                                                        <option value="209">Room 209</option>
+                                                        <option value="210">Room 210</option>
+                                                        <option value="211">Room 211</option>
+                                                        <option value="212">Room 212</option>
+                                                        <option value="213">Room 213 </option>
+                                                        <option value="214">Room 214</option>
+                                                        <option value="215">Room 215</option>
+                                                        <option value="216">Room 216</option>
+                                                        <option value="217">Room 217</option>
+                                                        <option value="218">Room 218</option>
+                                                    </select>
+                                                </div>
+                                                <div className="form-group">
+                                                    <label className="label-control">Device Name</label>
+                                                    <select className="selectpicker" data-style="select-with-transition" multiple title="Choose Device" data-size="7" name="cbbDeviceToReport"
+                                                        onChange={this.onHandleChangeReportErrorForm}>
+                                                        {/* update */}
+                                                        {/* name="cbbRoomToBook" value={this.state.cbbRoomToBook} onChange={this.onHandleChangeUpdateBookingForm} */}
+                                                        <option disabled> Choose Device</option>
+                                                        <option value="light">Light </option>
+                                                        <option value="fan">Fan</option>
+                                                        <option value="powerPlug">Power Plug</option>
+                                                        <option value="airConditioner">Air-Conditioner</option>
+                                                    </select>
+                                                </div>
+                                               
+                                                <div className="form-group">
+                                                    <label className="control-label">Description</label>
+                                                    <input className="form-control" name="txtDescriptionToReport" value={this.state.txtDescriptionToReport} onChange={this.onHandleChangeReportErrorForm}></input>
+                                                    <span className="material-input"></span>
+                                                </div>
+
+                                            </div>
+                                            <div className="footer text-center textGetStarted">
+                                                <button type="submit" className="btn btn-primary btn-round">Update</button>
                                             </div>
                                         </form>
                                     </div>
@@ -1451,45 +1786,45 @@ class UserHomePage extends Component<Props, State> {
                                                 columns={
                                                     [
                                                         { title: "ID", field: "id", hidden: true },
-                                                        { title: "Title", field: "message" },
+                                                        { title: "Title", field: "title" },
                                                         {
-                                                            title: "Request Type", field: "typeRequest",
-                                                            render: (rowData: message) => {
-                                                                return rowData.typeRequest == "bookRoomRequest" ? <p style={{ color: "#E87722", fontWeight: "bold" }}>Book room request</p> :
-                                                                    rowData.typeRequest == "reportErrorRequest" ? <p style={{ color: "#008240", fontWeight: "bold" }}>Report Error Request</p> :
+                                                            title: "Request Type", field: "requestType",
+                                                            render: (rowData: any) => {
+                                                                return rowData.requestType == "bookRoomRequest" ? <p style={{ color: "#E87722", fontWeight: "bold" }}>Book room request</p> :
+                                                                    rowData.requestType == "reportErrorRequest" ? <p style={{ color: "#008240", fontWeight: "bold" }}>Report Error Request</p> :
                                                                         <p style={{ color: "#B0B700", fontWeight: "bold" }}>Change Room Request</p>
                                                             }
                                                         },
                                                         {
-                                                            title: "Reply Time", field: "sendAt",
-                                                            render: (rowData: message) => {
-                                                                console.log(formatDateTime(rowData.sendAt));
+                                                            title: "Request Time", field: "requestTime",
+                                                            render: (rowData: any) => {
+                                                                console.log(rowData.requestTime?.split("-")[1]);
 
-                                                                return <small>{moment(formatDateTime(rowData.sendAt)).calendar()}</small>
+                                                                return <small>{moment(formatDateTime(rowData.requestTime?.split("-")[1] + "-" + rowData.requestTime?.split("-")[2])).calendar()}</small>
                                                             }
                                                         },
                                                         {
                                                             title: "Status", field: "status",
-                                                            render: (rowData: message) => {
+                                                            render: (rowData: any) => {
                                                                 return rowData.status == "accepted" ? <span className="label label-success" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
                                                                     rowData.status == "pending" ? <span className="label label-warning" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
                                                                         <span className="label label-default" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span>
                                                             }
                                                         },
                                                         {
-                                                            title: "Actions", render: (rowData: message) => (
+                                                            title: "Actions", render: (rowData: any) => (
                                                                 // <span className="btn-action-container">
                                                                 //     <button title="edit" type="button" className="btn btn-warning btn-simple" data-toggle="modal" data-dismiss="modal" data-target="#updateBookRoomModal" onClick={(e) => this.onGetValueToUpdateForm(data.id)}><i className="material-icons">edit</i><div className="ripple-container"></div></button>
                                                                 //     <button title="delete" type="button" className="btn btn-danger btn-simple" ><i className="material-icons">delete</i><div className="ripple-container"></div></button>
                                                                 // </span>
                                                                 <div className="btn-action-container-flex">
-                                                                    <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" title="Edit" data-toggle="modal" data-dismiss="modal" data-target="#updateBookRoomModal" onClick={(e) => this.onGetValueToUpdateForm(rowData.id)}>
+                                                                    <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" title="Edit" data-toggle="modal" data-dismiss="modal" data-target={rowData.requestType==="reportErrorRequest" ? "#updateReportErrorModal" : "#updateBookRoomModal"} onClick={(e) => this.onGetValueToUpdateForm(rowData.id, rowData.requestType)}>
                                                                         <span className="MuiIconButton-label">
                                                                             <span className="material-icons MuiIcon-root btn-edit-color" aria-hidden="true">edit</span>
                                                                         </span>
                                                                         <span className="MuiTouchRipple-root"></span>
                                                                     </button>
-                                                                    <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" onClick={(e) => this.onDeleteRequest((rowData as message).typeRequest.toString(), (rowData as message).id.toString(), (rowData as message).message.toString())}>
+                                                                    <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" onClick={(e) => this.onDeleteRequest(rowData.requestType, rowData.id, rowData.title)}>
                                                                         <span className="MuiIconButton-label">
                                                                             <span className="material-icons MuiIcon-root btn-delete-color" aria-hidden="true">delete</span>
                                                                         </span>
@@ -1502,15 +1837,13 @@ class UserHomePage extends Component<Props, State> {
 
                                                     ]
                                                 }
-                                                data={this.state.messageToUser}
+                                                data={this.state.historyRequest}
 
                                             />
 
 
                                         </div>
-                                        {/* <!-- end content--> */}
                                     </div>
-                                    {/* <!--  end card  --> */}
                                 </div>
                             </div>
                         </div>
@@ -1521,19 +1854,5 @@ class UserHomePage extends Component<Props, State> {
         )
     }
 }
-// const mapStateToProps = (state:any) => {
-//     console.log(state)
-//     return {
-//         bookingRoom: state.loggedInUser
-//     }
-// }
 
-// const mapDispatchToProps=(dispatch:any, props:any)=>{
-//     return{
-//         :(bookingRoom:any)=>{
-//         dispatch((bookingRoom));
-//       }
-//     }
-//   }
-// export default connect(mapStateToProps, mapDispatchToProps)(UserHomePage);
 export default UserHomePage

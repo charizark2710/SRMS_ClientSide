@@ -7,6 +7,7 @@ import listPlugin from '@fullcalendar/list'; //For List View
 import firebase from 'firebase'
 import { db, client } from './../../FireBase/config'
 import message from '../../model/Message';
+import { formatDate, formatTime } from "../Common/formatDateTime";
 
 interface Props {
 
@@ -26,57 +27,59 @@ class Calendar extends Component<Props, State> {
 
     notificationManagement = () => {
         this.setState({ calendars: [] });
-        db.ref('Booking').on('child_added', snap => {
+        db.ref('calendar').on('child_added', snap => {
             const data: any = snap.val();
-            if (data.status === 'accepted') {
+            console.log("data");
+            
+            if (data) {
                 var calendar: any = {
                     title: data.roomName + '-' + data.userId,
-                    start: data.date + 'T' + data.startTime,
-                    end: data.date + 'T' + data.endTime,
+                    start: formatDate(data.date) + 'T' + formatTime(data.from),
+                    end: formatDate(data.date) + 'T' + formatTime(data.to),
                     id: data.id
                 }
                 this.setState({ calendars: [... this.state.calendars, calendar] })
             }
         });
-        db.ref('Booking').off('child_added', snap => {
+        db.ref('calendar').off('child_added', snap => {
             const data: any = snap.val();
-            if (data.status === 'accepted') {
+            if (data) {
                 var calendar: any = {
                     title: data.roomName + '-' + data.userId,
-                    start: data.date + 'T' + data.startTime,
-                    end: data.date + 'T' + data.endTime,
+                    start: formatDate(data.date) + 'T' + formatTime(data.from),
+                    end: formatDate(data.date) + 'T' + formatTime(data.to),
                     id: data.id
                 }
                 this.setState({ calendars: [... this.state.calendars, calendar] })
             }
         });
-        db.ref('Booking').on('child_changed', snap => {
+        db.ref('calendar').on('child_changed', snap => {
             const data: any = snap.val();
-            if (data.status === 'accepted') {
+            if (data) {
                 var calendar: any = {
                     id:data.id,
                     title: data.roomName + '-' + data.userId,
-                    start: data.date + 'T' + data.startTime,
-                    end: data.date + 'T' + data.endTime,
+                    start: formatDate(data.date) + 'T' + formatTime(data.from),
+                    end: formatDate(data.date) + 'T' + formatTime(data.to),
                 }
                 this.setState({ calendars: [... this.state.calendars, calendar] })
             }
         });
-        db.ref('Booking').off('child_changed', snap => {
+        db.ref('calendar').off('child_changed', snap => {
             const data: any = snap.val();
-            if (data.status === 'accepted') {
+            if (data) {
                 var calendar: any = {
                     title: data.roomName + '-' + data.userId,
-                    start: data.date + 'T' + data.startTime,
-                    end: data.date + 'T' + data.endTime,
+                    start: formatDate(data.date) + 'T' + formatTime(data.from),
+                    end: formatDate(data.date) + 'T' + formatTime(data.to),
                 }
                 this.setState({ calendars: [... this.state.calendars, calendar] })
             }
         });
 
-        db.ref('Booking').on('child_removed', snap => {
+        db.ref('calendar').on('child_removed', snap => {
             const data: any = snap.val();
-            if (data.status === 'accepted') {
+            if (data) {
                 const arr = this.state.calendars;
                 const newArr = arr.filter((noti:any) => {
                     return noti.id !== data.id;
@@ -85,9 +88,9 @@ class Calendar extends Component<Props, State> {
             }
         });
 
-        db.ref('Booking').off('child_removed', snap => {
+        db.ref('calendar').off('child_removed', snap => {
             const data: any = snap.val();
-            if (data.status === 'accepted') {
+            if (data) {
                 const arr = this.state.calendars;
                 const newArr = arr.filter((noti:any) => {
                     return noti.id !== data.id;
@@ -103,7 +106,8 @@ class Calendar extends Component<Props, State> {
 
 
     render() {
-
+        console.log(this.state.calendars);
+        
         return (
             <div className="content">
                 <div className="container-fluid">

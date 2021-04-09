@@ -6,5 +6,6 @@ export default interface message {
     sendAt: string,
     isRead: boolean,
     status:string,
-    typeRequest:string
+    typeRequest:string,
+    url?:string,
 }

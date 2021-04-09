@@ -172,6 +172,19 @@ a:hover, a:focus{
     overflow: hidden; 
     text-overflow: ellipsis; 
 }
+
+.noti-info-user{
+    padding-left: 10px;
+    display: inline-block; 
+    width: 500px; 
+    height: fit-content;
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+}
+.menu-user-height{
+    overflow-y: auto;
+    max-height: 650px;
+}
 .noti-time{
     padding-left: 10px;
 }

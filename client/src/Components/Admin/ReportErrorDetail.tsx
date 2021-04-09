@@ -87,12 +87,11 @@ class ReportErrorDetail extends Component<Props, State> {
     }
 
     acceptOrRejectReportError = (status: string) => {
-        var roomBooking = {
+        var reportErr = {
             id: this.state.id,
             status: status,
             roomName: this.state.roomName,
-            description: this.state.description,
-            deviceNames: this.state.deviceNames,
+            userId: this.state.fromUser,
         }
         fetch('http://localhost:5000/reportError/acceptOrRejectReportError', {
             credentials: 'include',
@@ -100,7 +99,7 @@ class ReportErrorDetail extends Component<Props, State> {
                 'content-type': 'application/json',
             },
             method: 'PATCH',
-            body: JSON.stringify(roomBooking)
+            body: JSON.stringify(reportErr)
         }).then(res => {
             if (res.status === 200) {
                 return res.json().then(result => { console.log(result) })

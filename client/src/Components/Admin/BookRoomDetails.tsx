@@ -3,7 +3,9 @@ import message from '../../model/Message';
 import moment from 'moment';
 import { NavLink, RouteComponentProps } from 'react-router-dom';
 import { title } from 'process';
-
+import {formatDate, formatTime} from '../Common/formatDateTime'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface Props {
     match: any
@@ -76,9 +78,9 @@ class BookRoomDetail extends Component<Props, State> {
                     // if(bookingRoomData){
                     this.setState({
                         title:'Request to book room ' + result.roomName,
-                        date: result.date,
+                        date: formatDate(result.date),
                         roomName: result.roomName,
-                        time: result.startTime + ' - ' + result.endTime,
+                        time: formatTime(result.startTime) + ' - ' + formatTime(result.endTime),
                         fromUser: result.userId,
                         reason: result.reason,
                         status: result.status,
@@ -101,9 +103,10 @@ class BookRoomDetail extends Component<Props, State> {
         var roomBooking = {
             id: this.state.id,
             status: status,
-            // roomName: this.state.roomName,
-            // date: this.state.date,
-            // time: this.state.time,
+            roomName: this.state.roomName,
+            date: this.state.date,
+            time: this.state.time,
+            userId:this.state.fromUser
         }
         fetch('http://localhost:5000/bookRoom/acceptOrRejectBooking', {
             credentials: 'include',
@@ -114,7 +117,7 @@ class BookRoomDetail extends Component<Props, State> {
             body: JSON.stringify(roomBooking)
         }).then(res => {
             if (res.status === 200) {
-                return res.json().then(result => { console.log(result) })
+            toast.success(status+" successfully!");
             }
             else {
                 return res.json().then(result => { throw Error(result.error) });
@@ -142,12 +145,11 @@ class BookRoomDetail extends Component<Props, State> {
     // }
 
 
-
-
     render() {
         var { date, reason, fromUser, time, roomName, status, title } = this.state;
         return (
             <div className="content">
+                <ToastContainer />
                 <div className="container-fluid">
                     <div className="row">
                         <div className="col-md-12">
