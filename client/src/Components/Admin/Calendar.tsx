@@ -25,39 +25,41 @@ class Calendar extends Component<Props, State> {
         }
     }
 
-    notificationManagement = () => {
+    calendarManagement = () => {
         this.setState({ calendars: [] });
         db.ref('calendar').on('child_added', snap => {
             const data: any = snap.val();
-            console.log("data");
-            
             if (data) {
-                var calendar: any = {
-                    title: data.roomName + '-' + data.userId,
-                    start: formatDate(data.date) + 'T' + formatTime(data.from),
-                    end: formatDate(data.date) + 'T' + formatTime(data.to),
-                    id: data.id
-                }
-                this.setState({ calendars: [... this.state.calendars, calendar] })
+                Object.values(data).forEach((calen: any) => {
+                    var calendar: any = {
+                        title: calen.room + '-' + calen.userId,
+                        start: formatDate(calen.date) + 'T' + formatTime(calen.from),
+                        end: formatDate(calen.date) + 'T' + formatTime(calen.to),
+                        id: calen.id
+                    }
+                    this.setState({ calendars: [... this.state.calendars, calendar] })
+                })
             }
         });
         db.ref('calendar').off('child_added', snap => {
             const data: any = snap.val();
             if (data) {
-                var calendar: any = {
-                    title: data.roomName + '-' + data.userId,
-                    start: formatDate(data.date) + 'T' + formatTime(data.from),
-                    end: formatDate(data.date) + 'T' + formatTime(data.to),
-                    id: data.id
-                }
-                this.setState({ calendars: [... this.state.calendars, calendar] })
+                Object.values(data).forEach((calen: any) => {
+                    var calendar: any = {
+                        title: calen.room + '-' + calen.userId,
+                        start: formatDate(calen.date) + 'T' + formatTime(calen.from),
+                        end: formatDate(calen.date) + 'T' + formatTime(calen.to),
+                        id: calen.id
+                    }
+                    this.setState({ calendars: [... this.state.calendars, calendar] })
+                })
             }
         });
         db.ref('calendar').on('child_changed', snap => {
             const data: any = snap.val();
             if (data) {
                 var calendar: any = {
-                    id:data.id,
+                    id: data.id,
                     title: data.roomName + '-' + data.userId,
                     start: formatDate(data.date) + 'T' + formatTime(data.from),
                     end: formatDate(data.date) + 'T' + formatTime(data.to),
@@ -81,7 +83,7 @@ class Calendar extends Component<Props, State> {
             const data: any = snap.val();
             if (data) {
                 const arr = this.state.calendars;
-                const newArr = arr.filter((noti:any) => {
+                const newArr = arr.filter((noti: any) => {
                     return noti.id !== data.id;
                 })
                 this.setState({ calendars: newArr })
@@ -92,7 +94,7 @@ class Calendar extends Component<Props, State> {
             const data: any = snap.val();
             if (data) {
                 const arr = this.state.calendars;
-                const newArr = arr.filter((noti:any) => {
+                const newArr = arr.filter((noti: any) => {
                     return noti.id !== data.id;
                 })
                 this.setState({ calendars: newArr })
@@ -100,14 +102,14 @@ class Calendar extends Component<Props, State> {
         });
     }
     componentDidMount() {
-        this.notificationManagement();
+        this.calendarManagement();
     }
 
 
 
     render() {
         console.log(this.state.calendars);
-        
+
         return (
             <div className="content">
                 <div className="container-fluid">

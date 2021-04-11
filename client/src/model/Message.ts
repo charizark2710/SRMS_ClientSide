@@ -8,4 +8,6 @@ export default interface message {
     status:string,
     typeRequest:string,
     url?:string,
+    isValid?:boolean,
+    actionNotiId?:string
 }

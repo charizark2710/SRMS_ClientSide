@@ -57,13 +57,14 @@ class Login extends Component<Props, State> {
                 body: JSON.stringify(this.state),
             }).then( async res => {
                 if (res.ok) {
-                    await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-                    if(this.state.employeeId === 'dangduchieudn99' || this.state.employeeId === 'pbt.anh1999' || this.state.employeeId === 'winnguyenthongminhghe' || this.state.employeeId === 'thanhngo100298'){
+                    await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                    const role = await res.json();
+                    if(role.role === 'admin'){
                          this.props.history.push("/adminHomePage");
                     }else{
                         this.props.history.push("/userHomePage");
                     }
-                    return res.json().then(result => { console.log(result) })
+                    return
                 }
                 else {
                     firebase.auth().currentUser?.delete();

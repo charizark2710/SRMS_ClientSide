@@ -76,13 +76,15 @@ class Header extends Component<Props, State> {
           arr[changingIndex].sender = mail.sender,
           arr[changingIndex].sendAt = mail.sendAt,
           this.setState({ messages: arr })
-      }else{
+      }
+      if(!mail.isValid){//valid->invalid do cập nhật hoặc xóa
         const arr = this.state.messages;
         var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-        arr[changingIndex].isRead = false,
+          arr[changingIndex].isRead = mail.isRead,
           arr[changingIndex].message = mail.message,
           arr[changingIndex].sender = mail.sender,
           arr[changingIndex].sendAt = mail.sendAt,
+          arr[changingIndex].isValid =false;
           this.setState({ messages: arr })
       }
     });
@@ -92,47 +94,50 @@ class Header extends Component<Props, State> {
       if (mail.isRead) {//đánh dấu ĐÃ ĐỌC
         const arr = this.state.messages;
         var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-        arr[changingIndex].isRead = true,
+          arr[changingIndex].isRead = true,
           arr[changingIndex].message = mail.message,
           arr[changingIndex].sender = mail.sender,
           arr[changingIndex].sendAt = mail.sendAt,
           this.setState({ messages: arr })
-      }else{
+      }
+      
+      if(!mail.isValid){//valid->invalid do cập nhật hoặc xóa
         const arr = this.state.messages;
         var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-        arr[changingIndex].isRead = false,
+          arr[changingIndex].isRead = mail.isRead,
           arr[changingIndex].message = mail.message,
           arr[changingIndex].sender = mail.sender,
           arr[changingIndex].sendAt = mail.sendAt,
+          arr[changingIndex].isValid =false;
           this.setState({ messages: arr })
       }
     });
 
-    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_removed', (snap: any) => {
-      const mail: message = snap.val();
-      console.log("child-remove-on");
-      if (mail) {
-        const arr = this.state.messages;
-        const newArr = arr.filter(mess => {
-          return mess.id !== mail.id;
-        })
-        console.log(newArr);
+    // db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_removed', (snap: any) => {
+    //   const mail: message = snap.val();
+    //   console.log("child-remove-on");
+    //   if (mail) {
+    //     const arr = this.state.messages;
+    //     const newArr = arr.filter(mess => {
+    //       return mess.id !== mail.id;
+    //     })
+    //     console.log(newArr);
 
-        this.setState({ messages: newArr })
-      }
-    });
+    //     this.setState({ messages: newArr })
+    //   }
+    // });
 
-    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_removed', (snap: any) => {
-      const mail: message = snap.val();
-      console.log("child-remove-off");
-      if (mail) {
-        const arr = this.state.messages;
-        const newArr = arr.filter(mess => {
-          return mess.id !== mail.id;
-        })
-        this.setState({ messages: newArr })
-      }
-    });
+    // db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_removed', (snap: any) => {
+    //   const mail: message = snap.val();
+    //   console.log("child-remove-off");
+    //   if (mail) {
+    //     const arr = this.state.messages;
+    //     const newArr = arr.filter(mess => {
+    //       return mess.id !== mail.id;
+    //     })
+    //     this.setState({ messages: newArr })
+    //   }
+    // });
 
   }
 
@@ -177,11 +182,11 @@ class Header extends Component<Props, State> {
                             <b className="caret"></b>
                   </p>
                 </a>
-                <ul className="dropdown-menu">
+                <ul className="dropdown-menu admin-menu-height">
                   <div className="noti">Notifications</div>
                   {messages && messages.map((message, index) => {
                     return <li key={index}>
-                      <NavLink to={match.url+message.url}>
+                      <NavLink to={match.url+message.url} className={message.isValid?"":"invalid-noti-bg"}>
                         <table className="tbl-width">
                           <tbody>
                             <tr>

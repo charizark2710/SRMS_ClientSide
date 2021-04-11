@@ -45,6 +45,7 @@ interface State {
     isUpdateData: boolean
     updatingIdBooking: string
     updatingIdReport: string
+    actionNotiId:string
 
     //notification for user
     messageToUser: message[]
@@ -87,6 +88,7 @@ class UserHomePage extends Component<Props, State> {
             isUpdateData: false,
             updatingIdBooking: '',
             updatingIdReport: '',
+            actionNotiId:'',
 
             messageToUser: [],
 
@@ -132,7 +134,7 @@ class UserHomePage extends Component<Props, State> {
                         this.setState({
                             currentUser: currentUser
                         })
-                        this.getHistoryRequest(currentUser.employeeId)
+                        // this.getHistoryRequest(currentUser.employeeId)
                         this.createScript();
                     }
                 });
@@ -335,10 +337,11 @@ class UserHomePage extends Component<Props, State> {
         fetch('http://localhost:5000/logout', {
             credentials: "include",
             method: 'POST',
+            cache: 'reload',
         }).then(async res => {
             try {
                 if (res.ok) {
-                    await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
+                    await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
                     localStorage.clear();
                     firebase.auth().signOut();
                     this.props.history.push('/');
@@ -652,6 +655,8 @@ class UserHomePage extends Component<Props, State> {
             startTime: this.state.txtStartTime,
             endTime: this.state.txtEndTime,
             reason: this.state.txtReasonToBook,
+            userId:this.state.currentUser.employeeId,
+            actionNotiId:this.state.actionNotiId,
             id: '',
         }
         if (this.state.updatingIdBooking) {
@@ -689,8 +694,8 @@ class UserHomePage extends Component<Props, State> {
         });
     }
 
-    deleteBookingRequest = (idBooking: string, message: string) => {
-        fetch(`http://localhost:5000/bookRoom/delete/${idBooking}/?message=${message}`, {
+    deleteBookingRequest = (idBooking: string, message: string, actionNotiId:string) => {
+        fetch(`http://localhost:5000/bookRoom/delete/${idBooking}/?message=${message}?actionNotiId=${actionNotiId}`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -709,8 +714,8 @@ class UserHomePage extends Component<Props, State> {
 
     }
 
-    deleteReportErrorRequest = (idReport: string, message: string) => {
-        fetch(`http://localhost:5000/reportError/delete/${idReport}?message=${message}`, {
+    deleteReportErrorRequest = (idReport: string, message: string, actionNotiId:string) => {
+        fetch(`http://localhost:5000/reportError/delete/${idReport}?message=${message}?actionNotiId=${actionNotiId}`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -729,16 +734,16 @@ class UserHomePage extends Component<Props, State> {
 
     }
 
-    onDeleteRequest = (typeRquest: string, id: string, message: string) => {
+    onDeleteRequest = (typeRquest: string, id: string, message: string, actionNotiId:string) => {
         var result = window.confirm('Are you sure to delete ' + message + ' ?')
         if (result) {
             //delete booking in db
             if (typeRquest === "bookRoomRequest") {
-                this.deleteBookingRequest(id, message);
+                this.deleteBookingRequest(id, message, actionNotiId);
             }
             //delete reporterror in db
             if (typeRquest === "reportErrorRequest") {
-                this.deleteReportErrorRequest(id, message);
+                this.deleteReportErrorRequest(id, message, actionNotiId);
             }
             //update state
             const newArr = this.state.historyRequest.filter(mess => {
@@ -770,7 +775,8 @@ class UserHomePage extends Component<Props, State> {
                             isAgreeRuleBooking: true,
                             isShowValidateLoadEmptyRoom: true,
                             isAllowToLoadEmptyRooms: false,
-                            updatingIdBooking: id
+                            updatingIdBooking: id,
+                            actionNotiId:result.actionNotiId,
                         })
                         console.log(result);
 
@@ -797,7 +803,8 @@ class UserHomePage extends Component<Props, State> {
                             cbbDeviceToReport: result.deviceNames,
                             cbbRoomToReport: result.roomName,
                             txtDescriptionToReport: result.description,
-                            updatingIdReport: id
+                            updatingIdReport: id,
+                            actionNotiId:result.actionNotiId,
                         })
                         console.log(result);
 
@@ -831,8 +838,8 @@ class UserHomePage extends Component<Props, State> {
                 let arr = this.state.historyRequest;
                 let changingIndex = arr.findIndex((x: any) => x.id == this.state.updatingIdBooking);
 
-                arr[changingIndex].title = "request to book room " + booking.roomName + " at " + booking.date + " " + booking.startTime + "-" + booking.endTime,
-                    this.setState({ historyRequest: arr })
+                arr[changingIndex].title = "request to book room " + booking.roomName + " at " + booking.date + " " + booking.startTime + "-" + booking.endTime;
+                this.setState({ historyRequest: arr })
 
                 //make form empty
                 this.setState({
@@ -842,6 +849,7 @@ class UserHomePage extends Component<Props, State> {
                     txtEndTime: "",
                     txtReasonToBook: "",
                     updatingIdBooking: "",
+                    actionNotiId:"",
                 })
             }
             else {
@@ -911,6 +919,7 @@ class UserHomePage extends Component<Props, State> {
             deviceNames: this.state.cbbDeviceToReport,
             description: this.state.txtDescriptionToReport,
             userId: this.state.currentUser.employeeId,
+            actionNotiId:this.state.actionNotiId,
             id: '',
         }
         if (this.state.updatingIdReport) {
@@ -953,6 +962,7 @@ class UserHomePage extends Component<Props, State> {
                     cbbRoomToReport: "",
                     txtDescriptionToReport: "",
                     updatingIdReport: "",
+                    actionNotiId:"",
                 })
                 toast.success("Update report error request successfully!");
 
@@ -1000,7 +1010,7 @@ class UserHomePage extends Component<Props, State> {
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" data-toggle="modal" data-target="#historyRequestModal">
+                                    <a href="#" data-toggle="modal" data-target="#historyRequestModal" onClick={()=>this.getHistoryRequest(currentUser.employeeId)}>
                                         <i className="material-icons">history</i> History request
                                     </a>
                                 </li>
@@ -1786,6 +1796,7 @@ class UserHomePage extends Component<Props, State> {
                                                 columns={
                                                     [
                                                         { title: "ID", field: "id", hidden: true },
+                                                        { title: "actionNotiId", field: "actionNotiId", hidden: true },
                                                         { title: "Title", field: "title" },
                                                         {
                                                             title: "Request Type", field: "requestType",
@@ -1818,13 +1829,14 @@ class UserHomePage extends Component<Props, State> {
                                                                 //     <button title="delete" type="button" className="btn btn-danger btn-simple" ><i className="material-icons">delete</i><div className="ripple-container"></div></button>
                                                                 // </span>
                                                                 <div className="btn-action-container-flex">
+            
                                                                     <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" title="Edit" data-toggle="modal" data-dismiss="modal" data-target={rowData.requestType==="reportErrorRequest" ? "#updateReportErrorModal" : "#updateBookRoomModal"} onClick={(e) => this.onGetValueToUpdateForm(rowData.id, rowData.requestType)}>
                                                                         <span className="MuiIconButton-label">
                                                                             <span className="material-icons MuiIcon-root btn-edit-color" aria-hidden="true">edit</span>
                                                                         </span>
                                                                         <span className="MuiTouchRipple-root"></span>
                                                                     </button>
-                                                                    <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" onClick={(e) => this.onDeleteRequest(rowData.requestType, rowData.id, rowData.title)}>
+                                                                    <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" onClick={(e) => this.onDeleteRequest(rowData.requestType, rowData.id, rowData.title, rowData.actionNotiId)}>
                                                                         <span className="MuiIconButton-label">
                                                                             <span className="material-icons MuiIcon-root btn-delete-color" aria-hidden="true">delete</span>
                                                                         </span>

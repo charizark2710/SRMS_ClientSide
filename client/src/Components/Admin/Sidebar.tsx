@@ -30,7 +30,6 @@ class AdminHomePage extends Component<Props, State> {
                             name: user.displayName,
                             employeeId: user.email?.split('@')[0] || ' '
                         }
-
                         //this.notificationManagement(user);
                         this.setState({
                             currentAdmin: currentUser
@@ -39,6 +38,7 @@ class AdminHomePage extends Component<Props, State> {
                 });
             }
         }).catch(e => {
+            //Quay lại trang đăng nhập
             throw new Error(e);
         })
         console.log('sidebar');
@@ -93,10 +93,10 @@ class AdminHomePage extends Component<Props, State> {
                             </NavLink>
                         </li>
                         <li>
-                            <a href="./uploadData.html" className="text-align-right-for-link">
+                            <NavLink to={match.url + '/importData'}>
                                 <i className="material-icons">publish</i>
                                 <p> Import Data </p>
-                            </a>
+                            </NavLink>
                         </li>
                     </ul>
                 </div>

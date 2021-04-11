@@ -49,3 +49,15 @@
 .MuiTypography-body2 {
     font-size: 13px !important;
 }
+
+.import-room-height-500{
+    height: 500px;
+}
+
+.invalid-noti-bg{
+    background-color: rgb(221, 214, 214);
+}
+.admin-menu-height{
+    overflow-y: auto;
+    max-height: 650px;
+}

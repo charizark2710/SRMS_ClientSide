@@ -53,13 +53,7 @@ class App extends Component<Props, State>{
     }).then(res => {
       this.setState({ isDone: true });
       if (res.ok) {
-        client.auth().onAuthStateChanged(user => {
-          if (user) {
-            //this.notificationManagement(user);
-          } else {
-            this.setState({ isLogged: false });
-          }
-        });
+        
       }
     }).catch(e => {
       this.setState({ isDone: true, isLogged: false });
