@@ -23,25 +23,22 @@ import {
 
 
 interface Props {
-    match: any
+    match: any,
+    history:any
 }
 
 interface State {
-    messages: message[]
+   
 }
 
 class AdminHomePage extends Component<Props, State> {
     constructor(props: Props) {
         super(props)
         this.state = {
-            messages: []
+            
         }
     }
-    UNSAFE_componentWillReceiveProps = async (nextProps: any) => {
-        await this.setState({
-            messages: nextProps.messagesToAdmin
-        })
-    }
+
 
     createScript() {
         var scripts = [
@@ -70,7 +67,7 @@ class AdminHomePage extends Component<Props, State> {
                 <Sidebar match={this.props.match}/>
                 <div className="main-panel">
                     
-                    <Header messagesToAdmin={this.state.messages} match={this.props.match} />
+                    <Header match={this.props.match} history={this.props.history}/>
                     {/* <Calendar/> */}
                     {/* <BookRoom/> */}
                     <Route path='/adminHomePage' exact component={RoomAndDevices}></Route>

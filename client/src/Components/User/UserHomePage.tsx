@@ -9,7 +9,7 @@ import Button from "@material-ui/core/Button";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { formatDateTime, formatTime, formatDate } from "../Common/formatDateTime";
-import { report } from 'process';
+import { logout } from "../Common/logOut"
 
 
 
@@ -45,7 +45,7 @@ interface State {
     isUpdateData: boolean
     updatingIdBooking: string
     updatingIdReport: string
-    actionNotiId:string
+    actionNotiId: string
 
     //notification for user
     messageToUser: message[]
@@ -88,7 +88,7 @@ class UserHomePage extends Component<Props, State> {
             isUpdateData: false,
             updatingIdBooking: '',
             updatingIdReport: '',
-            actionNotiId:'',
+            actionNotiId: '',
 
             messageToUser: [],
 
@@ -333,31 +333,7 @@ class UserHomePage extends Component<Props, State> {
     }
 
 
-    logout = () => {
-        fetch('http://localhost:5000/logout', {
-            credentials: "include",
-            method: 'POST',
-            cache: 'reload',
-        }).then(async res => {
-            try {
-                if (res.ok) {
-                    await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-                    localStorage.clear();
-                    firebase.auth().signOut();
-                    this.props.history.push('/');
-                    // this.props.history.go(1);
-                } else {
-                    res.json().then(result => {
-                        throw Error(result);
-                    });
-                }
-            } catch (error) {
-                throw Error(error);
-            }
-        }).catch(e => {
-            throw Error(e);
-        });
-    }
+
 
     //control devices
     onControlDevices = () => {
@@ -583,23 +559,34 @@ class UserHomePage extends Component<Props, State> {
         }
 
         //load empty room
-        // var { txtDateToBook, txtStartTime, txtEndTime } = this.state;
-        // if (txtDateToBook && txtStartTime && txtEndTime) {
-        //     //load empty room
-        //     var { txtDateToBook, txtStartTime, txtEndTime } = this.state;
-        //     if (txtDateToBook && txtStartTime && txtEndTime) {
-        //         var data = {
-        //             dateToBook: txtDateToBook,
-        //             startTime: txtStartTime,
-        //             endTime: txtEndTime
-        //         }
-        //         this.getEmptyRooms(data);
-        //     }
-        // }
 
 
 
     }
+
+
+    loadAvailableRoom = () => {
+        var { txtDateToBook, txtStartTime, txtEndTime } = this.state;
+        fetch(`http://localhost:5000/bookRoom/getAvailableRooms?date=${txtDateToBook}&startTime=${txtStartTime}&endTime=${txtEndTime}`, {
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+            method: 'GET',
+        }).then(res => {
+            if (res.ok) {
+                return res.json().then(result => { console.log(result) })
+            }
+            else {
+                return res.json().then(result => { throw Error(result.error) });
+            }
+        }).catch(e => {
+            console.log(e);
+        });
+
+    }
+
+
 
     createBookingRoom = (bookingRoom: any) => {
         fetch('http://localhost:5000/bookRoom/add', {
@@ -655,8 +642,8 @@ class UserHomePage extends Component<Props, State> {
             startTime: this.state.txtStartTime,
             endTime: this.state.txtEndTime,
             reason: this.state.txtReasonToBook,
-            userId:this.state.currentUser.employeeId,
-            actionNotiId:this.state.actionNotiId,
+            userId: this.state.currentUser.employeeId,
+            actionNotiId: this.state.actionNotiId,
             id: '',
         }
         if (this.state.updatingIdBooking) {
@@ -673,28 +660,9 @@ class UserHomePage extends Component<Props, State> {
     }
 
 
-    //get empty room
-    getEmptyRooms = (data: any) => {
-        fetch('http://localhost:5000/bookRoom/getEmptyRooms', {
-            credentials: 'include',
-            headers: {
-                'content-type': 'application/json',
-            },
-            method: 'POST',
-            body: JSON.stringify(data)
-        }).then(res => {
-            if (res.ok) {
-                return res.json().then(result => { console.log(result) })
-            }
-            else {
-                return res.json().then(result => { throw Error(result.error) });
-            }
-        }).catch(e => {
-            console.log(e);
-        });
-    }
 
-    deleteBookingRequest = (idBooking: string, message: string, actionNotiId:string) => {
+
+    deleteBookingRequest = (idBooking: string, message: string, actionNotiId: string) => {
         fetch(`http://localhost:5000/bookRoom/delete/${idBooking}/?message=${message}?actionNotiId=${actionNotiId}`, {
             credentials: 'include',
             headers: {
@@ -714,7 +682,7 @@ class UserHomePage extends Component<Props, State> {
 
     }
 
-    deleteReportErrorRequest = (idReport: string, message: string, actionNotiId:string) => {
+    deleteReportErrorRequest = (idReport: string, message: string, actionNotiId: string) => {
         fetch(`http://localhost:5000/reportError/delete/${idReport}?message=${message}?actionNotiId=${actionNotiId}`, {
             credentials: 'include',
             headers: {
@@ -734,7 +702,7 @@ class UserHomePage extends Component<Props, State> {
 
     }
 
-    onDeleteRequest = (typeRquest: string, id: string, message: string, actionNotiId:string) => {
+    onDeleteRequest = (typeRquest: string, id: string, message: string, actionNotiId: string) => {
         var result = window.confirm('Are you sure to delete ' + message + ' ?')
         if (result) {
             //delete booking in db
@@ -776,7 +744,7 @@ class UserHomePage extends Component<Props, State> {
                             isShowValidateLoadEmptyRoom: true,
                             isAllowToLoadEmptyRooms: false,
                             updatingIdBooking: id,
-                            actionNotiId:result.actionNotiId,
+                            actionNotiId: result.actionNotiId,
                         })
                         console.log(result);
 
@@ -804,7 +772,7 @@ class UserHomePage extends Component<Props, State> {
                             cbbRoomToReport: result.roomName,
                             txtDescriptionToReport: result.description,
                             updatingIdReport: id,
-                            actionNotiId:result.actionNotiId,
+                            actionNotiId: result.actionNotiId,
                         })
                         console.log(result);
 
@@ -849,7 +817,7 @@ class UserHomePage extends Component<Props, State> {
                     txtEndTime: "",
                     txtReasonToBook: "",
                     updatingIdBooking: "",
-                    actionNotiId:"",
+                    actionNotiId: "",
                 })
             }
             else {
@@ -919,7 +887,7 @@ class UserHomePage extends Component<Props, State> {
             deviceNames: this.state.cbbDeviceToReport,
             description: this.state.txtDescriptionToReport,
             userId: this.state.currentUser.employeeId,
-            actionNotiId:this.state.actionNotiId,
+            actionNotiId: this.state.actionNotiId,
             id: '',
         }
         if (this.state.updatingIdReport) {
@@ -935,7 +903,7 @@ class UserHomePage extends Component<Props, State> {
 
     }
 
-    
+
     updateReportErrorRequest = (reportError: any) => {
         //dựa vào id trên state, update thông tin thay đổi trong form
         fetch(`http://localhost:5000/reportError/update`, {
@@ -947,7 +915,7 @@ class UserHomePage extends Component<Props, State> {
             body: JSON.stringify(reportError),
         }).then(res => {
             if (res.status === 200) {
-               
+
                 //close form
                 document.getElementById('closeUpdateReportErrorModal')?.click();
                 //update history form
@@ -962,7 +930,7 @@ class UserHomePage extends Component<Props, State> {
                     cbbRoomToReport: "",
                     txtDescriptionToReport: "",
                     updatingIdReport: "",
-                    actionNotiId:"",
+                    actionNotiId: "",
                 })
                 toast.success("Update report error request successfully!");
 
@@ -973,6 +941,27 @@ class UserHomePage extends Component<Props, State> {
         }).catch(e => {
             console.log(e);
         });
+    }
+
+    getCurrentRoom = () => {
+        var { txtDateToBook, txtStartTime, txtEndTime } = this.state;
+        fetch(`http://localhost:5000/changeRoom`, {
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+            method: 'GET',
+        }).then(res => {
+            if (res.ok) {
+                return res.json().then(result => { console.log(result) })
+            }
+            else {
+                return res.json().then(result => { throw Error(result.error) });
+            }
+        }).catch(e => {
+            console.log(e);
+        });
+
     }
 
     notifyBookingRoomSuccess = () => toast.success("Sent booking room request successfully!");
@@ -1010,7 +999,7 @@ class UserHomePage extends Component<Props, State> {
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" data-toggle="modal" data-target="#historyRequestModal" onClick={()=>this.getHistoryRequest(currentUser.employeeId)}>
+                                    <a href="#" data-toggle="modal" data-target="#historyRequestModal" onClick={() => this.getHistoryRequest(currentUser.employeeId)}>
                                         <i className="material-icons">history</i> History request
                                     </a>
                                 </li>
@@ -1056,7 +1045,7 @@ class UserHomePage extends Component<Props, State> {
                                 </li>
 
                                 <li>
-                                    <a href="#" onClick={this.logout}>
+                                    <a onClick={() => logout(this.props.history)}>
                                         <i className="material-icons">input</i> Logout
                                     </a>
                                 </li>
@@ -1140,7 +1129,7 @@ class UserHomePage extends Component<Props, State> {
                                                     Click here if you want to change to another room.
                                     </p>
                                                 <a href="#pablo" className="btn btn-warning btn-round" data-toggle="modal"
-                                                    data-target="#changeRoomModal">Change now</a>
+                                                    data-target="#changeRoomModal" >Change now</a>
                                             </div>
                                         </div>
                                     </div>
@@ -1220,6 +1209,7 @@ class UserHomePage extends Component<Props, State> {
                             <div className="modal-header">
                                 <button type="button" className="close" data-dismiss="modal" id="closeBookRoomModal">&times;</button>
                                 <h2 className="modal-title text-center">Book room</h2>
+                                <button onClick={this.loadAvailableRoom}>AVAILABLE</button>
                             </div>
                             <div className="modal-body">
                                 <div className="row mgTop3">
@@ -1649,7 +1639,7 @@ class UserHomePage extends Component<Props, State> {
                                                         <option value="airConditioner">Air-Conditioner</option>
                                                     </select>
                                                 </div>
-                                               
+
                                                 <div className="form-group">
                                                     <label className="control-label">Description</label>
                                                     <input className="form-control" name="txtDescriptionToReport" value={this.state.txtDescriptionToReport} onChange={this.onHandleChangeReportErrorForm}></input>
@@ -1766,7 +1756,7 @@ class UserHomePage extends Component<Props, State> {
                                                 </div>
                                             </div>
                                             <div className="footer text-center pdBottom">
-                                                <a href="#pablo" className="btn btn-primary btn-round">Get Started</a>
+                                                <a href="#pablo" className="btn btn-primary btn-round" onClick={this.getCurrentRoom}>Get Started</a>
                                             </div>
                                         </form>
                                     </div>
@@ -1829,8 +1819,8 @@ class UserHomePage extends Component<Props, State> {
                                                                 //     <button title="delete" type="button" className="btn btn-danger btn-simple" ><i className="material-icons">delete</i><div className="ripple-container"></div></button>
                                                                 // </span>
                                                                 <div className="btn-action-container-flex">
-            
-                                                                    <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" title="Edit" data-toggle="modal" data-dismiss="modal" data-target={rowData.requestType==="reportErrorRequest" ? "#updateReportErrorModal" : "#updateBookRoomModal"} onClick={(e) => this.onGetValueToUpdateForm(rowData.id, rowData.requestType)}>
+
+                                                                    <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" title="Edit" data-toggle="modal" data-dismiss="modal" data-target={rowData.requestType === "reportErrorRequest" ? "#updateReportErrorModal" : "#updateBookRoomModal"} onClick={(e) => this.onGetValueToUpdateForm(rowData.id, rowData.requestType)}>
                                                                         <span className="MuiIconButton-label">
                                                                             <span className="material-icons MuiIcon-root btn-edit-color" aria-hidden="true">edit</span>
                                                                         </span>

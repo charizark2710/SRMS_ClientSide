@@ -1,15 +1,55 @@
 import React, { ChangeEvent, Component } from 'react';
 import { client, messaging } from './../../FireBase/config'
-import { NavLink, RouteComponentProps, Router, Route } from 'react-router-dom';
+import { NavLink, RouteComponentProps, Router, Route, useRouteMatch } from 'react-router-dom';
 
 
 interface Props {
     match: any,
+    
+}
+
+interface ILinkProp{
+    icon:any,
+    label: any,
+    to: any,
+    activeOnlyWhenExact: any
 }
 
 interface State {
     currentAdmin: any
 }
+
+const CustomNavLink = ({ label, to, activeOnlyWhenExact, icon}: ILinkProp) => {
+    return (
+        <Route path={to} exact={activeOnlyWhenExact} children={({ match }) => {
+            var active = match ? "active" : "";
+            return (
+                <li className={active}>
+                    <NavLink to={to}>
+                        <i className="material-icons">{icon}</i>
+                        <p> {label} </p>
+                    </NavLink>
+                </li>
+            )
+        }} />
+
+        
+    )
+}
+
+// const customNavLink=({ label, to, activeOnlyWhenExact }: Props) =>{
+//     let match = useRouteMatch({
+//       path: to,
+//       exact: activeOnlyWhenExact
+//     });
+
+//     return (
+//       <li className={match ? "active" : ""}>
+//         {match && "> "}
+//         <NavLink to={to}>{label}</NavLink>
+//       </li>
+//     );
+//   }
 
 class AdminHomePage extends Component<Props, State> {
 
@@ -74,7 +114,7 @@ class AdminHomePage extends Component<Props, State> {
                         </div>
                     </div>
                     <ul className="nav">
-                        <li className="active text-align-right-for-link">
+                        {/* <li className="active">
                             <NavLink to={match.url}>
                                 <i className="material-icons">dashboard</i>
                                 <p> Rooms & Devices </p>
@@ -97,7 +137,12 @@ class AdminHomePage extends Component<Props, State> {
                                 <i className="material-icons">publish</i>
                                 <p> Import Data </p>
                             </NavLink>
-                        </li>
+                        </li> */}
+
+                        <CustomNavLink label="Rooms & Devices" to={match.url} activeOnlyWhenExact={true} icon="dashboard"></CustomNavLink>
+                        <CustomNavLink label="Calendar" to={match.url + '/calendar'} activeOnlyWhenExact={false} icon="date_range"></CustomNavLink>
+                        <CustomNavLink label="Banned List" to={match.url + '/bannedList'} activeOnlyWhenExact={false} icon="subtitles_off"></CustomNavLink>
+                        <CustomNavLink label="Import Data" to={match.url + '/importData'} activeOnlyWhenExact={false} icon="publish"></CustomNavLink>
                     </ul>
                 </div>
             </div>

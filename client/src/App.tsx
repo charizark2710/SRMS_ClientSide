@@ -17,12 +17,12 @@ import {
   Link,
   RouteComponentProps
 } from "react-router-dom";
-interface MatchParams {
-  name: string;
-}
+// interface MatchParams {
+//   name: string;
+// }
 
-interface MatchProps extends RouteComponentProps<MatchParams> {
-}
+// interface MatchProps extends RouteComponentProps<MatchParams> {
+// }
 interface Props {
 }
 
@@ -153,9 +153,8 @@ class App extends Component<Props, State>{
           {/* <Route path='/adminHomePage'>
             <AdminHomePage messagesToAdmin={this.state.message}/>
           </Route>  */}
-          <Route path="/adminHomePage" render={({ match }: MatchProps) => (
-            <AdminHomePage match={match}/>)} /> 
-           {/* messagesToAdmin={this.state.message} */}
+          <Route path="/adminHomePage" render={({ match, history }) => (
+            <AdminHomePage match={match} history={history}/>)} /> 
           <Route path='/testML' component={testML}></Route>
 
         </Switch>

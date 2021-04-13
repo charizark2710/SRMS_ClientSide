@@ -5,10 +5,13 @@ import { NavLink, RouteComponentProps, Router, Route } from 'react-router-dom';
 import firebase from 'firebase'
 import { db, client } from './../../FireBase/config';
 import { formatDateTime } from "../Common/formatDateTime";
+import { logout } from "../Common/logOut";
+
+// import history from "../Common/history";
 
 interface Props {
-  messagesToAdmin: message[],
   match: any,
+  history:any
 }
 
 interface State {
@@ -113,6 +116,8 @@ class Header extends Component<Props, State> {
       }
     });
 
+
+  
     // db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_removed', (snap: any) => {
     //   const mail: message = snap.val();
     //   console.log("child-remove-on");
@@ -209,14 +214,14 @@ class Header extends Component<Props, State> {
                     </li>
                   })}
 
-                  <div className="noti-seemore"><a href="moreNotification.html">See more <i
-                    className="material-icons">navigate_next</i> </a> </div>
+                  <div className="noti-seemore"><NavLink to="/adminHomePage/requests">See more <i
+                    className="material-icons">navigate_next</i> </NavLink> </div>
                 </ul>
               </li>
               <li>
-                <a href="#pablo" className="dropdown-toggle" data-toggle="dropdown">
-                  <i className="material-icons">person</i>
-                  <p className="hidden-lg hidden-md">Profile</p>
+                <a href="#pablo" onClick={()=>logout(this.props.history)} className="dropdown-toggle" data-toggle="dropdown">
+                  <i className="material-icons">logout</i>
+                  <p className="hidden-lg hidden-md">Logout</p>
                 </a>
               </li>
               <li className="separator hidden-lg hidden-md"></li>
