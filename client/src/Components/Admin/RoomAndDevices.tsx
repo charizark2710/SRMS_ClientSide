@@ -111,7 +111,8 @@ class RoomAndDevices extends Component<Props, State> {
 
 
 
-    onControlDevices = (room: string) => {
+    //control devices
+    onControlDevices = (room:string) => {
         this.setState({
             controllingRoom:room
         })
@@ -153,6 +154,10 @@ class RoomAndDevices extends Component<Props, State> {
             console.log(e);
         });
     }
+
+
+    //viết hàm dựa vào employId để xem có quyền điều khiển phòng nào->set vào state
+
     toggleDeviceStatus = (device: string) => {
         switch (device) {
             case "light":
@@ -160,7 +165,7 @@ class RoomAndDevices extends Component<Props, State> {
                     lightOn: !this.state.lightOn
                 })
                 var lightUpdating = {
-                    roomName: this.state.controllingRoom,
+                    roomName: '201',
                     device: {
                         light: (this.state.lightOn) ? 0 : 1,
                     }
@@ -172,7 +177,7 @@ class RoomAndDevices extends Component<Props, State> {
                     fanOn: !this.state.fanOn
                 })
                 var fanUpdating = {
-                    roomName: this.state.controllingRoom,
+                    roomName: '201',
                     device: {
                         fan: (this.state.fanOn) ? 0 : 1,
                     }
@@ -184,7 +189,7 @@ class RoomAndDevices extends Component<Props, State> {
                     conditionerOn: !this.state.conditionerOn
                 })
                 var conditionerUpdating = {
-                    roomName: this.state.controllingRoom,
+                    roomName: '201',
                     device: {
                         conditioner: (this.state.conditionerOn) ? 0 : 1,
                     }
@@ -196,7 +201,7 @@ class RoomAndDevices extends Component<Props, State> {
                     powerPlugOn: !this.state.powerPlugOn
                 })
                 var powerPlugUpdating = {
-                    roomName: this.state.controllingRoom,
+                    roomName: '201',
                     device: {
                         powerPlug: (this.state.powerPlugOn) ? 0 : 1,
                     }
@@ -219,6 +224,15 @@ class RoomAndDevices extends Component<Props, State> {
             body: JSON.stringify(updatingDevice),
         }).then(res => {
             if (res.ok) {
+                if (this.state.lightOn && this.state.fanOn && this.state.powerPlugOn && this.state.conditionerOn) {
+                    this.setState({
+                        isTurnOnAllDevices: true
+                    })
+                } else {
+                    this.setState({
+                        isTurnOnAllDevices: false
+                    })
+                }
                 return res.json().then(result => { console.log(result) })
             }
             else {
@@ -229,32 +243,38 @@ class RoomAndDevices extends Component<Props, State> {
         });
     }
 
+
+
+    isTurnOn: number | undefined = undefined;
     //turn on/off all devices
     onChange = async (event: any) => {
         await this.setState({
             isTurnOnAllDevices: event.target.checked
         })
-        var isTurnOn = this.state.isTurnOnAllDevices ? 1 : 0
-        var data = {
-            roomName: this.state.controllingRoom,
+        this.isTurnOn = this.state.isTurnOnAllDevices ? 1 : 0;
+        var data;
+        if (this.isTurnOn)
+            console.log('aaaa');
+        data = {
+            roomName: '201',
             devices: {
-                light: isTurnOn,
-                powerPlug: isTurnOn,
-                fan: isTurnOn,
-                conditioner: isTurnOn,
+                light: this.isTurnOn,
+                powerPlug: this.isTurnOn,
+                fan: this.isTurnOn,
+                conditioner: this.isTurnOn,
             }
         }
         this.UpdateAllDevicesStatus(data);
     }
 
     UpdateAllDevicesStatus = (data: any) => {
-        fetch('http://localhost:5000/room/switchAllDevicesStatus', {
+        const url = 'http://localhost:5000/room/switchAllDevicesStatus/' + data.roomName + '?q=' + this.isTurnOn;
+        fetch(url, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
             },
             method: 'PUT',
-            body: JSON.stringify(data),
         }).then(res => {
             if (res.ok) {
                 if (this.state.isTurnOnAllDevices) {

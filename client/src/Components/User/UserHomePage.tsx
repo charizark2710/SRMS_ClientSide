@@ -944,7 +944,6 @@ class UserHomePage extends Component<Props, State> {
     }
 
     getCurrentRoom = () => {
-        var { txtDateToBook, txtStartTime, txtEndTime } = this.state;
         fetch(`http://localhost:5000/changeRoom`, {
             credentials: 'include',
             headers: {
@@ -1129,7 +1128,7 @@ class UserHomePage extends Component<Props, State> {
                                                     Click here if you want to change to another room.
                                     </p>
                                                 <a href="#pablo" className="btn btn-warning btn-round" data-toggle="modal"
-                                                    data-target="#changeRoomModal" >Change now</a>
+                                                    data-target="#changeRoomModal" onClick={this.getCurrentRoom}>Change now</a>
                                             </div>
                                         </div>
                                     </div>
@@ -1209,68 +1208,53 @@ class UserHomePage extends Component<Props, State> {
                             <div className="modal-header">
                                 <button type="button" className="close" data-dismiss="modal" id="closeBookRoomModal">&times;</button>
                                 <h2 className="modal-title text-center">Book room</h2>
-                                <button onClick={this.loadAvailableRoom}>AVAILABLE</button>
+                                {/* <button onClick={this.loadAvailableRoom}>AVAILABLE</button> */}
                             </div>
                             <div className="modal-body">
                                 <div className="row mgTop3">
-                                    <div className="col-md-5 col-md-offset-1">
-                                        <div className="card-content">
-                                            <div className="info info-horizontal">
-                                                <div className="icon icon-rose">
-                                                    <i className="material-icons">gavel</i><span className="ruleFormat">Rules</span>
-                                                </div>
-                                                <div className="description">
-                                                    <h4 className="info-title">Date and Time</h4>
-                                                    <p className="description">
-                                                        You can book room all day in a week from 7:00 - 22:00
-                                        </p>
-                                                </div>
-                                            </div>
-                                            <div className="info info-horizontal">
-                                                <div className="description">
-                                                    <h4 className="info-title">Rule two</h4>
-                                                    <p className="description">
-                                                        This is rule two 's content. We've developed the website with HTML5 and CSS3.
-                                                        The client has access to the
-                                                        code using GitHub.
-                                        </p>
-                                                </div>
-                                            </div>
-                                            <div className="info info-horizontal">
-                                                <div className="description">
-                                                    <h4 className="info-title">Rule three</h4>
-                                                    <p className="description">
-                                                        This is rule 3's contents. There is also a Fully Customizable CMS Admin
-                                                        Dashboard for this product.
-                                        </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
 
-                                    <div className="col-md-5">
+
+                                    <div className="col-md-12">
 
                                         <form className="form" method="" action="" onSubmit={this.onSubmitBookingForm}>
 
                                             <div className="card-content">
-                                                <div className="form-group">
-                                                    <label className="label-control">Date</label>
-                                                    <input type="date" className="form-control" name="txtDateToBook" value={this.state.txtDateToBook} onChange={this.onHandleChangeBookingForm} />
+
+                                                <div className="row">
+                                                    <div className="col-md-4">
+                                                        <div className="form-group label-floating is-empty">
+                                                            <label className="control-label"></label>
+                                                            <input type="date" className="form-control" name="txtDateToBook" value={this.state.txtDateToBook} onChange={this.onHandleChangeBookingForm} />
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <div className="form-group label-floating is-empty">
+                                                            <label className="control-label"></label>
+                                                            <input type="time" className="form-control" name="txtStartTime" value={this.state.txtStartTime} onChange={this.onHandleChangeBookingForm} />
+                                                        </div>
+                                                    </div>
+                                                    <div className="col-md-4">
+                                                        <div className="form-group label-floating is-empty">
+                                                            <label className="control-label"></label>
+                                                            <input type="time" className="form-control" name="txtEndTime" value={this.state.txtEndTime} onChange={this.onHandleChangeBookingForm} />
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div className="form-group">
-                                                    <label className="label-control">Start Time</label>
-                                                    <input type="time" className="form-control" name="txtStartTime" value={this.state.txtStartTime} onChange={this.onHandleChangeBookingForm} />
+
+
+                                                <div className="form-group is-empty">
+                                                    <label className="control-label">Reason</label>
+                                                    <input className="form-control" value={this.state.txtReasonToBook} name="txtReasonToBook" onChange={this.onHandleChangeBookingForm}></input>
+                                                    <span className="material-input"></span>
                                                 </div>
-                                                <div className="form-group">
-                                                    <label className="label-control">End Time</label>
-                                                    <input type="time" className="form-control" name="txtEndTime" value={this.state.txtEndTime} onChange={this.onHandleChangeBookingForm} />
-                                                </div>
-                                                <div className="form-group">
-                                                    <label className="label-control">Room Name <small className="validate-loadEmptyRoom" hidden={isShowValidateLoadEmptyRoom}>*Please select date and time before choosing room</small> </label>
-                                                    <select className="selectpicker" data-style="select-with-transition" title="Choose Room" data-size="7" name="cbbRoomToBook"
-                                                        value={this.state.cbbRoomToBook} onChange={this.onHandleChangeBookingForm}>
-                                                        {/* name="cbbRoomToBook" value={this.state.cbbRoomToBook} onChange={this.onHandleChangeBookingForm} */}
-                                                        <option disabled> Choose room</option>
+
+
+
+                                                {/* <div className="form-group"> */}
+                                                {/* <label className="label-control">Room Name <small className="validate-loadEmptyRoom" hidden={isShowValidateLoadEmptyRoom}>*Please select date and time before choosing room</small> </label> */}
+                                                {/* <select className="selectpicker" data-style="select-with-transition" title="Choose Room" data-size="7" name="cbbRoomToBook" */}
+                                                {/* value={this.state.cbbRoomToBook} onChange={this.onHandleChangeBookingForm}> */}
+                                                {/* <option disabled> Choose room</option>
                                                         <option value="201">Room 201 </option>
                                                         <option value="202">Room 202</option>
                                                         <option value="203">Room 203</option>
@@ -1290,22 +1274,75 @@ class UserHomePage extends Component<Props, State> {
                                                         <option value="217">Room 217</option>
                                                         <option value="218">Room 218</option>
                                                     </select>
-                                                </div>
-
-                                                <div className="form-group label-floating is-empty">
-                                                    <label className="control-label">Reason</label>
-                                                    <textarea className="form-control" value={this.state.txtReasonToBook} name="txtReasonToBook" onChange={this.onHandleChangeBookingForm}></textarea>
-                                                    <span className="material-input"></span>
-                                                </div>
+                                                </div> */}
 
 
-                                                <div className="checkbox">
+
+
+                                                {/* <div className="checkbox">
                                                     <label>
                                                         <input type="checkbox" name="isAgreeRuleBooking" checked={this.state.isAgreeRuleBooking} onChange={this.onHandleChangeBookingForm} /><span
                                                             className="checkbox-material" ></span> I agree to the &nbsp;
                                                         <a href="#something">rules</a>.
                                                     </label>
+                                                </div> */}
+
+                                                <div className="form-group is-empty">
+                                                    <label className="control-label">Select Room</label>
+                                                    <div className="select-room-height">
+                                                        
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        <button type="button" className="btn btn-default">button</button>
+                                                        
+                                                    </div>
+                                                    
                                                 </div>
+
                                             </div>
                                             <div className="footer text-center pdBottom5">
                                                 <button type="submit" className="btn btn-primary btn-round" disabled={isDisableBookingBtn}>Book now</button>
@@ -1440,7 +1477,7 @@ class UserHomePage extends Component<Props, State> {
 
 
                 <div id="reportErrorModal" className="modal fade blur" role="dialog">
-                    <div className="modal-dialog dialogWidth">
+                    <div className="modal-dialog reportError-dialogWidth">
                         <div className="modal-content">
                             <div className="modal-header">
                                 <button id="closeReportErrorModal" type="button" className="close" data-dismiss="modal">&times;</button>
@@ -1448,43 +1485,9 @@ class UserHomePage extends Component<Props, State> {
                             </div>
                             <div className="modal-body">
                                 <div className="row">
-                                    <div className="col-md-5 col-md-offset-1">
-                                        <div className="card-content">
-                                            <div className="info info-horizontal">
-                                                <div className="icon icon-rose">
-                                                    <i className="material-icons">
-                                                        flutter_dash</i><span className="textSpan">Thank you for feedback error</span>
-                                                </div>
-                                                <div className="description">
-                                                    <h4 className="info-title">Date and Time</h4>
-                                                    <p className="description">
-                                                        You can book room all day in a week from 7:00 - 22:00
-                                        </p>
-                                                </div>
-                                            </div>
-                                            <div className="info info-horizontal">
-                                                <div className="description">
-                                                    <h4 className="info-title">Rule two</h4>
-                                                    <p className="description">
-                                                        This is rule two 's content. We've developed the website with HTML5 and CSS3.
-                                                        The client has access to the
-                                                        code using GitHub.
-                                        </p>
-                                                </div>
-                                            </div>
-                                            <div className="info info-horizontal">
-                                                <div className="description">
-                                                    <h4 className="info-title">Rule three</h4>
-                                                    <p className="description">
-                                                        This is rule 3's contents. There is also a Fully Customizable CMS Admin
-                                                        Dashboard for this product.
-                                        </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
 
-                                    <div className="col-md-5">
+
+                                    <div className="col-md-12">
 
                                         <form className="form" method="" action="" onSubmit={this.onSubmitReportErrorForm}>
 
@@ -1660,7 +1663,7 @@ class UserHomePage extends Component<Props, State> {
 
 
                 <div id="changeRoomModal" className="modal fade blur" role="dialog">
-                    <div className="modal-dialog dialogWidth">
+                    <div className="modal-dialog changeroom-dialogWidth">
 
 
                         <div className="modal-content">
@@ -1670,100 +1673,30 @@ class UserHomePage extends Component<Props, State> {
                             </div>
                             <div className="modal-body">
                                 <div className="row">
-                                    <h3 className="mg-20">Your Booked Room(s)</h3>
-                                    <div className="col-md-5 col-md-offset-1 scroll-change-room fix-size-change-room-modal">
 
-                                        <div className="card-content">
-                                            <div className="info info-horizontal">
-                                                <div className="icon icon-rose">
-                                                    <i className="material-icons">
-                                                        flutter_dash</i><span className="textSpan">Thank you for feedback error</span>
-                                                </div>
-                                                <div className="description">
-                                                    <h4 className="info-title">Date and Time</h4>
-                                                    <p className="description">
-                                                        You can book room all day in a week from 7:00 - 22:00
-                                        </p>
-                                                </div>
-                                            </div>
-                                            <div className="info info-horizontal">
-                                                <div className="description">
-                                                    <h4 className="info-title">Rule two</h4>
-                                                    <p className="description">
-                                                        This is rule two 's content. We've developed the website with HTML5 and CSS3.
-                                                        The client has access to the
-                                                        code using GitHub.
-                                        </p>
-                                                </div>
-                                            </div>
-                                            <div className="info info-horizontal">
-                                                <div className="description">
-                                                    <h4 className="info-title">Rule three</h4>
-                                                    <p className="description">
-                                                        This is rule 3's contents. There is also a Fully Customizable CMS Admin
-                                                        Dashboard for this product.
-                                        </p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                    </div>
-
-                                    <div className="col-md-5">
+                                    <div className="col-md-12">
 
                                         <form className="form" method="" action="">
 
                                             <div className="card-content">
                                                 <div className="form-group">
-                                                    <label className="label-control">You can change from room 201 to: </label>
-                                                    <select className="selectpicker" data-style="select-with-transition" multiple
-                                                        title="Choose Room" data-size="7">
-                                                        {/* <option disabled> Choose room</option>
-                                                        <option value="2">Room 201 </option>
-                                                        <option value="3">Room 202</option>
-                                                        <option value="4">Room 203</option>
-                                                        <option value="5">Room 204</option>
-                                                        <option value="6">Room 205 </option>
-                                                        <option value="7">Room 206</option>
-                                                        <option value="8">Room 207 </option>
-                                                        <option value="9">Room 208</option>
-                                                        <option value="10">Room 209</option>
-                                                        <option value="11">Room 210</option>
-                                                        <option value="12">Room 211</option>
-                                                        <option value="13">Room 212</option>
-                                                        <option value="14">Room 213 </option>
-                                                        <option value="15">Room 214</option>
-                                                        <option value="16">Room 215</option>
-                                                        <option value="17">Room 216</option>
-                                                        <option value="18">Room 216</option>
-                                                        <option value="19">Room 217</option> */}
-                                                    </select>
+                                                    <label className="label-control"><span className="text-orange"> You have permisstion to control devices in room 201 on 10-04-2021 8:00-10:00</span> </label>
                                                 </div>
 
                                                 <div className="form-group label-floating is-empty">
-                                                    <label className="control-label">Reason</label>
+                                                    <label className="control-label">Why do you want to change to another room?</label>
                                                     <textarea className="form-control"></textarea>
                                                     <span className="material-input"></span>
                                                 </div>
-
-
-                                                <div className="checkbox">
-                                                    <label>
-                                                        <input type="checkbox" name="optionsCheckboxes" /><span
-                                                            className="checkbox-material"></span> I agree to the
-                                            <a href="#something">rules</a>.
-                                        </label>
-                                                </div>
                                             </div>
                                             <div className="footer text-center pdBottom">
-                                                <a href="#pablo" className="btn btn-primary btn-round" onClick={this.getCurrentRoom}>Get Started</a>
+                                                <a href="#pablo" className="btn btn-primary btn-round">Submit</a>
                                             </div>
                                         </form>
                                     </div>
                                 </div>
                             </div>
-                            <br></br>
-                            <br></br>
+
                         </div>
                     </div>
                 </div>

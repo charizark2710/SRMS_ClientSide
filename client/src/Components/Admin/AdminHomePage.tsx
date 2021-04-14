@@ -12,6 +12,7 @@ import BookRoomDetail from './BookRoomDetails';
 import ReportErrorDetail from './ReportErrorDetail';
 import RequestList from './RequestList';
 import ImportData from './ImportData';
+import MonitorReport from './MonitorReport';
 import {
     BrowserRouter as Router,
     Redirect,
@@ -77,6 +78,7 @@ class AdminHomePage extends Component<Props, State> {
                     <Route path='/adminHomePage/bannedList' component={BannedList}></Route>
                     <Route path='/adminHomePage/requests' component={RequestList}></Route>
                     <Route path='/adminHomePage/importData' component={ImportData}></Route>
+                    <Route path='/adminHomePage/report' component={MonitorReport}></Route>
                 </div>
             </div >
         )

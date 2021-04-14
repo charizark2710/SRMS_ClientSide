@@ -8,7 +8,8 @@ interface Props {
 
 interface State {
     fileUploaded: boolean,
-    fileName:string
+    fileName:string,
+    fileSize:string,
 }
 
 //let bookingRoomData = new Map();
@@ -18,7 +19,8 @@ class ImportData extends Component<Props, State> {
         super(props)
         this.state = {
             fileUploaded: false,
-            fileName:""
+            fileName:"",
+            fileSize:""
         }
     }
 
@@ -62,18 +64,41 @@ class ImportData extends Component<Props, State> {
             };
         });
 
-        promise.then((d) => {
+        promise.then((data:any) => {
             //setstate
             this.setState({
                 fileUploaded: true,
-                fileName:filename
+                fileName:filename,
             })
-            alert(JSON.stringify(d))
-
+            this.importRoom(data);
         });
     };
 
 
+    importRoom = (rooms: any) => {
+        fetch('http://localhost:5000/room', {
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+            method: 'POST',
+            body: JSON.stringify(rooms)
+        }).then(res => {
+            if (res.status === 200) {
+                return res.json().then(result=>{
+                    this.setState({
+                        fileSize:result
+                    })
+                })
+            }
+            else {
+                return res.json().then(result => { throw Error(result.error) });
+            }
+        }).catch(e => {
+            console.log(e);
+        });
+
+    }
 
     render() {
         return (
@@ -92,8 +117,7 @@ class ImportData extends Component<Props, State> {
                                 <div className="card-content">
                                     <div className="formUpload">
                                         <input type="file" onChange={this.readExcel} />
-                                        <p>{this.state.fileUploaded ? "File imported: "+this.state.fileName : "Drag your files here or click in this area."}</p>
-
+                                        <p>{this.state.fileUploaded ? "File imported ("+this.state.fileSize+" rooms): "+this.state.fileName : "Drag your files here or click in this area."}</p>
                                     </div>
                                 </div>
                             </div>

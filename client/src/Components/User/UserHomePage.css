@@ -10,6 +10,13 @@
 .dialogWidth{
    width: 70%;
 }
+.changeroom-dialogWidth{
+    width: auto;
+}
+.text-orange{
+    color: rgb(37, 33, 66);
+    font-weight: bold;
+}
 .textSpan{
     font-weight: 800; 
     font-size: 25px;
@@ -43,11 +50,18 @@
     margin-right: -520%;
 }
 .pdBottom5{
-    padding-bottom: 5%;
+    padding-bottom: 1%;
 }
 .validate-loadEmptyRoom{
     font-size: smaller;
     color: #ff9800;
+}
+.reportError-dialogWidth{
+    width: 40%;
+}
+.select-room-height{
+    max-height: 250px;
+    overflow-y: scroll;
 }
 /* 
 .change-room-bg{
