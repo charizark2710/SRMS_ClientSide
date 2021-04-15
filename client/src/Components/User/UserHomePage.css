@@ -61,7 +61,7 @@
 }
 .select-room-height{
     max-height: 250px;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 /* 
 .change-room-bg{
@@ -119,6 +119,13 @@
 }
 .btn-delete-color{
     color: red;
+}
+.alert-bg{
+    background-color: #dff0d8 !important;
+    border-color: #d6e9c6;
+    border-radius: 0px;
+    color: #3c763d !important;
+    padding: 10px;
 }
 
 

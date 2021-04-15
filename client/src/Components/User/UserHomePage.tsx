@@ -38,9 +38,12 @@ interface State {
     cbbRoomToBook: string
     txtReasonToBook: string
     isDisableBookingBtn: boolean
+    isDisableLoadEmptyRoomBtn: boolean
     isAgreeRuleBooking: boolean
     isAllowToLoadEmptyRooms: boolean
     isShowValidateLoadEmptyRoom: boolean
+    availableRooms: any[],
+    selectedRoom: string,
     //tracking update or insert
     isUpdateData: boolean
     updatingIdBooking: string
@@ -57,6 +60,16 @@ interface State {
     cbbDeviceToReport: string[]
     cbbRoomToReport: string
     txtDescriptionToReport: string
+
+    //change room
+    currentRoomPermission: string,
+    currentDatePermission: string,
+    currentStartTimePermission: string,
+    currentEndTimePermission: string,
+    txtReasonChangeRoom: string,
+    isDisableChangeRoomBtn: boolean,
+    isDisableSubmitChangeRoomBtn: boolean,
+    currentCalendarId:string,
 
 
 }
@@ -81,9 +94,12 @@ class UserHomePage extends Component<Props, State> {
             cbbRoomToBook: '',
             txtReasonToBook: '',
             isDisableBookingBtn: true,
+            isDisableLoadEmptyRoomBtn: true,
             isAgreeRuleBooking: false,
             isShowValidateLoadEmptyRoom: false,
             isAllowToLoadEmptyRooms: true,
+            availableRooms: [],
+            selectedRoom: '',
 
             isUpdateData: false,
             updatingIdBooking: '',
@@ -98,7 +114,14 @@ class UserHomePage extends Component<Props, State> {
             cbbRoomToReport: '',
             txtDescriptionToReport: '',
 
-
+            currentRoomPermission: '',
+            currentDatePermission: '',
+            currentStartTimePermission: '',
+            currentEndTimePermission: '',
+            txtReasonChangeRoom: '',
+            isDisableChangeRoomBtn: true,
+            isDisableSubmitChangeRoomBtn: true,
+            currentCalendarId:''
         }
 
     }
@@ -532,31 +555,33 @@ class UserHomePage extends Component<Props, State> {
         await this.setState({
             [name]: value
         } as Pick<State, keyof State>);
-        console.log(this.state.cbbRoomToBook);
+        console.log(this.state);
 
         //validate button Booking
-        var { txtDateToBook, txtStartTime, txtEndTime, cbbRoomToBook, txtReasonToBook, isAgreeRuleBooking } = this.state;
-        if (txtDateToBook && txtStartTime && txtEndTime && cbbRoomToBook && txtReasonToBook && isAgreeRuleBooking) {
+        var { txtDateToBook, txtStartTime, txtEndTime, txtReasonToBook } = this.state;
+        if (txtDateToBook && txtStartTime && txtEndTime && txtReasonToBook) {
             this.setState({
-                isDisableBookingBtn: false
+                isDisableBookingBtn: false,
+                isDisableLoadEmptyRoomBtn: false,
             })
         } else {
             this.setState({
-                isDisableBookingBtn: true
+                isDisableBookingBtn: true,
+                isDisableLoadEmptyRoomBtn: true,
             })
         }
-        //validate combobox
-        if (txtDateToBook && txtStartTime && txtEndTime) {
-            this.setState({
-                isAllowToLoadEmptyRooms: false,
-                isShowValidateLoadEmptyRoom: true
-            })
-        } else {
-            this.setState({
-                isAllowToLoadEmptyRooms: true,
-                isShowValidateLoadEmptyRoom: false
-            })
-        }
+        // //validate combobox
+        // if (txtDateToBook && txtStartTime && txtEndTime) {
+        //     this.setState({
+        //         isAllowToLoadEmptyRooms: false,
+        //         isShowValidateLoadEmptyRoom: true
+        //     })
+        // } else {
+        //     this.setState({
+        //         isAllowToLoadEmptyRooms: true,
+        //         isShowValidateLoadEmptyRoom: false
+        //     })
+        // }
 
         //load empty room
 
@@ -566,6 +591,9 @@ class UserHomePage extends Component<Props, State> {
 
 
     loadAvailableRoom = () => {
+        this.setState({
+            selectedRoom: ''
+        })
         var { txtDateToBook, txtStartTime, txtEndTime } = this.state;
         fetch(`http://localhost:5000/bookRoom/getAvailableRooms?date=${txtDateToBook}&startTime=${txtStartTime}&endTime=${txtEndTime}`, {
             credentials: 'include',
@@ -575,7 +603,11 @@ class UserHomePage extends Component<Props, State> {
             method: 'GET',
         }).then(res => {
             if (res.ok) {
-                return res.json().then(result => { console.log(result) })
+                return res.json().then(result =>
+                    this.setState({
+                        availableRooms: result
+                    })
+                )
             }
             else {
                 return res.json().then(result => { throw Error(result.error) });
@@ -586,7 +618,23 @@ class UserHomePage extends Component<Props, State> {
 
     }
 
+    getSelectedRoom = async (room: string) => {
+        await this.setState({
+            selectedRoom: room
+        })
+        //validate button Booking
+        var { txtDateToBook, txtStartTime, txtEndTime, selectedRoom, txtReasonToBook } = this.state;
+        if (txtDateToBook && txtStartTime && txtEndTime && selectedRoom && txtReasonToBook) {
+            this.setState({
+                isDisableBookingBtn: false
+            })
+        } else {
+            this.setState({
+                isDisableBookingBtn: true
+            })
+        }
 
+    }
 
     createBookingRoom = (bookingRoom: any) => {
         fetch('http://localhost:5000/bookRoom/add', {
@@ -604,9 +652,11 @@ class UserHomePage extends Component<Props, State> {
                     txtDateToBook: '',
                     txtStartTime: '',
                     txtEndTime: '',
-                    cbbRoomToBook: '',
+                    selectedRoom: '',
                     txtReasonToBook: '',
                     isDisableBookingBtn: true,
+                    isDisableLoadEmptyRoomBtn: true,
+                    availableRooms: [],
                     isAgreeRuleBooking: false,
                     isShowValidateLoadEmptyRoom: false,
                     isAllowToLoadEmptyRooms: true,
@@ -637,7 +687,7 @@ class UserHomePage extends Component<Props, State> {
     onSubmitBookingForm = (event: any) => {
         event.preventDefault();
         var bookRoom = {
-            roomName: this.state.cbbRoomToBook,
+            roomName: this.state.selectedRoom,
             date: this.state.txtDateToBook,
             startTime: this.state.txtStartTime,
             endTime: this.state.txtEndTime,
@@ -944,7 +994,7 @@ class UserHomePage extends Component<Props, State> {
     }
 
     getCurrentRoom = () => {
-        fetch(`http://localhost:5000/changeRoom`, {
+        fetch(`http://localhost:5000/changeRoom/getCurrentRoom`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -952,7 +1002,19 @@ class UserHomePage extends Component<Props, State> {
             method: 'GET',
         }).then(res => {
             if (res.ok) {
-                return res.json().then(result => { console.log(result) })
+                return res.json().then(result => {
+                    console.log(result);
+
+                    if (result) {
+                        this.setState({
+                            currentRoomPermission: result.room,
+                            currentDatePermission: formatDate(result.date),
+                            currentStartTimePermission: formatTime(result.from),
+                            currentEndTimePermission: formatTime(result.to),
+                            currentCalendarId:result.id,
+                        })
+                    }
+                })
             }
             else {
                 return res.json().then(result => { throw Error(result.error) });
@@ -963,13 +1025,63 @@ class UserHomePage extends Component<Props, State> {
 
     }
 
+    onHandleChangeChangeRoomForm = async (event: any) => {
+        var target = event.target;
+        var name = target.name;
+        var value = target.value;
+        await this.setState({
+            [name]: value
+        } as Pick<State, keyof State>);
+    }
+
+    onSubmitChangeRoomForm = (event: any) => {
+        event.preventDefault();
+        var changeRoomReq = {
+            room: this.state.currentRoomPermission,
+            calendarId: this.state.currentCalendarId,
+            userId: this.state.currentUser.employeeId,
+            date: this.state.currentDatePermission,
+            reasonToChange: this.state.txtReasonChangeRoom,
+            
+        }
+
+        this.sendChangeRoomRequest(changeRoomReq);
+
+
+    }
+    sendChangeRoomRequest=(changeRoomReq:any)=>{
+        fetch(`http://localhost:5000/changeRoom/sendChangeRoomRequest`, {
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+            method: 'POST',
+            body:JSON.stringify(changeRoomReq)
+        }).then(res => {
+            if (res.ok) {
+                return res.json().then(result => {
+                    toast.success("Send request to change room successfully.")
+                    document.getElementById('closeChangeRoomModal')?.click();
+                    this.setState({
+                        txtReasonChangeRoom:''
+                    })
+                })
+            }
+            else {
+                return res.json().then(result => { throw Error(result.error) });
+            }
+        }).catch(e => {
+            console.log(e);
+        });
+
+    }
     notifyBookingRoomSuccess = () => toast.success("Sent booking room request successfully!");
     notifyReportErrorSuccess = () => toast.success("Sent report error request successfully!");
 
     render() {
         console.log(this.state.messageToUser);
 
-        var { messageToUser, lightOn, fanOn, conditionerOn, powerPlugOn, currentUser, isDisableBookingBtn, isAllowToLoadEmptyRooms, isShowValidateLoadEmptyRoom } = this.state;
+        var { currentDatePermission, currentEndTimePermission, currentRoomPermission, currentStartTimePermission, availableRooms, messageToUser, lightOn, fanOn, conditionerOn, powerPlugOn, currentUser, isDisableBookingBtn, isDisableLoadEmptyRoomBtn, isShowValidateLoadEmptyRoom } = this.state;
         return (
             <div>
                 <ToastContainer />
@@ -1208,7 +1320,6 @@ class UserHomePage extends Component<Props, State> {
                             <div className="modal-header">
                                 <button type="button" className="close" data-dismiss="modal" id="closeBookRoomModal">&times;</button>
                                 <h2 className="modal-title text-center">Book room</h2>
-                                {/* <button onClick={this.loadAvailableRoom}>AVAILABLE</button> */}
                             </div>
                             <div className="modal-body">
                                 <div className="row mgTop3">
@@ -1222,20 +1333,20 @@ class UserHomePage extends Component<Props, State> {
 
                                                 <div className="row">
                                                     <div className="col-md-4">
-                                                        <div className="form-group label-floating is-empty">
-                                                            <label className="control-label"></label>
+                                                        <div className="form-group is-empty">
+                                                            <label className="control-label">Date</label>
                                                             <input type="date" className="form-control" name="txtDateToBook" value={this.state.txtDateToBook} onChange={this.onHandleChangeBookingForm} />
                                                         </div>
                                                     </div>
                                                     <div className="col-md-4">
-                                                        <div className="form-group label-floating is-empty">
-                                                            <label className="control-label"></label>
+                                                        <div className="form-group is-empty">
+                                                            <label className="control-label">Start Time</label>
                                                             <input type="time" className="form-control" name="txtStartTime" value={this.state.txtStartTime} onChange={this.onHandleChangeBookingForm} />
                                                         </div>
                                                     </div>
                                                     <div className="col-md-4">
-                                                        <div className="form-group label-floating is-empty">
-                                                            <label className="control-label"></label>
+                                                        <div className="form-group is-empty">
+                                                            <label className="control-label">End Time</label>
                                                             <input type="time" className="form-control" name="txtEndTime" value={this.state.txtEndTime} onChange={this.onHandleChangeBookingForm} />
                                                         </div>
                                                     </div>
@@ -1288,59 +1399,19 @@ class UserHomePage extends Component<Props, State> {
                                                 </div> */}
 
                                                 <div className="form-group is-empty">
-                                                    <label className="control-label">Select Room</label>
+                                                    <button className="btn btn-warning" type="button" disabled={isDisableLoadEmptyRoomBtn} onClick={this.loadAvailableRoom}>
+                                                        <i className="material-icons">autorenew</i> Find available room
+                                                    </button>
                                                     <div className="select-room-height">
-                                                        
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        <button type="button" className="btn btn-default">button</button>
-                                                        
+                                                        {
+                                                            availableRooms && availableRooms.map((room, index) => {
+                                                                return (
+                                                                    <button key={index} type="button" className={this.state.selectedRoom === room ? "btn btn-warning" : "btn btn-success"} onClick={() => this.getSelectedRoom(room)}>{room}</button>
+                                                                )
+                                                            })
+                                                        }
                                                     </div>
-                                                    
+
                                                 </div>
 
                                             </div>
@@ -1464,7 +1535,7 @@ class UserHomePage extends Component<Props, State> {
                                                 </div>
                                             </div>
                                             <div className="footer text-center pdBottom5">
-                                                <button type="submit" className="btn btn-primary btn-round" disabled={isDisableBookingBtn}>Update now</button>
+                                                <button type="submit" className="btn btn-primary btn-round">Update now</button>
                                             </div>
                                         </form>
                                     </div>
@@ -1598,7 +1669,7 @@ class UserHomePage extends Component<Props, State> {
 
                                     <div className="col-md-5">
 
-                                        <form className="form" method="" action="" onSubmit={this.onSubmitReportErrorForm}>
+                                        <form className="form" onSubmit={this.onSubmitReportErrorForm}>
 
                                             <div className="card-content">
 
@@ -1668,7 +1739,7 @@ class UserHomePage extends Component<Props, State> {
 
                         <div className="modal-content">
                             <div className="modal-header">
-                                <button type="button" className="close" data-dismiss="modal">&times;</button>
+                                <button type="button" className="close" id="closeChangeRoomModal" data-dismiss="modal">&times;</button>
                                 <h2 className="modal-title text-center">Change room</h2>
                             </div>
                             <div className="modal-body">
@@ -1676,21 +1747,21 @@ class UserHomePage extends Component<Props, State> {
 
                                     <div className="col-md-12">
 
-                                        <form className="form" method="" action="">
+                                        <form className="form" onSubmit={this.onSubmitChangeRoomForm}>
 
                                             <div className="card-content">
                                                 <div className="form-group">
-                                                    <label className="label-control"><span className="text-orange"> You have permisstion to control devices in room 201 on 10-04-2021 8:00-10:00</span> </label>
+                                                    <div className="alert alert-success alert-bg">You have permisstion to control devices in room <b>{currentRoomPermission}</b> on <b>{currentDatePermission} {currentStartTimePermission}-{currentEndTimePermission}</b></div>
                                                 </div>
 
                                                 <div className="form-group label-floating is-empty">
                                                     <label className="control-label">Why do you want to change to another room?</label>
-                                                    <textarea className="form-control"></textarea>
+                                                    <textarea className="form-control" name="txtReasonChangeRoom" value={this.state.txtReasonChangeRoom} onChange={this.onHandleChangeChangeRoomForm}></textarea>
                                                     <span className="material-input"></span>
                                                 </div>
                                             </div>
                                             <div className="footer text-center pdBottom">
-                                                <a href="#pablo" className="btn btn-primary btn-round">Submit</a>
+                                                <button type="submit" className="btn btn-primary btn-round">Submit</button>
                                             </div>
                                         </form>
                                     </div>

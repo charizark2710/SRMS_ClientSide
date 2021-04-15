@@ -155,7 +155,7 @@ class BookRoomDetail extends Component<Props, State> {
                         <div className="col-md-12">
                             <div className="card">
 
-                                {/* <form method="get" action="/" className="form-horizontal"> */}
+                                <form className="form-horizontal">
                                 <div className="card-header card-header-text" data-background-color="orange">
                                     <h4 className="card-title">Book Room Request</h4>
                                 </div>
@@ -220,7 +220,7 @@ class BookRoomDetail extends Component<Props, State> {
                                     <button type="button" onClick={() => this.onHandleBooking('accepted')} className="btn btn-warning btn-fill">Accept</button>
                                     <button type="button" onClick={() => this.onHandleBooking('rejected')} className="btn btn-defalt btn-fill">Reject</button>
                                 </div>
-                                {/* </form> */}
+                                </form>
 
                             </div>
                         </div>

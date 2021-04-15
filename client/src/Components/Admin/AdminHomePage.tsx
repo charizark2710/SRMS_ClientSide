@@ -13,6 +13,7 @@ import ReportErrorDetail from './ReportErrorDetail';
 import RequestList from './RequestList';
 import ImportData from './ImportData';
 import MonitorReport from './MonitorReport';
+import ChangeRoomDetail from './ChangeRoomDetail';
 import {
     BrowserRouter as Router,
     Redirect,
@@ -74,6 +75,7 @@ class AdminHomePage extends Component<Props, State> {
                     <Route path='/adminHomePage' exact component={RoomAndDevices}></Route>
                     <Route path='/adminHomePage/bookRoomRequest/:id' match={this.props.match} component={BookRoomDetail}></Route>
                     <Route path='/adminHomePage/reportErrorRequest/:id' match={this.props.match} component={ReportErrorDetail}></Route>
+                    <Route path='/adminHomePage/changeRoomRequest/:id' match={this.props.match} component={ChangeRoomDetail}></Route>
                     <Route path='/adminHomePage/calendar' component={Calendar}></Route>
                     <Route path='/adminHomePage/bannedList' component={BannedList}></Route>
                     <Route path='/adminHomePage/requests' component={RequestList}></Route>
