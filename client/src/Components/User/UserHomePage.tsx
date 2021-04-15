@@ -69,7 +69,7 @@ interface State {
     txtReasonChangeRoom: string,
     isDisableChangeRoomBtn: boolean,
     isDisableSubmitChangeRoomBtn: boolean,
-    currentCalendarId:string,
+    currentCalendarId: string,
 
 
 }
@@ -121,7 +121,7 @@ class UserHomePage extends Component<Props, State> {
             txtReasonChangeRoom: '',
             isDisableChangeRoomBtn: true,
             isDisableSubmitChangeRoomBtn: true,
-            currentCalendarId:''
+            currentCalendarId: ''
         }
 
     }
@@ -1011,7 +1011,7 @@ class UserHomePage extends Component<Props, State> {
                             currentDatePermission: formatDate(result.date),
                             currentStartTimePermission: formatTime(result.from),
                             currentEndTimePermission: formatTime(result.to),
-                            currentCalendarId:result.id,
+                            currentCalendarId: result.id,
                         })
                     }
                 })
@@ -1042,28 +1042,28 @@ class UserHomePage extends Component<Props, State> {
             userId: this.state.currentUser.employeeId,
             date: this.state.currentDatePermission,
             reasonToChange: this.state.txtReasonChangeRoom,
-            
+
         }
 
         this.sendChangeRoomRequest(changeRoomReq);
 
 
     }
-    sendChangeRoomRequest=(changeRoomReq:any)=>{
+    sendChangeRoomRequest = (changeRoomReq: any) => {
         fetch(`http://localhost:5000/changeRoom/sendChangeRoomRequest`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
             },
             method: 'POST',
-            body:JSON.stringify(changeRoomReq)
+            body: JSON.stringify(changeRoomReq)
         }).then(res => {
             if (res.ok) {
                 return res.json().then(result => {
                     toast.success("Send request to change room successfully.")
                     document.getElementById('closeChangeRoomModal')?.click();
                     this.setState({
-                        txtReasonChangeRoom:''
+                        txtReasonChangeRoom: ''
                     })
                 })
             }
@@ -1817,28 +1817,27 @@ class UserHomePage extends Component<Props, State> {
                                                             }
                                                         },
                                                         {
-                                                            title: "Actions", render: (rowData: any) => (
-                                                                // <span className="btn-action-container">
-                                                                //     <button title="edit" type="button" className="btn btn-warning btn-simple" data-toggle="modal" data-dismiss="modal" data-target="#updateBookRoomModal" onClick={(e) => this.onGetValueToUpdateForm(data.id)}><i className="material-icons">edit</i><div className="ripple-container"></div></button>
-                                                                //     <button title="delete" type="button" className="btn btn-danger btn-simple" ><i className="material-icons">delete</i><div className="ripple-container"></div></button>
-                                                                // </span>
+                                                            title: "Actions", render: (rowData: any) => {
+                                                                return rowData.requestType == "bookRoomRequest" || rowData.requestType == "changeRoomRequest" 
+                                                                ? 
                                                                 <div className="btn-action-container-flex">
-
-                                                                    <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" title="Edit" data-toggle="modal" data-dismiss="modal" data-target={rowData.requestType === "reportErrorRequest" ? "#updateReportErrorModal" : "#updateBookRoomModal"} onClick={(e) => this.onGetValueToUpdateForm(rowData.id, rowData.requestType)}>
-                                                                        <span className="MuiIconButton-label">
-                                                                            <span className="material-icons MuiIcon-root btn-edit-color" aria-hidden="true">edit</span>
-                                                                        </span>
-                                                                        <span className="MuiTouchRipple-root"></span>
-                                                                    </button>
                                                                     <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" onClick={(e) => this.onDeleteRequest(rowData.requestType, rowData.id, rowData.title, rowData.actionNotiId)}>
                                                                         <span className="MuiIconButton-label">
                                                                             <span className="material-icons MuiIcon-root btn-delete-color" aria-hidden="true">delete</span>
                                                                         </span>
                                                                         <span className="MuiTouchRipple-root"></span>
                                                                     </button>
+                                                                </div> 
+                                                                : 
+                                                                <div className="btn-action-container-flex">
+                                                                    <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" disabled>
+                                                                        <span className="MuiIconButton-label">
+                                                                            <span className="material-icons MuiIcon-root btn-delete-color-disable" aria-hidden="true">delete</span>
+                                                                        </span>
+                                                                        <span className="MuiTouchRipple-root"></span>
+                                                                    </button>
                                                                 </div>
-
-                                                            )
+                                                            }
                                                         },
 
                                                     ]

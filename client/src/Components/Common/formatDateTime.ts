@@ -6,7 +6,7 @@ export const formatDate = (date: string) => {
         let formatedDate = year + "-" + month + "-" + day;
         return formatedDate;
 
-    }else {
+    } else {
         return ""
     }
 }
@@ -18,7 +18,7 @@ export const formatTime = (time: string) => {
         let sencond = time.substring(4, 6);
         let formatedTime = hour + ":" + minus + ":" + sencond;
         return formatedTime;
-    }else{
+    } else {
         return ""
     }
 }
@@ -38,7 +38,8 @@ export const formatDateTime = (dateTime: string) => {
             return formatedDate + "T" + formatedTime
         }
         return formatedDate;
-    }else{
+    } else {
         return ""
     }
 }
+

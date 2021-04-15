@@ -74,3 +74,9 @@
     max-height: 250px;
     overflow-y: auto;
 }
+.btn-search-report{
+    margin-top: 33px;
+}
+.report-center{
+    margin-left: 25%;
+}

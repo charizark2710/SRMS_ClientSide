@@ -120,6 +120,9 @@
 .btn-delete-color{
     color: red;
 }
+.btn-delete-color-disable{
+    color:gray
+}
 .alert-bg{
     background-color: #dff0d8 !important;
     border-color: #d6e9c6;

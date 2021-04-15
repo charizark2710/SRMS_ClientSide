@@ -142,6 +142,7 @@ class AdminHomePage extends Component<Props, State> {
                         <CustomNavLink label="Rooms & Devices" to={match.url} activeOnlyWhenExact={true} icon="dashboard"></CustomNavLink>
                         <CustomNavLink label="Calendar" to={match.url + '/calendar'} activeOnlyWhenExact={false} icon="date_range"></CustomNavLink>
                         <CustomNavLink label="Banned List" to={match.url + '/bannedList'} activeOnlyWhenExact={false} icon="subtitles_off"></CustomNavLink>
+                        <CustomNavLink label="Mornitor Report" to={match.url + '/report'} activeOnlyWhenExact={false} icon="stacked_line_chart"></CustomNavLink>
                         <CustomNavLink label="Import Data" to={match.url + '/importData'} activeOnlyWhenExact={false} icon="publish"></CustomNavLink>
                     </ul>
                 </div>

@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 interface Props {
     match: any,
-    // reasonToChangeRoom:any
+    history:any
 }
 
 interface State {
@@ -21,7 +21,6 @@ interface State {
     reason: string,
     currentRoon: string,
     newRoom: string,
-    isDisableLoadAvailableBtn: boolean,
     isDisableAcceptBtn: boolean,
     availableRooms: any[],
     calendarId: string,
@@ -41,7 +40,6 @@ class ChangeRoomDetail extends Component<Props, State> {
             reason: '',
             currentRoon: '',
             newRoom: '',
-            isDisableLoadAvailableBtn: true,
             isDisableAcceptBtn: true,
             availableRooms: [],
             calendarId: ''
@@ -181,11 +179,58 @@ class ChangeRoomDetail extends Component<Props, State> {
         });
 
     }
-    onSelectNewRoom = (newRoom: string) => {
+    onSelectNewRoom = async(newRoom: string) => {
+        await this.setState({
+            newRoom: newRoom
+        })
+        //validate button Booking
+        var {  title, fromUser, date, startTime, endTime, reason, currentRoon, newRoom} = this.state;
+        if (title && fromUser && date && startTime && endTime && reason && currentRoon && newRoom) {
+            this.setState({
+                isDisableAcceptBtn: false
+            })
+        } else {
+            this.setState({
+                isDisableAcceptBtn: true
+            })
+        }
 
     }
+
+    onAcceptChangeRoom=()=>{
+        let changeRoom={
+            userId:this.state.fromUser,
+            from:this.state.startTime,
+            to:this.state.endTime,
+            date:this.state.date,
+            newRoom:this.state.newRoom,
+            room:this.state.currentRoon,
+            calendarId:this.state.calendarId,
+        }
+        fetch('http://localhost:5000/changeRoom/acceptChangeRoomRequest', {
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+            method: 'PUT',
+            body: JSON.stringify(changeRoom)
+        }).then(res => {
+            if (res.status === 200) {
+               
+                //thông báo đặt phòng thành công
+                toast.success('Accept change room request successfully.');
+                this.props.history.back();
+
+            }
+            else {
+                return res.json().then(result => { throw Error(result.error) });
+            }
+        }).catch(e => {
+            console.log(e);
+        });
+    }
     render() {
-        var { title, fromUser, date, startTime, endTime, reason, currentRoon, newRoom, isDisableLoadAvailableBtn, isDisableAcceptBtn, availableRooms } = this.state;
+        var { title, fromUser, date, startTime, endTime, reason, currentRoon, newRoom, isDisableAcceptBtn, availableRooms } = this.state;
         return (
             <div className="content">
                 <ToastContainer />
@@ -247,7 +292,7 @@ class ChangeRoomDetail extends Component<Props, State> {
                                             <label className="col-sm-2 label-on-left">Find available room</label>
                                             <div className="col-sm-10">
                                                 <div className="form-group label-floating is-empty">
-                                                    <button className="btn btn-warning" type="button" disabled={isDisableLoadAvailableBtn} onClick={this.loadAvailableRoom}>
+                                                    <button className="btn btn-warning" type="button" onClick={this.loadAvailableRoom}>
                                                         <i className="material-icons">autorenew</i>
                                                     </button>
                                                 </div>
@@ -271,7 +316,7 @@ class ChangeRoomDetail extends Component<Props, State> {
 
                                     </div>
                                     <div className="card-footer text-center">
-                                        <button type="submit" className="btn btn-warning btn-fill" disabled={isDisableAcceptBtn}>Accept</button>
+                                        <button type="button" className="btn btn-warning btn-fill" disabled={isDisableAcceptBtn} onClick={this.onAcceptChangeRoom}>Accept</button>
                                     </div>
                                 </div>
                             </div>
