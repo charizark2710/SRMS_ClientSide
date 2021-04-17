@@ -188,8 +188,7 @@ class ReportErrorDetail extends Component<Props, State> {
 
                                         </div>
                                         <div className="card-footer text-center">
-                                            <button type="button" className="btn btn-warning btn-fill" onClick={() => this.onHandleReportError('accepted')}>Accept</button>
-                                            <button type="button" className="btn btn-defalt btn-fill" onClick={() => this.onHandleReportError('rejected')}>Reject</button>
+                                            <button type="button" className="btn btn-warning btn-fill" onClick={() => this.onHandleReportError('accepted')}>Confirm</button>
                                         </div>
 
                                     </div>

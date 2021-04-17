@@ -10,6 +10,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { formatDateTime, formatTime, formatDate } from "../Common/formatDateTime";
 import { logout } from "../Common/logOut"
+import FullCalendarIO from '../Common/FullCalendarIO';
 
 
 
@@ -129,7 +130,7 @@ class UserHomePage extends Component<Props, State> {
     notification: message[] = [];
 
     createScript() {
-        const scripts = ["js/jquery.tagsinput.js", "js/material-dashboard.js?v=1.2.1", "customJS/loadBackground.js"]//,"customJS/loadTable.js"
+        const scripts = ["js/jquery.tagsinput.js", "/js/material-dashboard.js?v=1.2.1", "customJS/loadBackground.js"]//,"customJS/loadTable.js"
 
         for (let index = 0; index < scripts.length; ++index) {
             const script = document.createElement('script');
@@ -360,8 +361,11 @@ class UserHomePage extends Component<Props, State> {
 
     //control devices
     onControlDevices = () => {
+        if(this.state.currentRoomPermission===""){
+            this.getCurrentRoom();//load chỗ ni chuối quá
+        }
         var roomName = {
-            roomName: '201'
+            roomName: this.state.currentRoomPermission
         }
         fetch('http://localhost:5000/room/sendDevicesStatus', {
             credentials: 'include',
@@ -409,7 +413,7 @@ class UserHomePage extends Component<Props, State> {
                     lightOn: !this.state.lightOn
                 })
                 var lightUpdating = {
-                    roomName: '201',
+                    roomName: this.state.currentRoomPermission,
                     device: {
                         light: (this.state.lightOn) ? 0 : 1,
                     }
@@ -421,7 +425,7 @@ class UserHomePage extends Component<Props, State> {
                     fanOn: !this.state.fanOn
                 })
                 var fanUpdating = {
-                    roomName: '201',
+                    roomName: this.state.currentRoomPermission,
                     device: {
                         fan: (this.state.fanOn) ? 0 : 1,
                     }
@@ -445,7 +449,7 @@ class UserHomePage extends Component<Props, State> {
                     powerPlugOn: !this.state.powerPlugOn
                 })
                 var powerPlugUpdating = {
-                    roomName: '201',
+                    roomName: this.state.currentRoomPermission,
                     device: {
                         powerPlug: (this.state.powerPlugOn) ? 0 : 1,
                     }
@@ -1105,7 +1109,7 @@ class UserHomePage extends Component<Props, State> {
                                     </a>
                                 </li>
                                 <li>
-                                    <a>
+                                    <a href="#" data-toggle="modal" data-target="#calendarModal">
                                         <i className="material-icons">event_available</i> Calendar
                                     </a>
                                 </li>
@@ -1169,11 +1173,8 @@ class UserHomePage extends Component<Props, State> {
                         <div className="content">
                             <div className="container">
                                 <div className="row">
-                                    <div className="col-md-6 col-md-offset-3 text-center">
-                                        <h2 className="title">Pick the best plan for you</h2>
-                                        <h5 className="description">You have Free Unlimited Updates and Premium Support on each
-                                        package.
-                            </h5>
+                                    <div className="col-md-12 app-name-position text-center">
+                                        <h2 className="title">Do what you need - need what you do</h2>
                                     </div>
                                 </div>
                                 <div className="row">
@@ -1259,7 +1260,7 @@ class UserHomePage extends Component<Props, State> {
                         <div className="modal-content">
                             <div className="modal-header">
                                 <button type="button" className="close" data-dismiss="modal">&times;</button>
-                                <h4 className="modal-title">Room 218 - Control devices</h4>
+                                <h4 className="modal-title">Room {currentRoomPermission} - Control devices</h4>
                             </div>
                             <div className="modal-body">
                                 <div className="nav-center">
@@ -1818,25 +1819,25 @@ class UserHomePage extends Component<Props, State> {
                                                         },
                                                         {
                                                             title: "Actions", render: (rowData: any) => {
-                                                                return rowData.requestType == "bookRoomRequest" || rowData.requestType == "changeRoomRequest" 
-                                                                ? 
-                                                                <div className="btn-action-container-flex">
-                                                                    <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" onClick={(e) => this.onDeleteRequest(rowData.requestType, rowData.id, rowData.title, rowData.actionNotiId)}>
-                                                                        <span className="MuiIconButton-label">
-                                                                            <span className="material-icons MuiIcon-root btn-delete-color" aria-hidden="true">delete</span>
-                                                                        </span>
-                                                                        <span className="MuiTouchRipple-root"></span>
-                                                                    </button>
-                                                                </div> 
-                                                                : 
-                                                                <div className="btn-action-container-flex">
-                                                                    <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" disabled>
-                                                                        <span className="MuiIconButton-label">
-                                                                            <span className="material-icons MuiIcon-root btn-delete-color-disable" aria-hidden="true">delete</span>
-                                                                        </span>
-                                                                        <span className="MuiTouchRipple-root"></span>
-                                                                    </button>
-                                                                </div>
+                                                                return rowData.requestType == "bookRoomRequest" || rowData.requestType == "changeRoomRequest"
+                                                                    ?
+                                                                    <div className="btn-action-container-flex">
+                                                                        <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" onClick={(e) => this.onDeleteRequest(rowData.requestType, rowData.id, rowData.title, rowData.actionNotiId)}>
+                                                                            <span className="MuiIconButton-label">
+                                                                                <span className="material-icons MuiIcon-root btn-delete-color" aria-hidden="true">delete</span>
+                                                                            </span>
+                                                                            <span className="MuiTouchRipple-root"></span>
+                                                                        </button>
+                                                                    </div>
+                                                                    :
+                                                                    <div className="btn-action-container-flex">
+                                                                        <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" disabled>
+                                                                            <span className="MuiIconButton-label">
+                                                                                <span className="material-icons MuiIcon-root btn-delete-color-disable" aria-hidden="true">delete</span>
+                                                                            </span>
+                                                                            <span className="MuiTouchRipple-root"></span>
+                                                                        </button>
+                                                                    </div>
                                                             }
                                                         },
 
@@ -1854,6 +1855,34 @@ class UserHomePage extends Component<Props, State> {
                         </div>
                     </div>
                 </div>
+
+                {/* <!-- Calendar modal --> */}
+                <div id="calendarModal" className="modal fade blur" role="dialog">
+                    <div className="modal-dialog calendar-dialog-width">
+
+                        {/* <!-- Modal content--> */}
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <button type="button" className="close" data-dismiss="modal">&times;</button>
+                            </div>
+                            <div className="modal-body">
+                                <div className="container-fluid">
+                                    <div className="row">
+                                        <div className="col-md-10 col-md-offset-1">
+                                            <div className="card card-calendar">
+                                                <div className="card-content ps-child">
+                                                    <FullCalendarIO />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
         )

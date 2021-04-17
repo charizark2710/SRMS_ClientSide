@@ -130,5 +130,7 @@
     color: #3c763d !important;
     padding: 10px;
 }
-
+.calendar-dialog-width{
+    width: 70%;
+}
 

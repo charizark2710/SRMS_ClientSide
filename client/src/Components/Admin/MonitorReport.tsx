@@ -57,13 +57,13 @@ class BannedList extends Component<Props, State> {
         await this.setState({
             txtToDate: d.toISOString().slice(0, 10)
         })
-        d.setDate(d.getDate()-7);
+        d.setDate(d.getDate() - 7);
         await this.setState({
-            txtFromDate:d.toISOString().slice(0, 10)
+            txtFromDate: d.toISOString().slice(0, 10)
         })
-        
+
         this.getReport();
-        
+
     }
 
     onHandleChangeDate = async (event: any) => {
@@ -127,7 +127,7 @@ class BannedList extends Component<Props, State> {
                         <div className="col-md-12">
                             <div className="card">
                                 <div className="card-content">
-                                    <h2>Energy consumption time (milisecond)</h2>
+                                    <h2>Energy consumption time (hour)</h2>
 
                                     <div className="row report-center">
 
@@ -174,7 +174,55 @@ class BannedList extends Component<Props, State> {
                                             <Line type="monotone" dataKey="powerPlug" stroke="#FF00FB" />
                                         </LineChart>
                                         <span style={{ float: "left" }}>
-                                            <p>Viết số liệu tính tiền ở đây</p>
+                                            <br></br>
+                                            <div className="form-group">
+                                                <div className="alert alert-success alert-bg text-center"><b>Time usage and cost estimation</b></div>
+                                            </div>
+
+                                            <table className="table table-striped table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Device</th>
+                                                        <th>Time Usage (hour)</th>
+                                                        <th>Wattage</th>
+                                                        <th>Cost(VND)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>Light</td>
+                                                        <td>9000</td>
+                                                        <td>36W</td>
+                                                        <td>821.664</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Fan</td>
+                                                        <td>8020</td>
+                                                        <td>55W</td>
+                                                        <td>1.118.629</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Conditioner</td>
+                                                        <td>6300</td>
+                                                        <td>800W</td>
+                                                        <td>12.781.400</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Power Plug</td>
+                                                        <td>11923</td>
+                                                        <td>36w</td>
+                                                        <td>821.664</td>
+                                                    </tr>
+
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr>
+                                                        <td className="total-colspan-2" colSpan={3} style={{textAlign:'right'}}><b>Total Cost:</b></td>
+                                                        <td className="total-colspan-2"><b>23.123.121</b></td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+
                                         </span>
 
 

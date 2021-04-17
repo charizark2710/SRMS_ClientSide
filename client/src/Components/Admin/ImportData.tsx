@@ -110,14 +110,14 @@ class ImportData extends Component<Props, State> {
                         <div className="col-md-6">
                             <div className="card import-room-height-500">
                                 <div className="card-header">
-                                    <h4 className="card-title">Import Data -
-                            <small>FPTU-rooms</small>
+                                    <h4 className="card-title text-warning">Import Room Data -
+                            <small>FPTU-DA NANG CAMPUS</small>
                                     </h4>
                                 </div>
                                 <div className="card-content">
                                     <div className="formUpload">
                                         <input type="file" onChange={this.readExcel} />
-                                        <p>{this.state.fileUploaded ? "File imported ("+this.state.fileSize+" rooms): "+this.state.fileName : "Drag your files here or click in this area."}</p>
+                                        <p>{this.state.fileUploaded ? "File imported ("+this.state.fileSize+" rooms): "+this.state.fileName : "Drag ROOM excel file here or click in this area."}</p>
                                     </div>
                                 </div>
                             </div>
@@ -125,12 +125,15 @@ class ImportData extends Component<Props, State> {
                         <div className="col-md-6">
                             <div className="card import-room-height-500">
                                 <div className="card-header">
-                                    <h4 className="card-title">Import Data -
-                            <small>Room</small>
+                                <h4 className="card-title text-warning">Import Calendar Data -
+                            <small>FPTU-DA NANG CAMPUS</small>
                                     </h4>
                                 </div>
                                 <div className="card-content">
-
+                                    <div className="formUpload">
+                                        <input type="file" />
+                                        <p>Drag CALENDAR excel file here or click in this area.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

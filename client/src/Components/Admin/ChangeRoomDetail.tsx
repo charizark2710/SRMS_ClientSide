@@ -317,6 +317,7 @@ class ChangeRoomDetail extends Component<Props, State> {
                                     </div>
                                     <div className="card-footer text-center">
                                         <button type="button" className="btn btn-warning btn-fill" disabled={isDisableAcceptBtn} onClick={this.onAcceptChangeRoom}>Accept</button>
+                                        <button type="button" className="btn btn-default btn-fill" disabled={isDisableAcceptBtn} >Deny</button>
                                     </div>
                                 </div>
                             </div>

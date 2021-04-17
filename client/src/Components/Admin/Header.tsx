@@ -172,12 +172,6 @@ class Header extends Component<Props, State> {
           </div>
           <div className="collapse navbar-collapse">
             <ul className="nav navbar-nav navbar-right">
-              <li>
-                <a href="#pablo" className="dropdown-toggle" data-toggle="dropdown">
-                  <i className="material-icons">dashboard</i>
-                  <p className="hidden-lg hidden-md">Dashboard</p>
-                </a>
-              </li>
               <li className="dropdown">
                 <a href="#" className="dropdown-toggle" data-toggle="dropdown">
                   <i className="material-icons">notifications</i>
@@ -227,17 +221,6 @@ class Header extends Component<Props, State> {
               <li className="separator hidden-lg hidden-md"></li>
             </ul>
 
-
-            <form className="navbar-form navbar-right" role="search">
-              <div className="form-group form-search is-empty">
-                <input type="text" className="form-control" placeholder=" Search " />
-                <span className="material-input"></span>
-              </div>
-              <button type="submit" className="btn btn-white btn-round btn-just-icon">
-                <i className="material-icons">search</i>
-                <div className="ripple-container"></div>
-              </button>
-            </form>
           </div>
         </div>
       </nav>

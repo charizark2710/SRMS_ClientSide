@@ -80,3 +80,6 @@
 .report-center{
     margin-left: 25%;
 }
+.total-colspan-2{
+    column-span: all;
+}

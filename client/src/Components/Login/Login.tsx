@@ -103,9 +103,8 @@ class Login extends Component<Props, State> {
                             <div className="content">
                                 <div className="container">
                                     <div className="row">
-                                        <div className="col-md-6 col-md-offset-3 text-center">
-                                            <h2 className="title">Pick the best plan for you</h2>
-                                            <h5 className="description">You have Free Unlimited Updates and Premium Support on each package.</h5>
+                                        <div className="col-md-12 app-name-position text-center">
+                                            <h2 className="title">Smart Room Managerment System</h2>
                                         </div>
                                     </div>
                                     <div className="row">

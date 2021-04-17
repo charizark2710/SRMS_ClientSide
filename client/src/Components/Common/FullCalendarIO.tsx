@@ -5,10 +5,9 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from "@fullcalendar/interaction"; // needed
 import listPlugin from '@fullcalendar/list'; //For List View
 import firebase from 'firebase'
-import { db, client } from './../../FireBase/config'
+import { db, client } from '../../FireBase/config'
 import message from '../../model/Message';
-import { formatDate, formatTime } from "../Common/formatDateTime";
-import FullCalendarIO from '../Common/FullCalendarIO';
+import { formatDate, formatTime } from "./formatDateTime";
 
 interface Props {
 
@@ -18,7 +17,7 @@ interface State {
     calendars: any
 }
 
-class Calendar extends Component<Props, State> {
+class FullCalendarIO extends Component<Props, State> {
     constructor(props: Props) {
         super(props)
         this.state = {
@@ -112,25 +111,21 @@ class Calendar extends Component<Props, State> {
         console.log(this.state.calendars);
 
         return (
-            <div className="content">
-                <div className="container-fluid">
-                    <div className="header text-center">
-                       <h4><a>Teaching</a> &  <a>Booking</a> calendar</h4>
-                    </div>
-                    <div className="row">
-                        <div className="col-md-10 col-md-offset-1">
-                            <div className="card card-calendar">
-                                <div className="card-content ps-child">
-                                    <FullCalendarIO/>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
 
-                </div>
-            </div>
+            <FullCalendar
+                plugins={[dayGridPlugin, interactionPlugin, listPlugin]}
+                initialView="dayGridMonth"
+                headerToolbar={{
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,dayGridWeek,dayGridDay,listWeek'
+                }}
+                dayMaxEvents
+                events={this.state.calendars}
+            />
+
         )
 
     }
 }
-export default Calendar;
+export default FullCalendarIO;
