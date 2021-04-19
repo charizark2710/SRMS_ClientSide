@@ -111,7 +111,7 @@ class BannedList extends Component<Props, State> {
                 )
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);

@@ -60,7 +60,36 @@ class AdminHomePage extends Component<Props, State> {
         }
     }
     componentDidMount(){
-        this.createScript();
+        fetch('http://localhost:5000', {
+            credentials: 'include',
+        }).then(res => {
+            if (res.ok) {
+                // res.json().then(result => {
+                //     if(result.role==='student'||result.role==='lecture'){
+                //         return this.props.history.push('/userHomePage');
+                //     }
+                // });
+                client.auth().onAuthStateChanged(async user => {
+                    if (user) {
+                        const currentUser = {
+                            name: user.displayName,
+                            employeeId: user.email?.split('@')[0] || ' '
+                        }
+
+                        this.setState({
+                            currentUser: currentUser
+                        })
+                        // this.getHistoryRequest(currentUser.employeeId)
+                        this.createScript();
+                    }
+                });
+            } else if (res.status === 401) {
+                return this.props.history.push('/');
+            }
+        }).catch(e => {
+            console.log(e);
+
+        })
     }
 
     render() {
@@ -68,10 +97,7 @@ class AdminHomePage extends Component<Props, State> {
             <div className="wrapper">
                 <Sidebar match={this.props.match}/>
                 <div className="main-panel">
-                    
                     <Header match={this.props.match} history={this.props.history}/>
-                    {/* <Calendar/> */}
-                    {/* <BookRoom/> */}
                     <Route path='/adminHomePage' exact component={RoomAndDevices}></Route>
                     <Route path='/adminHomePage/bookRoomRequest/:id' match={this.props.match} component={BookRoomDetail}></Route>
                     <Route path='/adminHomePage/reportErrorRequest/:id' match={this.props.match} component={ReportErrorDetail}></Route>

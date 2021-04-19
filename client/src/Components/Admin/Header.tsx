@@ -36,8 +36,10 @@ class Header extends Component<Props, State> {
           }
         });
       }
+    }).then(()=>{
+      document.getElementById
     }).catch(e => {
-      throw new Error(e);
+      console.log(e);
     })
   }
 

@@ -12,6 +12,7 @@ export const logout = (history:any) => {
                 localStorage.clear();
                 firebase.auth().signOut();
                 history.push('/');
+                location.reload();
                 // this.props.history.go(1);
             } else {
                 res.json().then(result => {

@@ -93,10 +93,13 @@ class BookRoomDetail extends Component<Props, State> {
                 })
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => {
+                    console.log(result);
+                });
             }
         }).catch(e => {
-            throw Error(e)
+            console.log(e);
+
         });
     }
 
@@ -125,7 +128,7 @@ class BookRoomDetail extends Component<Props, State> {
                 toast.success(status + " successfully!");
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result)})
             }
         }).catch(e => {
             console.log(e);
@@ -198,7 +201,7 @@ class BookRoomDetail extends Component<Props, State> {
                                             <div className="col-sm-10">
                                                 <div className="form-group label-floating is-empty">
                                                     <label className="control-label"></label>
-                                                    <input type="text" className="form-control" value={date + ' ' + startTime+"-"+endTime} readOnly />
+                                                    <input type="text" className="form-control" value={date + ' ' + startTime + "-" + endTime} readOnly />
                                                     <span className="material-input"></span></div>
                                             </div>
                                         </div>

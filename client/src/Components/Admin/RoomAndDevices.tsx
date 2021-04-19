@@ -99,14 +99,14 @@ class RoomAndDevices extends Component<Props, State> {
 
                 } else {
                     res.json().then(result => {
-                        throw Error(result);
-                    });
+                        console.log(result);
+                                            });
                 }
             } catch (error) {
-                throw Error(error);
+                console.log(error);
             }
         }).catch(e => {
-            throw Error(e);
+            console.log(e);
         });
     }
 
@@ -150,7 +150,7 @@ class RoomAndDevices extends Component<Props, State> {
                 })
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);
@@ -252,7 +252,7 @@ class RoomAndDevices extends Component<Props, State> {
                 return res.json().then(result => { console.log(result) })
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);
@@ -319,7 +319,7 @@ class RoomAndDevices extends Component<Props, State> {
                 return res.json().then(result => { console.log(result) })
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);
@@ -345,14 +345,14 @@ class RoomAndDevices extends Component<Props, State> {
 
                 } else {
                     res.json().then(result => {
-                        throw Error(result);
+                        console.log(result);
                     });
                 }
             } catch (error) {
-                throw Error(error);
+                console.log(error);
             }
         }).catch(e => {
-            throw Error(e);
+            console.log(e);
         });
     }
     render() {

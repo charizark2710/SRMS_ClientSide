@@ -1,13 +1,22 @@
 import React, { Component } from 'react';
 import './Login.css';
 import firebase from 'firebase'
-import { client} from './../../FireBase/config';
-import { Redirect } from 'react-router-dom';
+import { client } from './../../FireBase/config';
+import { ToastContainer, toast } from 'react-toastify';
+import UserHomePage from '../User/UserHomePage'
+import AdminHomePage from '../Admin/AdminHomePage'
 
+import {
+    BrowserRouter as Router,
+    Switch,
+    Route,
+    Link,
+    Redirect
+} from "react-router-dom";
 
 interface Props {
     // propsFromLoginApp:any,
-    history:any
+    history: any
 }
 
 interface State {
@@ -16,23 +25,41 @@ interface State {
     name: string,
     isLoaded: boolean,
     employeeId: string,
+    role?: string
 }
 
 
 class Login extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
-        this.state = { idToken: '', isLoaded: false, uid: '', name: '', employeeId: '' }
+        this.state = { idToken: '', isLoaded: false, uid: '', name: '', employeeId: '', role: undefined }
     }
 
-    componentDidUpdate(){
+    componentDidUpdate() {
         // common.checkFullPageBackgroundImage();
     }
 
     componentDidMount() {
-        const script=document.createElement("script");
-        script.src='customJS/loadBackground.js';
-        script.async=true;
+
+        fetch('http://localhost:5000', {
+            credentials: 'include',
+        }).then(async res => {
+            if (res.ok) {
+                const result = await res.json();
+                const role = result.role;
+                if (role === 'admin') {
+                    this.props.history.push('/adminHomePage')
+                } else {
+                    this.props.history.push('/userHomePage')
+                }
+            }
+        }).catch(e => {
+            throw new Error(e);
+        })
+
+        const script = document.createElement("script");
+        script.src = 'customJS/loadBackground.js';
+        script.async = true;
         document.body.appendChild(script);
         if (client) {
             this.setState({ isLoaded: true })
@@ -55,26 +82,29 @@ class Login extends Component<Props, State> {
 
                 method: 'POST',
                 body: JSON.stringify(this.state),
-            }).then( async res => {
+            }).then(async res => {
                 if (res.ok) {
                     await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
                     const role = await res.json();
-                    if(role.role === 'admin'){
-                         this.props.history.push("/adminHomePage");
-                    }else{
+                    if (role.role === 'admin') {
+                        this.props.history.push("/adminHomePage");
+                    } else {
                         this.props.history.push("/userHomePage");
                     }
-                    return
+                } else if (res.status === 403) {
+                    toast.warning("You are being banned! Please contact admin.")
+                } else if (res.status === 400) {
+                    toast.warning("Please use FPTU google account");
                 }
                 else {
                     firebase.auth().currentUser?.delete();
                     firebase.auth().signOut();
-                    return res.json().then(result => { throw Error(result.error) });
+                    toast.error("Failed to login 1");
                 }
             }).catch(e => {
                 firebase.auth().currentUser?.delete();
                 firebase.auth().signOut();
-                console.log(e);
+                toast.error("Failed to login 2");
             });
             event.preventDefault();
         })
@@ -84,6 +114,7 @@ class Login extends Component<Props, State> {
         if (this.state.isLoaded)
             return (
                 <div>
+                    <ToastContainer />
                     <nav className="navbar navbar-primary navbar-transparent navbar-absolute">
                         <div className="container">
                             <div className="navbar-header">

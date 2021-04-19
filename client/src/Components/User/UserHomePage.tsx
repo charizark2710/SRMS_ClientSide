@@ -79,8 +79,6 @@ class UserHomePage extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
-            // name: this.props.propsFromLoginToUser.name,
-            // employeeId: this.props.propsFromLoginToUser.employeeId,
             currentUser: {},
             lightOn: false,
             fanOn: false,
@@ -146,9 +144,18 @@ class UserHomePage extends Component<Props, State> {
         fetch('http://localhost:5000', {
             credentials: 'include',
         }).then(res => {
+            console.log(res);
+            
             if (res.ok) {
+                // res.json().then(result => {
+                //     if(result.role==='admin'){
+                //         return this.props.history.push('/adminHomePage');
+                //     }
+                // });
                 client.auth().onAuthStateChanged(async user => {
                     if (user) {
+                        console.log(user);
+                        
                         const currentUser = {
                             name: user.displayName,
                             employeeId: user.email?.split('@')[0] || ' '
@@ -161,10 +168,13 @@ class UserHomePage extends Component<Props, State> {
                         // this.getHistoryRequest(currentUser.employeeId)
                         this.createScript();
                     }
+                    
                 });
+            } else if (res.status === 401) {
+                return this.props.history.push('/');
             }
         }).catch(e => {
-            throw new Error(e);
+            console.log(e);
         })
     }
 
@@ -260,7 +270,7 @@ class UserHomePage extends Component<Props, State> {
                 })
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);
@@ -361,7 +371,7 @@ class UserHomePage extends Component<Props, State> {
 
     //control devices
     onControlDevices = () => {
-        if(this.state.currentRoomPermission===""){
+        if (this.state.currentRoomPermission === "") {
             this.getCurrentRoom();//load chỗ ni chuối quá
         }
         var roomName = {
@@ -396,7 +406,7 @@ class UserHomePage extends Component<Props, State> {
                 })
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);
@@ -484,7 +494,7 @@ class UserHomePage extends Component<Props, State> {
                 return res.json().then(result => { console.log(result) })
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);
@@ -543,7 +553,7 @@ class UserHomePage extends Component<Props, State> {
                 return res.json().then(result => { console.log(result) })
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);
@@ -614,7 +624,7 @@ class UserHomePage extends Component<Props, State> {
                 )
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);
@@ -677,7 +687,7 @@ class UserHomePage extends Component<Props, State> {
 
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);
@@ -728,7 +738,7 @@ class UserHomePage extends Component<Props, State> {
                 toast.success("Delete booking successfully!")
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);
@@ -748,7 +758,7 @@ class UserHomePage extends Component<Props, State> {
                 toast.success("Delete report error request successfully!")
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);
@@ -805,7 +815,7 @@ class UserHomePage extends Component<Props, State> {
                     })
                 }
                 else {
-                    return res.json().then(result => { throw Error(result.error) });
+                    return res.json().then(result => { console.log(result.error) });
                 }
             }).catch(e => {
                 console.log(e);
@@ -833,7 +843,7 @@ class UserHomePage extends Component<Props, State> {
                     })
                 }
                 else {
-                    return res.json().then(result => { throw Error(result.error) });
+                    return res.json().then(result => { console.log(result.error) });
                 }
             }).catch(e => {
                 console.log(e);
@@ -875,7 +885,7 @@ class UserHomePage extends Component<Props, State> {
                 })
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);
@@ -914,7 +924,7 @@ class UserHomePage extends Component<Props, State> {
 
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);
@@ -990,7 +1000,7 @@ class UserHomePage extends Component<Props, State> {
 
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);
@@ -1021,7 +1031,7 @@ class UserHomePage extends Component<Props, State> {
                 })
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);
@@ -1072,7 +1082,7 @@ class UserHomePage extends Component<Props, State> {
                 })
             }
             else {
-                return res.json().then(result => { throw Error(result.error) });
+                return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
             console.log(e);
@@ -1190,8 +1200,8 @@ class UserHomePage extends Component<Props, State> {
                                                 <p className="card-description">
                                                     If you have permission to turn on/off devices, please click here.
                                     </p>
-                                                <a className="btn btn-warning btn-round" data-toggle="modal"
-                                                    data-target="#controlDevicesModal" onClick={this.onControlDevices}>Control now</a>
+                                                <button className="btn btn-warning btn-round" data-toggle="modal"
+                                                    data-target="#controlDevicesModal" onClick={this.onControlDevices} disabled={currentRoomPermission===""?true:false}>Control now</button>
                                             </div>
                                         </div>
                                     </div>
@@ -1240,8 +1250,8 @@ class UserHomePage extends Component<Props, State> {
                                                 <p className="card-description">
                                                     Click here if you want to change to another room.
                                     </p>
-                                                <a href="#pablo" className="btn btn-warning btn-round" data-toggle="modal"
-                                                    data-target="#changeRoomModal" onClick={this.getCurrentRoom}>Change now</a>
+                                                <button disabled={currentRoomPermission===""?true:false} className="btn btn-warning btn-round" data-toggle="modal"
+                                                    data-target="#changeRoomModal" onClick={this.getCurrentRoom}>Change now</button>
                                             </div>
                                         </div>
                                     </div>
