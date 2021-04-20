@@ -108,7 +108,6 @@ class FullCalendarIO extends Component<Props, State> {
 
 
     render() {
-        console.log(this.state.calendars);
 
         return (
 

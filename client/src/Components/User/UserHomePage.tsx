@@ -45,6 +45,9 @@ interface State {
     isShowValidateLoadEmptyRoom: boolean
     availableRooms: any[],
     selectedRoom: string,
+    isDateValid: boolean,
+    isStartTimeValid: boolean,
+    isEndtimeValid: boolean,
     //tracking update or insert
     isUpdateData: boolean
     updatingIdBooking: string
@@ -99,6 +102,9 @@ class UserHomePage extends Component<Props, State> {
             isAllowToLoadEmptyRooms: true,
             availableRooms: [],
             selectedRoom: '',
+            isDateValid: false,
+            isStartTimeValid: false,
+            isEndtimeValid: false,
 
             isUpdateData: false,
             updatingIdBooking: '',
@@ -128,7 +134,7 @@ class UserHomePage extends Component<Props, State> {
     notification: message[] = [];
 
     createScript() {
-        const scripts = ["js/jquery.tagsinput.js", "/js/material-dashboard.js?v=1.2.1", "customJS/loadBackground.js"]//,"customJS/loadTable.js"
+        const scripts = ["js/jquery.tagsinput.js", "/js/material-dashboard.js?v=1.2.1", "customJS/loadBackground.js", "js/bootstrap-datetimepicker.js", "customJS/datetimetest.js"]//,"customJS/loadTable.js"
 
         for (let index = 0; index < scripts.length; ++index) {
             const script = document.createElement('script');
@@ -144,8 +150,8 @@ class UserHomePage extends Component<Props, State> {
         fetch('http://localhost:5000', {
             credentials: 'include',
         }).then(res => {
-            console.log(res);
-            
+           
+
             if (res.ok) {
                 // res.json().then(result => {
                 //     if(result.role==='admin'){
@@ -154,8 +160,6 @@ class UserHomePage extends Component<Props, State> {
                 // });
                 client.auth().onAuthStateChanged(async user => {
                     if (user) {
-                        console.log(user);
-                        
                         const currentUser = {
                             name: user.displayName,
                             employeeId: user.email?.split('@')[0] || ' '
@@ -168,7 +172,7 @@ class UserHomePage extends Component<Props, State> {
                         // this.getHistoryRequest(currentUser.employeeId)
                         this.createScript();
                     }
-                    
+
                 });
             } else if (res.status === 401) {
                 return this.props.history.push('/');
@@ -265,7 +269,7 @@ class UserHomePage extends Component<Props, State> {
                     this.setState({
                         historyRequest: result
                     })
-                    console.log(result);
+                   
 
                 })
             }
@@ -281,14 +285,14 @@ class UserHomePage extends Component<Props, State> {
         this.setState({ messageToUser: [] });
         const userEmail = user.email?.split("@")[0] || '';
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_added', (snap: any) => {
-            console.log("child-add-on");
+           
             const mail: message = snap.val();
             if (mail) {
                 this.setState({ messageToUser: [... this.state.messageToUser, mail] })
             }
         });
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_added', (snap: any) => {
-            console.log("child-add-off");
+            
 
             const mail: message = snap.val();
             if (mail) {
@@ -297,7 +301,7 @@ class UserHomePage extends Component<Props, State> {
         });
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_changed', (snap: any) => {
             const mail: message = snap.val();
-            console.log("child-change-on");
+           
             if (mail.isRead) {//đánh dấu ĐÃ ĐỌC
                 const arr = this.state.messageToUser;
                 var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
@@ -318,7 +322,7 @@ class UserHomePage extends Component<Props, State> {
         });
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_changed', (snap: any) => {
             const mail: message = snap.val();
-            console.log("child-change-on");
+            
             if (mail.isRead) {//đánh dấu ĐÃ ĐỌC
                 const arr = this.state.messageToUser;
                 var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
@@ -340,13 +344,13 @@ class UserHomePage extends Component<Props, State> {
 
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_removed', (snap: any) => {
             const mail: message = snap.val();
-            console.log("child-remove-on");
+            
             if (mail) {
                 const arr = this.state.messageToUser;
                 const newArr = arr.filter(mess => {
                     return mess.id !== mail.id;
                 })
-                console.log(newArr);
+                
 
                 this.setState({ messageToUser: newArr })
             }
@@ -354,7 +358,7 @@ class UserHomePage extends Component<Props, State> {
 
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_removed', (snap: any) => {
             const mail: message = snap.val();
-            console.log("child-remove-off");
+            
             if (mail) {
                 const arr = this.state.messageToUser;
                 const newArr = arr.filter(mess => {
@@ -512,7 +516,7 @@ class UserHomePage extends Component<Props, State> {
         this.isTurnOn = this.state.isTurnOnAllDevices ? 1 : 0;
         var data;
         if (this.isTurnOn)
-            console.log('aaaa');
+            
         data = {
             roomName: '201',
             devices: {
@@ -563,43 +567,39 @@ class UserHomePage extends Component<Props, State> {
 
     //booking room: dùng chung cho update và insert 
     onHandleChangeBookingForm = async (event: any) => {
+        console.log('change');
+        
         var target = event.target;
         var name = target.name;
         var value = target.type == 'checkbox' ? target.checked : target.value;
+        console.log(target.value);
+        
         await this.setState({
             [name]: value
         } as Pick<State, keyof State>);
-        console.log(this.state);
 
         //validate button Booking
-        var { txtDateToBook, txtStartTime, txtEndTime, txtReasonToBook } = this.state;
+        var { txtDateToBook, txtStartTime, txtEndTime, txtReasonToBook, selectedRoom } = this.state;
+        
         if (txtDateToBook && txtStartTime && txtEndTime && txtReasonToBook) {
-            this.setState({
-                isDisableBookingBtn: false,
+            if (txtDateToBook < new Date().toLocaleString()) {
+
+            }
+            await this.setState({
                 isDisableLoadEmptyRoomBtn: false,
             })
+            if (selectedRoom) {
+                await this.setState({
+                    isDisableBookingBtn: false,
+                })
+            }
+
         } else {
-            this.setState({
+            await this.setState({
                 isDisableBookingBtn: true,
                 isDisableLoadEmptyRoomBtn: true,
             })
         }
-        // //validate combobox
-        // if (txtDateToBook && txtStartTime && txtEndTime) {
-        //     this.setState({
-        //         isAllowToLoadEmptyRooms: false,
-        //         isShowValidateLoadEmptyRoom: true
-        //     })
-        // } else {
-        //     this.setState({
-        //         isAllowToLoadEmptyRooms: true,
-        //         isShowValidateLoadEmptyRoom: false
-        //     })
-        // }
-
-        //load empty room
-
-
 
     }
 
@@ -609,7 +609,15 @@ class UserHomePage extends Component<Props, State> {
             selectedRoom: ''
         })
         var { txtDateToBook, txtStartTime, txtEndTime } = this.state;
-        fetch(`http://localhost:5000/bookRoom/getAvailableRooms?date=${txtDateToBook}&startTime=${txtStartTime}&endTime=${txtEndTime}`, {
+        let today=new Date();
+        let currentTime=today.getHours()+":"+today.getMinutes();
+        
+        if(txtStartTime>=txtEndTime){
+            toast.error("Endtime must be greater than start time!")
+        }else if(txtStartTime<=currentTime){
+            toast.error("Starttime must be greater than current time!")
+        }else{
+            fetch(`http://localhost:5000/bookRoom/getAvailableRooms?date=${txtDateToBook}&startTime=${txtStartTime}&endTime=${txtEndTime}`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -617,10 +625,17 @@ class UserHomePage extends Component<Props, State> {
             method: 'GET',
         }).then(res => {
             if (res.ok) {
-                return res.json().then(result =>
+                return res.json().then(result => {
                     this.setState({
                         availableRooms: result
                     })
+                    if (!this.state.selectedRoom) {
+                        this.setState({
+                            isDisableBookingBtn: true,
+                        })
+                    }
+
+                }
                 )
             }
             else {
@@ -630,6 +645,9 @@ class UserHomePage extends Component<Props, State> {
             console.log(e);
         });
 
+        }
+
+        
     }
 
     getSelectedRoom = async (room: string) => {
@@ -720,7 +738,6 @@ class UserHomePage extends Component<Props, State> {
             this.createBookingRoom(bookRoom);
         }
 
-
     }
 
 
@@ -810,7 +827,7 @@ class UserHomePage extends Component<Props, State> {
                             updatingIdBooking: id,
                             actionNotiId: result.actionNotiId,
                         })
-                        console.log(result);
+                       
 
                     })
                 }
@@ -838,7 +855,7 @@ class UserHomePage extends Component<Props, State> {
                             updatingIdReport: id,
                             actionNotiId: result.actionNotiId,
                         })
-                        console.log(result);
+                        
 
                     })
                 }
@@ -940,7 +957,7 @@ class UserHomePage extends Component<Props, State> {
             [name]: value
         } as Pick<State, keyof State>);
 
-        console.log(this.state);
+     
 
     }
 
@@ -1017,7 +1034,7 @@ class UserHomePage extends Component<Props, State> {
         }).then(res => {
             if (res.ok) {
                 return res.json().then(result => {
-                    console.log(result);
+                   
 
                     if (result) {
                         this.setState({
@@ -1091,9 +1108,13 @@ class UserHomePage extends Component<Props, State> {
     }
     notifyBookingRoomSuccess = () => toast.success("Sent booking room request successfully!");
     notifyReportErrorSuccess = () => toast.success("Sent report error request successfully!");
-
+    onHandleChangeBookingForm1=(date:any)=>{
+        
+        console.log(date);
+        
+    }
     render() {
-        console.log(this.state.messageToUser);
+       
 
         var { currentDatePermission, currentEndTimePermission, currentRoomPermission, currentStartTimePermission, availableRooms, messageToUser, lightOn, fanOn, conditionerOn, powerPlugOn, currentUser, isDisableBookingBtn, isDisableLoadEmptyRoomBtn, isShowValidateLoadEmptyRoom } = this.state;
         return (
@@ -1201,7 +1222,7 @@ class UserHomePage extends Component<Props, State> {
                                                     If you have permission to turn on/off devices, please click here.
                                     </p>
                                                 <button className="btn btn-warning btn-round" data-toggle="modal"
-                                                    data-target="#controlDevicesModal" onClick={this.onControlDevices} disabled={currentRoomPermission===""?true:false}>Control now</button>
+                                                    data-target="#controlDevicesModal" onClick={this.onControlDevices} disabled={currentRoomPermission === "" ? true : false}>Control now</button>
                                             </div>
                                         </div>
                                     </div>
@@ -1250,7 +1271,7 @@ class UserHomePage extends Component<Props, State> {
                                                 <p className="card-description">
                                                     Click here if you want to change to another room.
                                     </p>
-                                                <button disabled={currentRoomPermission===""?true:false} className="btn btn-warning btn-round" data-toggle="modal"
+                                                <button disabled={currentRoomPermission === "" ? true : false} className="btn btn-warning btn-round" data-toggle="modal"
                                                     data-target="#changeRoomModal" onClick={this.getCurrentRoom}>Change now</button>
                                             </div>
                                         </div>
@@ -1346,19 +1367,21 @@ class UserHomePage extends Component<Props, State> {
                                                     <div className="col-md-4">
                                                         <div className="form-group is-empty">
                                                             <label className="control-label">Date</label>
-                                                            <input type="date" className="form-control" name="txtDateToBook" value={this.state.txtDateToBook} onChange={this.onHandleChangeBookingForm} />
+                                                            {/* <input type="date" className="form-control" name="txtDateToBook"  value={this.state.txtDateToBook} onChange={this.onHandleChangeBookingForm} /> */}
+                                                            <input type="" className="form-control datepicker" name="txtDateToBook"  value={this.state.txtDateToBook} onSelect={()=>this.onHandleChangeBookingForm1("a")} />
                                                         </div>
                                                     </div>
                                                     <div className="col-md-4">
                                                         <div className="form-group is-empty">
                                                             <label className="control-label">Start Time</label>
-                                                            <input type="time" className="form-control" name="txtStartTime" value={this.state.txtStartTime} onChange={this.onHandleChangeBookingForm} />
+                                                            {/* <input type="time" className="form-control" name="txtStartTime" value={this.state.txtStartTime} onChange={this.onHandleChangeBookingForm1} /> */}
+                                                            <input  className="form-control timepicker" name="txtStartTime" value={this.state.txtStartTime} onChange={this.onHandleChangeBookingForm1} ></input>
                                                         </div>
                                                     </div>
                                                     <div className="col-md-4">
                                                         <div className="form-group is-empty">
                                                             <label className="control-label">End Time</label>
-                                                            <input type="time" className="form-control" name="txtEndTime" value={this.state.txtEndTime} onChange={this.onHandleChangeBookingForm} />
+                                                            <input  className="form-control timepicker" name="txtEndTime" value={this.state.txtEndTime} onChange={this.onHandleChangeBookingForm1} />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1814,7 +1837,7 @@ class UserHomePage extends Component<Props, State> {
                                                         {
                                                             title: "Request Time", field: "requestTime",
                                                             render: (rowData: any) => {
-                                                                console.log(rowData.requestTime?.split("-")[1]);
+                                                             
 
                                                                 return <small>{moment(formatDateTime(rowData.requestTime?.split("-")[1] + "-" + rowData.requestTime?.split("-")[2])).calendar()}</small>
                                                             }
@@ -1881,7 +1904,7 @@ class UserHomePage extends Component<Props, State> {
                                         <div className="col-md-10 col-md-offset-1">
                                             <div className="card card-calendar">
                                                 <div className="card-content ps-child">
-                                                    <FullCalendarIO />
+                                                    {/* <FullCalendarIO /> */}
                                                 </div>
                                             </div>
                                         </div>

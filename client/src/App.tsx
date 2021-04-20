@@ -59,32 +59,40 @@ class App extends Component<Props, State>{
   }
 
   render() {
-    if (this.state.role && this.state.role === 'admin') {
-      return (
-        <Switch>
-          <Route path="/adminHomePage" render={({ match, history }) => (
-            <AdminHomePage match={match} history={history} />)} />
-          <Route path='/testML' component={testML}></Route>
-          <Route component={NotFound} exact={true}></Route>
-        </Switch>
-      );
-    } else if (this.state.role && this.state.role !== 'admin') {
-      return (
-        <Switch>
-          <Route path='/userHomePage' component={UserHomePage}></Route>
-          <Route path='/testML' component={testML}></Route>
-          <Route component={NotFound} exact={true}></Route>
-        </Switch>
-      );
-    } else {
-      return (
-        <Switch>
-          <Route path='/' exact component={Login} ></Route>
-          <Route path='/testML' component={testML}></Route>
-          <Route component={NotFound} exact={true}></Route>
-        </Switch>
-      );
-    }
+    // if (this.state.role && this.state.role === 'admin') {
+    //   return (
+    //     <Switch>
+    //       <Route path="/adminHomePage" render={({ match, history }) => (
+    //         <AdminHomePage match={match} history={history} />)} />
+    //       <Route path='/testML' component={testML}></Route>
+    //       {/* <Route component={NotFound} exact={true}></Route> */}
+    //     </Switch>
+    //   );
+    // } else if (this.state.role && this.state.role !== 'admin') {
+    //   return (
+    //     <Switch>
+    //       <Route path='/userHomePage' component={UserHomePage}></Route>
+    //       <Route path='/testML' component={testML}></Route>
+    //       <Route component={NotFound} exact={true}></Route>
+    //     </Switch>
+    //   );
+    // } else {
+    //   return (
+    //     <Switch>
+    //       <Route path='/' exact component={Login} ></Route>
+    //       <Route path='/testML' component={testML}></Route>
+    //       <Route component={NotFound} exact={true}></Route>
+    //     </Switch>
+    //   );
+    // }
+    return (
+          <Switch>
+            <Route path='/' exact component={Login} ></Route>
+            <Route path='/userHomePage' component={UserHomePage}></Route>
+            <Route path='/testML' component={testML}></Route>
+            {/* <Route component={NotFound} exact={true}></Route> */}
+          </Switch>
+        );
   }
 }
 export default App;
