@@ -147,39 +147,21 @@ class UserHomePage extends Component<Props, State> {
 
 
     componentDidMount() {
-        fetch('http://localhost:5000', {
-            credentials: 'include',
-        }).then(res => {
-           
+        client.auth().onAuthStateChanged(async user => {
+            if (user) {
+                const currentUser = {
+                    name: user.displayName,
+                    employeeId: user.email?.split('@')[0] || ' '
+                }
 
-            if (res.ok) {
-                // res.json().then(result => {
-                //     if(result.role==='admin'){
-                //         return this.props.history.push('/adminHomePage');
-                //     }
-                // });
-                client.auth().onAuthStateChanged(async user => {
-                    if (user) {
-                        const currentUser = {
-                            name: user.displayName,
-                            employeeId: user.email?.split('@')[0] || ' '
-                        }
-
-                        this.notificationManagement(user);
-                        this.setState({
-                            currentUser: currentUser
-                        })
-                        // this.getHistoryRequest(currentUser.employeeId)
-                        this.createScript();
-                    }
-
-                });
-            } else if (res.status === 401) {
-                return this.props.history.push('/');
+                this.notificationManagement(user);
+                this.setState({
+                    currentUser: currentUser
+                })
+                // this.getHistoryRequest(currentUser.employeeId)
+                this.createScript();
             }
-        }).catch(e => {
-            console.log(e);
-        })
+        });
     }
 
     notiReady: boolean = false;
@@ -269,7 +251,7 @@ class UserHomePage extends Component<Props, State> {
                     this.setState({
                         historyRequest: result
                     })
-                   
+
 
                 })
             }
@@ -285,14 +267,14 @@ class UserHomePage extends Component<Props, State> {
         this.setState({ messageToUser: [] });
         const userEmail = user.email?.split("@")[0] || '';
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_added', (snap: any) => {
-           
+
             const mail: message = snap.val();
             if (mail) {
                 this.setState({ messageToUser: [... this.state.messageToUser, mail] })
             }
         });
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_added', (snap: any) => {
-            
+
 
             const mail: message = snap.val();
             if (mail) {
@@ -301,7 +283,7 @@ class UserHomePage extends Component<Props, State> {
         });
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_changed', (snap: any) => {
             const mail: message = snap.val();
-           
+
             if (mail.isRead) {//đánh dấu ĐÃ ĐỌC
                 const arr = this.state.messageToUser;
                 var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
@@ -322,7 +304,7 @@ class UserHomePage extends Component<Props, State> {
         });
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_changed', (snap: any) => {
             const mail: message = snap.val();
-            
+
             if (mail.isRead) {//đánh dấu ĐÃ ĐỌC
                 const arr = this.state.messageToUser;
                 var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
@@ -344,13 +326,13 @@ class UserHomePage extends Component<Props, State> {
 
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_removed', (snap: any) => {
             const mail: message = snap.val();
-            
+
             if (mail) {
                 const arr = this.state.messageToUser;
                 const newArr = arr.filter(mess => {
                     return mess.id !== mail.id;
                 })
-                
+
 
                 this.setState({ messageToUser: newArr })
             }
@@ -358,7 +340,7 @@ class UserHomePage extends Component<Props, State> {
 
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_removed', (snap: any) => {
             const mail: message = snap.val();
-            
+
             if (mail) {
                 const arr = this.state.messageToUser;
                 const newArr = arr.filter(mess => {
@@ -516,16 +498,16 @@ class UserHomePage extends Component<Props, State> {
         this.isTurnOn = this.state.isTurnOnAllDevices ? 1 : 0;
         var data;
         if (this.isTurnOn)
-            
-        data = {
-            roomName: '201',
-            devices: {
-                light: this.isTurnOn,
-                powerPlug: this.isTurnOn,
-                fan: this.isTurnOn,
-                conditioner: this.isTurnOn,
+
+            data = {
+                roomName: '201',
+                devices: {
+                    light: this.isTurnOn,
+                    powerPlug: this.isTurnOn,
+                    fan: this.isTurnOn,
+                    conditioner: this.isTurnOn,
+                }
             }
-        }
         this.UpdateAllDevicesStatus(data);
     }
 
@@ -568,19 +550,19 @@ class UserHomePage extends Component<Props, State> {
     //booking room: dùng chung cho update và insert 
     onHandleChangeBookingForm = async (event: any) => {
         console.log('change');
-        
+
         var target = event.target;
         var name = target.name;
         var value = target.type == 'checkbox' ? target.checked : target.value;
         console.log(target.value);
-        
+
         await this.setState({
             [name]: value
         } as Pick<State, keyof State>);
 
         //validate button Booking
         var { txtDateToBook, txtStartTime, txtEndTime, txtReasonToBook, selectedRoom } = this.state;
-        
+
         if (txtDateToBook && txtStartTime && txtEndTime && txtReasonToBook) {
             if (txtDateToBook < new Date().toLocaleString()) {
 
@@ -609,45 +591,45 @@ class UserHomePage extends Component<Props, State> {
             selectedRoom: ''
         })
         var { txtDateToBook, txtStartTime, txtEndTime } = this.state;
-        let today=new Date();
-        let currentTime=today.getHours()+":"+today.getMinutes();
-        
-        if(txtStartTime>=txtEndTime){
-            toast.error("Endtime must be greater than start time!")
-        }else if(txtStartTime<=currentTime){
-            toast.error("Starttime must be greater than current time!")
-        }else{
-            fetch(`http://localhost:5000/bookRoom/getAvailableRooms?date=${txtDateToBook}&startTime=${txtStartTime}&endTime=${txtEndTime}`, {
-            credentials: 'include',
-            headers: {
-                'content-type': 'application/json',
-            },
-            method: 'GET',
-        }).then(res => {
-            if (res.ok) {
-                return res.json().then(result => {
-                    this.setState({
-                        availableRooms: result
-                    })
-                    if (!this.state.selectedRoom) {
-                        this.setState({
-                            isDisableBookingBtn: true,
-                        })
-                    }
+        let today = new Date();
+        let currentTime = today.getHours() + ":" + today.getMinutes();
 
+        if (txtStartTime >= txtEndTime) {
+            toast.error("Endtime must be greater than start time!")
+        } else if (txtStartTime <= currentTime) {
+            toast.error("Starttime must be greater than current time!")
+        } else {
+            fetch(`http://localhost:5000/bookRoom/getAvailableRooms?date=${txtDateToBook}&startTime=${txtStartTime}&endTime=${txtEndTime}`, {
+                credentials: 'include',
+                headers: {
+                    'content-type': 'application/json',
+                },
+                method: 'GET',
+            }).then(res => {
+                if (res.ok) {
+                    return res.json().then(result => {
+                        this.setState({
+                            availableRooms: result
+                        })
+                        if (!this.state.selectedRoom) {
+                            this.setState({
+                                isDisableBookingBtn: true,
+                            })
+                        }
+
+                    }
+                    )
                 }
-                )
-            }
-            else {
-                return res.json().then(result => { console.log(result.error) });
-            }
-        }).catch(e => {
-            console.log(e);
-        });
+                else {
+                    return res.json().then(result => { console.log(result.error) });
+                }
+            }).catch(e => {
+                console.log(e);
+            });
 
         }
 
-        
+
     }
 
     getSelectedRoom = async (room: string) => {
@@ -827,7 +809,7 @@ class UserHomePage extends Component<Props, State> {
                             updatingIdBooking: id,
                             actionNotiId: result.actionNotiId,
                         })
-                       
+
 
                     })
                 }
@@ -855,7 +837,7 @@ class UserHomePage extends Component<Props, State> {
                             updatingIdReport: id,
                             actionNotiId: result.actionNotiId,
                         })
-                        
+
 
                     })
                 }
@@ -957,7 +939,7 @@ class UserHomePage extends Component<Props, State> {
             [name]: value
         } as Pick<State, keyof State>);
 
-     
+
 
     }
 
@@ -1034,7 +1016,7 @@ class UserHomePage extends Component<Props, State> {
         }).then(res => {
             if (res.ok) {
                 return res.json().then(result => {
-                   
+
 
                     if (result) {
                         this.setState({
@@ -1108,13 +1090,13 @@ class UserHomePage extends Component<Props, State> {
     }
     notifyBookingRoomSuccess = () => toast.success("Sent booking room request successfully!");
     notifyReportErrorSuccess = () => toast.success("Sent report error request successfully!");
-    onHandleChangeBookingForm1=(date:any)=>{
-        
+    onHandleChangeBookingForm1 = (date: any) => {
+
         console.log(date);
-        
+
     }
     render() {
-       
+
 
         var { currentDatePermission, currentEndTimePermission, currentRoomPermission, currentStartTimePermission, availableRooms, messageToUser, lightOn, fanOn, conditionerOn, powerPlugOn, currentUser, isDisableBookingBtn, isDisableLoadEmptyRoomBtn, isShowValidateLoadEmptyRoom } = this.state;
         return (
@@ -1123,13 +1105,6 @@ class UserHomePage extends Component<Props, State> {
                 <nav className="navbar navbar-primary navbar-transparent navbar-absolute">
                     <div className="container">
                         <div className="navbar-header">
-                            <button type="button" className="navbar-toggle" data-toggle="collapse"
-                                data-target="#navigation-example-2">
-                                <span className="sr-only">Toggle navigation</span>
-                                <span className="icon-bar"></span>
-                                <span className="icon-bar"></span>
-                                <span className="icon-bar"></span>
-                            </button>
                             <h4><strong>Smart Room Management System</strong></h4>
                         </div>
                         <div className="collapse navbar-collapse">
@@ -1368,20 +1343,20 @@ class UserHomePage extends Component<Props, State> {
                                                         <div className="form-group is-empty">
                                                             <label className="control-label">Date</label>
                                                             {/* <input type="date" className="form-control" name="txtDateToBook"  value={this.state.txtDateToBook} onChange={this.onHandleChangeBookingForm} /> */}
-                                                            <input type="" className="form-control datepicker" name="txtDateToBook"  value={this.state.txtDateToBook} onSelect={()=>this.onHandleChangeBookingForm1("a")} />
+                                                            <input type="" className="form-control datepicker" name="txtDateToBook" value={this.state.txtDateToBook} onSelect={() => this.onHandleChangeBookingForm1("a")} />
                                                         </div>
                                                     </div>
                                                     <div className="col-md-4">
                                                         <div className="form-group is-empty">
                                                             <label className="control-label">Start Time</label>
                                                             {/* <input type="time" className="form-control" name="txtStartTime" value={this.state.txtStartTime} onChange={this.onHandleChangeBookingForm1} /> */}
-                                                            <input  className="form-control timepicker" name="txtStartTime" value={this.state.txtStartTime} onChange={this.onHandleChangeBookingForm1} ></input>
+                                                            <input className="form-control timepicker" name="txtStartTime" value={this.state.txtStartTime} onChange={this.onHandleChangeBookingForm1} ></input>
                                                         </div>
                                                     </div>
                                                     <div className="col-md-4">
                                                         <div className="form-group is-empty">
                                                             <label className="control-label">End Time</label>
-                                                            <input  className="form-control timepicker" name="txtEndTime" value={this.state.txtEndTime} onChange={this.onHandleChangeBookingForm1} />
+                                                            <input className="form-control timepicker" name="txtEndTime" value={this.state.txtEndTime} onChange={this.onHandleChangeBookingForm1} />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1837,7 +1812,7 @@ class UserHomePage extends Component<Props, State> {
                                                         {
                                                             title: "Request Time", field: "requestTime",
                                                             render: (rowData: any) => {
-                                                             
+
 
                                                                 return <small>{moment(formatDateTime(rowData.requestTime?.split("-")[1] + "-" + rowData.requestTime?.split("-")[2])).calendar()}</small>
                                                             }
@@ -1877,10 +1852,7 @@ class UserHomePage extends Component<Props, State> {
                                                     ]
                                                 }
                                                 data={this.state.historyRequest}
-
                                             />
-
-
                                         </div>
                                     </div>
                                 </div>
@@ -1892,7 +1864,6 @@ class UserHomePage extends Component<Props, State> {
                 {/* <!-- Calendar modal --> */}
                 <div id="calendarModal" className="modal fade blur" role="dialog">
                     <div className="modal-dialog calendar-dialog-width">
-
                         {/* <!-- Modal content--> */}
                         <div className="modal-content">
                             <div className="modal-header">
@@ -1904,20 +1875,17 @@ class UserHomePage extends Component<Props, State> {
                                         <div className="col-md-10 col-md-offset-1">
                                             <div className="card card-calendar">
                                                 <div className="card-content ps-child">
-                                                    {/* <FullCalendarIO /> */}
+                                                    <FullCalendarIO />
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
-
         )
     }
 }

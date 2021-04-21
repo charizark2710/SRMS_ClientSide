@@ -133,4 +133,6 @@
 .calendar-dialog-width{
     width: 70%;
 }
-
+.fc-col-header{
+    width: 100% !important;
+}
