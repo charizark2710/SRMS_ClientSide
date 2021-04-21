@@ -1,8 +1,7 @@
-import React, { ChangeEvent, Component } from 'react';
+import React, { Component } from 'react';
 import message from '../../model/Message';
 import moment from 'moment';
-import { NavLink, RouteComponentProps, Router, Route } from 'react-router-dom';
-import firebase from 'firebase'
+import { NavLink } from 'react-router-dom';
 import { db, client } from './../../FireBase/config';
 import { formatDateTime } from "../Common/formatDateTime";
 import { logout } from "../Common/logOut";
@@ -11,7 +10,7 @@ import { logout } from "../Common/logOut";
 
 interface Props {
   match: any,
-  history:any
+  history: any
 }
 
 interface State {
@@ -36,21 +35,10 @@ class Header extends Component<Props, State> {
           }
         });
       }
-    }).then(()=>{
-      document.getElementById
     }).catch(e => {
       console.log(e);
     })
   }
-
-  // UNSAFE_componentWillReceiveProps = async (nextProps: any) => {
-  //     // await this.setState({
-  //     //     messages: nextProps.messagesToAdmin
-  //     // })
-  //     // console.log(this.state.messages);
-
-
-  // }
 
   notificationManagement = () => {
     this.setState({ messages: [] });
@@ -82,16 +70,17 @@ class Header extends Component<Props, State> {
           arr[changingIndex].sendAt = mail.sendAt,
           this.setState({ messages: arr })
       }
-      // if(!mail.isValid){//valid->invalid do cập nhật hoặc xóa
-      //   const arr = this.state.messages;
-      //   var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-      //     arr[changingIndex].isRead = mail.isRead,
-      //     arr[changingIndex].message = mail.message,
-      //     arr[changingIndex].sender = mail.sender,
-      //     arr[changingIndex].sendAt = mail.sendAt,
-      //     arr[changingIndex].isValid =false;
-      //     this.setState({ messages: arr })
-      // }
+      if (!mail.isValid) {//valid->invalid do cập nhật hoặc xóa
+        const arr = this.state.messages;
+        var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
+        arr[changingIndex].isRead = mail.isRead,
+          arr[changingIndex].message = mail.message,
+          arr[changingIndex].sender = mail.sender,
+          arr[changingIndex].sendAt = mail.sendAt,
+          arr[changingIndex].isValid = false;
+        this.setState({ messages: arr })
+      }
+
     });
     db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_changed', (snap: any) => {
       const mail: message = snap.val();
@@ -99,53 +88,25 @@ class Header extends Component<Props, State> {
       if (mail.isRead && mail.url !=="") {//đánh dấu ĐÃ ĐỌC
         const arr = this.state.messages;
         var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-          arr[changingIndex].isRead = true,
+        arr[changingIndex].isRead = true,
           arr[changingIndex].message = mail.message,
           arr[changingIndex].sender = mail.sender,
           arr[changingIndex].sendAt = mail.sendAt,
           this.setState({ messages: arr })
       }
-      
-      // if(!mail.isValid){//valid->invalid do cập nhật hoặc xóa
-      //   const arr = this.state.messages;
-      //   var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-      //     arr[changingIndex].isRead = mail.isRead,
-      //     arr[changingIndex].message = mail.message,
-      //     arr[changingIndex].sender = mail.sender,
-      //     arr[changingIndex].sendAt = mail.sendAt,
-      //     arr[changingIndex].isValid =false;
-      //     this.setState({ messages: arr })
-      // }
+
+      if (!mail.isValid) {//valid->invalid do cập nhật hoặc xóa
+        const arr = this.state.messages;
+        var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
+        arr[changingIndex].isRead = mail.isRead,
+          arr[changingIndex].message = mail.message,
+          arr[changingIndex].sender = mail.sender,
+          arr[changingIndex].sendAt = mail.sendAt,
+          arr[changingIndex].isValid = false;
+        this.setState({ messages: arr })
+      }
+
     });
-
-
-  
-    // db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_removed', (snap: any) => {
-    //   const mail: message = snap.val();
-    //   console.log("child-remove-on");
-    //   if (mail) {
-    //     const arr = this.state.messages;
-    //     const newArr = arr.filter(mess => {
-    //       return mess.id !== mail.id;
-    //     })
-    //     console.log(newArr);
-
-    //     this.setState({ messages: newArr })
-    //   }
-    // });
-
-    // db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_removed', (snap: any) => {
-    //   const mail: message = snap.val();
-    //   console.log("child-remove-off");
-    //   if (mail) {
-    //     const arr = this.state.messages;
-    //     const newArr = arr.filter(mess => {
-    //       return mess.id !== mail.id;
-    //     })
-    //     this.setState({ messages: newArr })
-    //   }
-    // });
-
   }
 
 
@@ -215,7 +176,7 @@ class Header extends Component<Props, State> {
                 </ul>
               </li>
               <li>
-                <a href="#pablo" onClick={()=>logout(this.props.history)} className="dropdown-toggle" data-toggle="dropdown">
+                <a href="#pablo" onClick={() => logout(this.props.history)} className="dropdown-toggle" data-toggle="dropdown">
                   <i className="material-icons">logout</i>
                   <p className="hidden-lg hidden-md">Logout</p>
                 </a>

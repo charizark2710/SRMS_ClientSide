@@ -133,46 +133,23 @@ class UserHomePage extends Component<Props, State> {
 
 
     componentDidMount() {
-
-        fetch('http://localhost:5000', {
-            credentials: 'include',
-        }).then(res => {
-
-
-            if (res.ok) {
-                // res.json().then(result => {
-                //     if(result.role==='admin'){
-                //         return this.props.history.push('/adminHomePage');
-                //     }
-                // });
-                client.auth().onAuthStateChanged(async user => {
-                    if (user) {
-                        const currentUser = {
-                            name: user.displayName,
-                            employeeId: user.email?.split('@')[0] || ' '
-                        }
-
-                        this.notificationManagement(user);
-                        this.setState({
-                            currentUser: currentUser
-                        })
-
-                        // this.getHistoryRequest(currentUser.employeeId)
-                        this.createScript();
-
-                        this.getCurrentRoom();
-                        var currentDate = new Date().toISOString().split("T")[0];
-                        document.getElementById("dateToBook")?.setAttribute("min", currentDate);
-
-                    }
-
-                });
-            } else if (res.status === 401) {
-                return this.props.history.push('/');
+        client.auth().onAuthStateChanged(async user => {
+            if (user) {
+                const currentUser = {
+                    name: user.displayName,
+                    employeeId: user.email?.split('@')[0] || ' '
+                }
+                this.notificationManagement(user);
+                this.setState({
+                    currentUser: currentUser
+                })
+                // this.getHistoryRequest(currentUser.employeeId)
+                this.createScript();
+                this.getCurrentRoom();
+                const currentDate = new Date().toISOString().split("T")[0];
+                document.getElementById("dateToBook")?.setAttribute("min", currentDate);
             }
-        }).catch(e => {
-            console.log(e);
-        })
+        });
     }
 
     notiReady: boolean = false;
@@ -506,7 +483,7 @@ class UserHomePage extends Component<Props, State> {
         this.isTurnOn = this.state.isTurnOnAllDevices ? 1 : 0;
         var data;
         if (this.isTurnOn)
-            console.log('aaaa');
+
         data = {
             roomName: this.state.currentRoomPermission,
             devices: {
@@ -515,7 +492,6 @@ class UserHomePage extends Component<Props, State> {
                 fan: this.isTurnOn,
                 conditioner: this.isTurnOn,
             }
-        }
         this.UpdateAllDevicesStatus(data);
     }
 
@@ -564,6 +540,7 @@ class UserHomePage extends Component<Props, State> {
 
     //booking room: dùng chung cho update và insert 
     onHandleChangeBookingForm = async (event: any) => {
+
         var target = event.target;
         var name = target.name;
         var value = target.type == 'checkbox' ? target.checked : target.value;
@@ -648,7 +625,6 @@ class UserHomePage extends Component<Props, State> {
             selectedRoom: ''
         })
         var { txtDateToBook, txtStartTime, txtEndTime } = this.state;
-
         fetch(`http://localhost:5000/bookRoom/getAvailableRooms?date=${txtDateToBook}&startTime=${txtStartTime}&endTime=${txtEndTime}`, {
             credentials: 'include',
             headers: {
@@ -663,23 +639,23 @@ class UserHomePage extends Component<Props, State> {
                     })
                     if (!this.state.selectedRoom) {
                         this.setState({
-                            isDisableBookingBtn: true,
+                            availableRooms: result
                         })
+                        if (!this.state.selectedRoom) {
+                            this.setState({
+                                isDisableBookingBtn: true,
+                            })
+                        }
+
                     }
-
+                    )
                 }
-                )
-            }
-            else {
-                return res.json().then(result => { console.log(result.error) });
-            }
-        }).catch(e => {
-            console.log(e);
-        });
-
-
-
-
+                else {
+                    return res.json().then(result => { console.log(result.error) });
+                }
+            }).catch(e => {
+                console.log(e);
+            });
     }
 
     getSelectedRoom = async (room: string) => {
@@ -816,7 +792,6 @@ class UserHomePage extends Component<Props, State> {
                 arr[changingIndex].status = "accepted",
                     this.setState({ messageToUser: arr })
             }
-
         }
         if (status === "accepted" || status === "pending") {
             var result = window.confirm('Are you sure to cancel ' + message + ' ?')
@@ -1013,13 +988,12 @@ class UserHomePage extends Component<Props, State> {
     notifyReportErrorSuccess = () => toast.success("Sent report error request successfully!");
 
     render() {
-
-
         var { currentDatePermission, currentEndTimePermission, currentRoomPermission, currentStartTimePermission, availableRooms, messageToUser, lightOn, fanOn, conditionerOn, powerPlugOn, currentUser, isDisableBookingBtn, isDisableLoadEmptyRoomBtn } = this.state;
         return (
             <div>
                 <ToastContainer />
                 <nav className="navbar navbar-primary navbar-transparent navbar-absolute">
+
                     <div className="container off-canvas-sidebar">
                         <div className="navbar-header menu-user-homepage-header">
                             <h4><strong>Smart Room Management System</strong></h4>
@@ -1505,10 +1479,7 @@ class UserHomePage extends Component<Props, State> {
                                                     ]
                                                 }
                                                 data={this.state.historyRequest}
-
                                             />
-
-
                                         </div>
                                     </div>
                                 </div>
@@ -1520,7 +1491,6 @@ class UserHomePage extends Component<Props, State> {
                 {/* <!-- Calendar modal --> */}
                 <div id="calendarModal" className="modal fade blur" role="dialog">
                     <div className="modal-dialog calendar-dialog-width">
-
                         {/* <!-- Modal content--> */}
                         <div className="modal-content">
                             <div className="modal-header">
@@ -1532,20 +1502,17 @@ class UserHomePage extends Component<Props, State> {
                                         <div className="col-md-10 col-md-offset-1">
                                             <div className="card card-calendar">
                                                 <div className="card-content ps-child">
-                                                    {/* <FullCalendarIO /> */}
+                                                    <FullCalendarIO />
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
-
         )
     }
 }

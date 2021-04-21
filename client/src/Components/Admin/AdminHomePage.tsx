@@ -1,13 +1,10 @@
-import React, { ChangeEvent, Component } from 'react';
+import { Component } from 'react';
 import './AdminCustomStyle.css';
-import Footer from '../Admin/Footer';
 import Header from '../Admin/Header';
 import Sidebar from '../Admin/Sidebar';
-import { client, db } from '../../FireBase/config';
 import Calendar from './Calendar';
 import BannedList from './BannedList';
 import RoomAndDevices from './RoomAndDevices';
-import message from '../../model/Message';
 import BookRoomDetail from './BookRoomDetails';
 import ReportErrorDetail from './ReportErrorDetail';
 import RequestList from './RequestList';
@@ -15,111 +12,54 @@ import ImportData from './ImportData';
 import MonitorReport from './MonitorReport';
 import ChangeRoomDetail from './ChangeRoomDetail';
 import {
-    BrowserRouter as Router,
-    Redirect,
-    Route,
-    Link,
-    RouteComponentProps
-  } from "react-router-dom";
+    Route
+} from "react-router-dom";
 
 
 
 interface Props {
     match: any,
-    history:any
+    history: any
 }
 
 interface State {
-   
+
 }
 
 class AdminHomePage extends Component<Props, State> {
     constructor(props: Props) {
         super(props)
-        this.state = {
-            
-        }
     }
 
-
     createScript() {
-        var scripts = [
-
-        
-                    //  "js/perfect-scrollbar.jquery.min.js",
-                    //    "js/moment.min.js", "js/jquery.select-bootstrap.js", "js/jquery.datatables.js",
-                    //    "js/fullcalendar.min.js", 
-                       "/js/material-dashboard.js?v=1.2.1"];
+        var scripts = ["/js/material-dashboard.js?v=1.2.1"];
 
         for (var index = 0; index < scripts.length; ++index) {
             var script = document.createElement('script');
             script.src = scripts[index];
-            // script.async = true;
-            // script.type = 'text/javascript';
             document.getElementsByTagName("body")[0].appendChild(script);
         }
-    }
-    componentDidMount(){
-        fetch('http://localhost:5000', {
-            credentials: 'include',
-        }).then(res => {
-            if (res.ok) {
-                // res.json().then(result => {
-                //     if(result.role==='student'||result.role==='lecture'){
-                //         return this.props.history.push('/userHomePage');
-                //     }
-                // });
-                client.auth().onAuthStateChanged(async user => {
-                    if (user) {
-                        const currentUser = {
-                            name: user.displayName,
-                            employeeId: user.email?.split('@')[0] || ' '
-                        }
-
-                        this.setState({
-                            currentUser: currentUser
-                        })
-                        // this.getHistoryRequest(currentUser.employeeId)
-                        this.createScript();
-                    }
-                });
-            } else if (res.status === 401) {
-                return this.props.history.push('/');
-            }
-        }).catch(e => {
-            console.log(e);
-
-        })
     }
 
     render() {
         return (
             <div className="wrapper">
-                <Sidebar match={this.props.match}/>
+                <Sidebar match={this.props.match} />
                 <div className="main-panel">
-                    <Header match={this.props.match} history={this.props.history}/>
-                    <Route path='/adminHomePage' exact component={RoomAndDevices}></Route>
-                    <Route path='/adminHomePage/bookRoomRequest/:id' match={this.props.match} component={BookRoomDetail}></Route>
-                    <Route path='/adminHomePage/reportErrorRequest/:id' match={this.props.match} component={ReportErrorDetail}></Route>
-                    <Route path='/adminHomePage/changeRoomRequest/:id' match={this.props.match} component={ChangeRoomDetail}></Route>
-                    <Route path='/adminHomePage/calendar' component={Calendar}></Route>
-                    <Route path='/adminHomePage/bannedList' component={BannedList}></Route>
-                    <Route path='/adminHomePage/requests' component={RequestList}></Route>
-                    <Route path='/adminHomePage/importData' component={ImportData}></Route>
-                    <Route path='/adminHomePage/report' component={MonitorReport}></Route>
+                    <Header match={this.props.match} history={this.props.history} />
+                    <Route path='/' exact component={RoomAndDevices}></Route>
+                    <Route path='/bookRoomRequest/:id' match={this.props.match} component={BookRoomDetail}></Route>
+                    <Route path='/reportErrorRequest/:id' match={this.props.match} component={ReportErrorDetail}></Route>
+                    <Route path='/changeRoomRequest/:id' match={this.props.match} component={ChangeRoomDetail}></Route>
+                    <Route path='/calendar' component={Calendar}></Route>
+                    <Route path='/bannedList' component={BannedList}></Route>
+                    <Route path='/requests' component={RequestList}></Route>
+                    <Route path='/importData' component={ImportData}></Route>
+                    <Route path='/report' component={MonitorReport}></Route>
                 </div>
             </div >
         )
 
     }
 }
-
-// const mapStateToProps = (state: any) => {
-//     console.log(state)
-//     return {
-//         bookingRoom: state.loggedInUser
-//     }
-// }
-
-// export default connect(mapStateToProps, null)(AdminHomePage);
 export default AdminHomePage;

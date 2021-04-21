@@ -106,8 +106,6 @@ class Calendar extends Component<Props, State> {
         this.calendarManagement();
     }
 
-
-
     render() {
         console.log(this.state.calendars);
 

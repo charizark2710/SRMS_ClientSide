@@ -139,6 +139,6 @@
 .calendar-dialog-width{
     width: 70%;
 }
-.title-fontfamily{
-    font-family:'Courier New'
+.fc-col-header{
+    width: 100% !important
 }
