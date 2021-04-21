@@ -239,8 +239,6 @@ class UserHomePage extends Component<Props, State> {
                     this.setState({
                         historyRequest: result
                     })
-
-
                 })
             }
             else {
@@ -313,21 +311,17 @@ class UserHomePage extends Component<Props, State> {
 
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_removed', (snap: any) => {
             const mail: message = snap.val();
-
             if (mail) {
                 const arr = this.state.messageToUser;
                 const newArr = arr.filter(mess => {
                     return mess.id !== mail.id;
                 })
-
-
                 this.setState({ messageToUser: newArr })
             }
         });
 
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_removed', (snap: any) => {
             const mail: message = snap.val();
-
             if (mail) {
                 const arr = this.state.messageToUser;
                 const newArr = arr.filter(mess => {
@@ -336,11 +330,7 @@ class UserHomePage extends Component<Props, State> {
                 this.setState({ messageToUser: newArr })
             }
         });
-
     }
-
-
-
 
     //control devices
     onControlDevices = () => {
@@ -484,13 +474,14 @@ class UserHomePage extends Component<Props, State> {
         var data;
         if (this.isTurnOn)
 
-        data = {
-            roomName: this.state.currentRoomPermission,
-            devices: {
-                light: this.isTurnOn,
-                powerPlug: this.isTurnOn,
-                fan: this.isTurnOn,
-                conditioner: this.isTurnOn,
+            data = {
+                roomName: this.state.currentRoomPermission,
+                devices: {
+                    light: this.isTurnOn,
+                    powerPlug: this.isTurnOn,
+                    fan: this.isTurnOn,
+                    conditioner: this.isTurnOn,
+                }
             }
         this.UpdateAllDevicesStatus(data);
     }
@@ -606,17 +597,12 @@ class UserHomePage extends Component<Props, State> {
                     })
                 }
             }
-
-
-
-
         } else {
             await this.setState({
                 isDisableBookingBtn: true,
                 isDisableLoadEmptyRoomBtn: true,
             })
         }
-
     }
 
 
@@ -646,16 +632,16 @@ class UserHomePage extends Component<Props, State> {
                                 isDisableBookingBtn: true,
                             })
                         }
-
                     }
-                    )
                 }
-                else {
-                    return res.json().then(result => { console.log(result.error) });
-                }
-            }).catch(e => {
-                console.log(e);
-            });
+                )
+            }
+            else {
+                return res.json().then(result => { console.log(result.error) });
+            }
+        }).catch(e => {
+            console.log(e);
+        });
     }
 
     getSelectedRoom = async (room: string) => {
@@ -697,11 +683,9 @@ class UserHomePage extends Component<Props, State> {
                     isDisableBookingBtn: true,
                     isDisableLoadEmptyRoomBtn: true,
                     availableRooms: [],
-
                 })
 
                 //đóng form
-
                 document.getElementById('closeBookRoomModal')?.click();
                 // document.getElementById("bookRoomModal")?.setAttribute("style", "display:none");
 
@@ -718,8 +702,6 @@ class UserHomePage extends Component<Props, State> {
 
     }
 
-
-
     //book room: dùng chhung cho update và insert
     onSubmitBookingForm = (event: any) => {
         event.preventDefault();
@@ -732,10 +714,7 @@ class UserHomePage extends Component<Props, State> {
             userId: this.state.currentUser.employeeId,
             id: '',
         }
-
         this.createBookingRoom(bookRoom);
-
-
     }
 
 
@@ -806,8 +785,6 @@ class UserHomePage extends Component<Props, State> {
         }
     }
 
-
-
     sendReportError = (reportError: any) => {
         fetch('http://localhost:5000/reportError/sendReportError', {
             credentials: 'include',
@@ -828,9 +805,6 @@ class UserHomePage extends Component<Props, State> {
                 document.getElementById('closeReportErrorModal')?.click();
                 //thông báo gửi thành công
                 this.notifyReportErrorSuccess();
-
-
-
             }
             else {
                 return res.json().then(result => { console.log(result.error) });
@@ -838,7 +812,6 @@ class UserHomePage extends Component<Props, State> {
         }).catch(e => {
             console.log(e);
         });
-
     }
 
     onHandleChangeReportErrorForm = async (event: any) => {
@@ -848,9 +821,6 @@ class UserHomePage extends Component<Props, State> {
         await this.setState({
             [name]: value
         } as Pick<State, keyof State>);
-
-
-
     }
 
     onSubmitReportErrorForm = (event: any) => {
@@ -862,13 +832,8 @@ class UserHomePage extends Component<Props, State> {
             userId: this.state.currentUser.employeeId,
             id: '',
         }
-
         //insert
         this.sendReportError(errorReport);
-
-
-
-
     }
 
     getCurrentRoom = () => {
@@ -922,10 +887,7 @@ class UserHomePage extends Component<Props, State> {
             reasonToChange: this.state.txtReasonChangeRoom,
 
         }
-
         this.sendChangeRoomRequest(changeRoomReq);
-
-
     }
     sendChangeRoomRequest = (changeRoomReq: any) => {
         fetch(`http://localhost:5000/changeRoom/sendChangeRoomRequest`, {
