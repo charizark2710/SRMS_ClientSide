@@ -210,7 +210,7 @@ class BookRoomDetail extends Component<Props, State> {
                                             <div className="col-sm-10">
                                                 <div className="form-group label-floating is-empty">
                                                     <label className="control-label"></label>
-                                                    <input type="text" className="form-control" value={status} readOnly />
+                                                    <input type="text" className="form-control" readOnly value={status}/>
                                                     <span className="material-input"></span></div>
                                             </div>
                                         </div>
@@ -225,8 +225,8 @@ class BookRoomDetail extends Component<Props, State> {
                                         </div>
                                     </div>
                                     <div className="card-footer text-center">
-                                        <button type="button" onClick={() => this.onHandleBooking('accepted')} className="btn btn-warning btn-fill">Accept</button>
-                                        <button type="button" onClick={() => this.onHandleBooking('rejected')} className="btn btn-defalt btn-fill">Reject</button>
+                                        <button type="button" disabled={(status==="accepted" || status==="rejected" || status==="deleted") ? true:false} onClick={() => this.onHandleBooking('accepted')} className="btn btn-warning btn-fill">Accept</button>
+                                        <button type="button" disabled={(status==="accepted" || status==="rejected" || status==="deleted") ? true:false} onClick={() => this.onHandleBooking('rejected')} className="btn btn-defalt btn-fill">Reject</button>
                                     </div>
                                 </form>
 

@@ -11,6 +11,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import { formatDateTime, formatTime, formatDate } from "../Common/formatDateTime";
 import { logout } from "../Common/logOut"
 import FullCalendarIO from '../Common/FullCalendarIO';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 
 
@@ -36,23 +38,13 @@ interface State {
     txtDateToBook: string
     txtStartTime: string
     txtEndTime: string
-    cbbRoomToBook: string
     txtReasonToBook: string
-    isDisableBookingBtn: boolean
     isDisableLoadEmptyRoomBtn: boolean
-    isAgreeRuleBooking: boolean
-    isAllowToLoadEmptyRooms: boolean
-    isShowValidateLoadEmptyRoom: boolean
+    isDisableBookingBtn: boolean
     availableRooms: any[],
     selectedRoom: string,
-    isDateValid: boolean,
     isStartTimeValid: boolean,
     isEndtimeValid: boolean,
-    //tracking update or insert
-    isUpdateData: boolean
-    updatingIdBooking: string
-    updatingIdReport: string
-    actionNotiId: string
 
     //notification for user
     messageToUser: message[]
@@ -64,6 +56,7 @@ interface State {
     cbbDeviceToReport: string[]
     cbbRoomToReport: string
     txtDescriptionToReport: string
+    allRooms: string[]
 
     //change room
     currentRoomPermission: string,
@@ -93,23 +86,15 @@ class UserHomePage extends Component<Props, State> {
             txtDateToBook: '',
             txtStartTime: '',
             txtEndTime: '',
-            cbbRoomToBook: '',
             txtReasonToBook: '',
             isDisableBookingBtn: true,
             isDisableLoadEmptyRoomBtn: true,
-            isAgreeRuleBooking: false,
-            isShowValidateLoadEmptyRoom: false,
-            isAllowToLoadEmptyRooms: true,
+
             availableRooms: [],
             selectedRoom: '',
-            isDateValid: false,
-            isStartTimeValid: false,
-            isEndtimeValid: false,
+            isStartTimeValid: true,
+            isEndtimeValid: true,
 
-            isUpdateData: false,
-            updatingIdBooking: '',
-            updatingIdReport: '',
-            actionNotiId: '',
 
             messageToUser: [],
 
@@ -118,6 +103,7 @@ class UserHomePage extends Component<Props, State> {
             cbbDeviceToReport: [],
             cbbRoomToReport: '',
             txtDescriptionToReport: '',
+            allRooms: [],
 
             currentRoomPermission: '',
             currentDatePermission: '',
@@ -134,7 +120,7 @@ class UserHomePage extends Component<Props, State> {
     notification: message[] = [];
 
     createScript() {
-        const scripts = ["js/jquery.tagsinput.js", "/js/material-dashboard.js?v=1.2.1", "customJS/loadBackground.js", "js/bootstrap-datetimepicker.js", "customJS/datetimetest.js"]//,"customJS/loadTable.js"
+        const scripts = ["js/jquery.tagsinput.js", "/js/material-dashboard.js?v=1.2.1", "customJS/loadBackground.js"]//,"customJS/loadTable.js"
 
         for (let index = 0; index < scripts.length; ++index) {
             const script = document.createElement('script');
@@ -153,13 +139,15 @@ class UserHomePage extends Component<Props, State> {
                     name: user.displayName,
                     employeeId: user.email?.split('@')[0] || ' '
                 }
-
                 this.notificationManagement(user);
                 this.setState({
                     currentUser: currentUser
                 })
                 // this.getHistoryRequest(currentUser.employeeId)
                 this.createScript();
+                this.getCurrentRoom();
+                const currentDate = new Date().toISOString().split("T")[0];
+                document.getElementById("dateToBook")?.setAttribute("min", currentDate);
             }
         });
     }
@@ -283,7 +271,6 @@ class UserHomePage extends Component<Props, State> {
         });
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_changed', (snap: any) => {
             const mail: message = snap.val();
-
             if (mail.isRead) {//đánh dấu ĐÃ ĐỌC
                 const arr = this.state.messageToUser;
                 var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
@@ -357,9 +344,7 @@ class UserHomePage extends Component<Props, State> {
 
     //control devices
     onControlDevices = () => {
-        if (this.state.currentRoomPermission === "") {
-            this.getCurrentRoom();//load chỗ ni chuối quá
-        }
+
         var roomName = {
             roomName: this.state.currentRoomPermission
         }
@@ -433,7 +418,7 @@ class UserHomePage extends Component<Props, State> {
                     conditionerOn: !this.state.conditionerOn
                 })
                 var conditionerUpdating = {
-                    roomName: '201',
+                    roomName: this.state.currentRoomPermission,
                     device: {
                         conditioner: (this.state.conditionerOn) ? 0 : 1,
                     }
@@ -499,19 +484,20 @@ class UserHomePage extends Component<Props, State> {
         var data;
         if (this.isTurnOn)
 
-            data = {
-                roomName: '201',
-                devices: {
-                    light: this.isTurnOn,
-                    powerPlug: this.isTurnOn,
-                    fan: this.isTurnOn,
-                    conditioner: this.isTurnOn,
-                }
+        data = {
+            roomName: this.state.currentRoomPermission,
+            devices: {
+                light: this.isTurnOn,
+                powerPlug: this.isTurnOn,
+                fan: this.isTurnOn,
+                conditioner: this.isTurnOn,
             }
         this.UpdateAllDevicesStatus(data);
     }
 
     UpdateAllDevicesStatus = (data: any) => {
+        console.log(data.roomName);
+
         const url = 'http://localhost:5000/room/switchAllDevicesStatus/' + data.roomName + '?q=' + this.isTurnOn;
         fetch(url, {
             credentials: 'include',
@@ -546,15 +532,18 @@ class UserHomePage extends Component<Props, State> {
         });
     }
 
+    //validate text
+    //date=today => so sanh now <= start < end
+    //date > today => so sanh start<end
+
+
 
     //booking room: dùng chung cho update và insert 
     onHandleChangeBookingForm = async (event: any) => {
-        console.log('change');
 
         var target = event.target;
         var name = target.name;
         var value = target.type == 'checkbox' ? target.checked : target.value;
-        console.log(target.value);
 
         await this.setState({
             [name]: value
@@ -564,17 +553,62 @@ class UserHomePage extends Component<Props, State> {
         var { txtDateToBook, txtStartTime, txtEndTime, txtReasonToBook, selectedRoom } = this.state;
 
         if (txtDateToBook && txtStartTime && txtEndTime && txtReasonToBook) {
-            if (txtDateToBook < new Date().toLocaleString()) {
+            let currentDate = new Date();
+            let hh = currentDate.getHours();
+            let mm = currentDate.getMinutes();
+            let currentTime = hh + ":" + mm;
+            console.log(currentTime);
+            var today = new Date().toISOString().split("T")[0];
 
+            if (today === txtDateToBook) {
+                if (currentTime > txtStartTime) {
+                    this.setState({
+                        isStartTimeValid: false
+                    })
+                } else if (currentTime < txtStartTime) {
+                    this.setState({
+                        isStartTimeValid: true
+                    })
+                    if (txtStartTime < txtEndTime) {
+                        await this.setState({
+                            isDisableLoadEmptyRoomBtn: false,
+                            isStartTimeValid: true,
+                            isEndtimeValid: true
+                        })
+                        if (selectedRoom) {
+                            await this.setState({
+                                isDisableBookingBtn: false,
+                            })
+                        }
+                    } else {
+                        this.setState({
+                            isEndtimeValid: false
+                        })
+                    }
+                }
+
+            } else if (today < txtDateToBook) {
+                if (txtStartTime < txtEndTime) {
+                    await this.setState({
+                        isDisableLoadEmptyRoomBtn: false,
+                        isStartTimeValid: true,
+                        isEndtimeValid: true
+                    })
+                    if (selectedRoom) {
+                        await this.setState({
+                            isDisableBookingBtn: false,
+                        })
+                    }
+
+                } else {
+                    this.setState({
+                        isEndtimeValid: false
+                    })
+                }
             }
-            await this.setState({
-                isDisableLoadEmptyRoomBtn: false,
-            })
-            if (selectedRoom) {
-                await this.setState({
-                    isDisableBookingBtn: false,
-                })
-            }
+
+
+
 
         } else {
             await this.setState({
@@ -591,23 +625,19 @@ class UserHomePage extends Component<Props, State> {
             selectedRoom: ''
         })
         var { txtDateToBook, txtStartTime, txtEndTime } = this.state;
-        let today = new Date();
-        let currentTime = today.getHours() + ":" + today.getMinutes();
-
-        if (txtStartTime >= txtEndTime) {
-            toast.error("Endtime must be greater than start time!")
-        } else if (txtStartTime <= currentTime) {
-            toast.error("Starttime must be greater than current time!")
-        } else {
-            fetch(`http://localhost:5000/bookRoom/getAvailableRooms?date=${txtDateToBook}&startTime=${txtStartTime}&endTime=${txtEndTime}`, {
-                credentials: 'include',
-                headers: {
-                    'content-type': 'application/json',
-                },
-                method: 'GET',
-            }).then(res => {
-                if (res.ok) {
-                    return res.json().then(result => {
+        fetch(`http://localhost:5000/bookRoom/getAvailableRooms?date=${txtDateToBook}&startTime=${txtStartTime}&endTime=${txtEndTime}`, {
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+            method: 'GET',
+        }).then(res => {
+            if (res.ok) {
+                return res.json().then(result => {
+                    this.setState({
+                        availableRooms: result
+                    })
+                    if (!this.state.selectedRoom) {
                         this.setState({
                             availableRooms: result
                         })
@@ -626,10 +656,6 @@ class UserHomePage extends Component<Props, State> {
             }).catch(e => {
                 console.log(e);
             });
-
-        }
-
-
     }
 
     getSelectedRoom = async (room: string) => {
@@ -671,9 +697,6 @@ class UserHomePage extends Component<Props, State> {
                     isDisableBookingBtn: true,
                     isDisableLoadEmptyRoomBtn: true,
                     availableRooms: [],
-                    isAgreeRuleBooking: false,
-                    isShowValidateLoadEmptyRoom: false,
-                    isAllowToLoadEmptyRooms: true,
 
                 })
 
@@ -707,26 +730,19 @@ class UserHomePage extends Component<Props, State> {
             endTime: this.state.txtEndTime,
             reason: this.state.txtReasonToBook,
             userId: this.state.currentUser.employeeId,
-            actionNotiId: this.state.actionNotiId,
             id: '',
         }
-        if (this.state.updatingIdBooking) {
-            //update
-            bookRoom["id"] = this.state.updatingIdBooking
-            this.updateBookingRequest(bookRoom);
-        } else {
-            //insert
-            // this.props.(bookRoom);
-            this.createBookingRoom(bookRoom);
-        }
+
+        this.createBookingRoom(bookRoom);
+
 
     }
 
 
 
 
-    deleteBookingRequest = (idBooking: string, message: string, actionNotiId: string) => {
-        fetch(`http://localhost:5000/bookRoom/delete/${idBooking}/?message=${message}?actionNotiId=${actionNotiId}`, {
+    deleteBookingRequest = (idBooking: string, message: string, status: string) => {
+        fetch(`http://localhost:5000/bookRoom/delete/${idBooking}/?message=${message}&status=${status}`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -745,8 +761,8 @@ class UserHomePage extends Component<Props, State> {
 
     }
 
-    deleteReportErrorRequest = (idReport: string, message: string, actionNotiId: string) => {
-        fetch(`http://localhost:5000/reportError/delete/${idReport}?message=${message}?actionNotiId=${actionNotiId}`, {
+    deleteReportErrorRequest = (idReport: string, message: string) => {
+        fetch(`http://localhost:5000/reportError/delete/${idReport}?message=${message}`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -765,138 +781,32 @@ class UserHomePage extends Component<Props, State> {
 
     }
 
-    onDeleteRequest = (typeRquest: string, id: string, message: string, actionNotiId: string) => {
-        var result = window.confirm('Are you sure to delete ' + message + ' ?')
-        if (result) {
-            //delete booking in db
-            if (typeRquest === "bookRoomRequest") {
-                this.deleteBookingRequest(id, message, actionNotiId);
-            }
-            //delete reporterror in db
-            if (typeRquest === "reportErrorRequest") {
-                this.deleteReportErrorRequest(id, message, actionNotiId);
-            }
-            //update state
-            const newArr = this.state.historyRequest.filter(mess => {
-                return mess.id !== id;
-            })
-            this.setState({ historyRequest: newArr })
-        }
-    }
-
-    onGetValueToUpdateForm = (id: string, requestType: string) => {
-        //lấy data từ db->gán vào state
-        if (requestType === "bookRoomRequest") {
-            fetch(`http://localhost:5000/bookRoom/edit/${id}`, {
-                credentials: 'include',
-                headers: {
-                    'content-type': 'application/json',
-                },
-                method: 'GET',
-            }).then(res => {
-                if (res.status === 200) {
-                    return res.json().then(result => {
-                        this.setState({
-                            txtDateToBook: formatDate(result.date),
-                            txtStartTime: formatTime(result.startTime),
-                            txtEndTime: formatTime(result.endTime),
-                            cbbRoomToBook: result.roomName,
-                            txtReasonToBook: result.reason,
-                            isDisableBookingBtn: false,
-                            isAgreeRuleBooking: true,
-                            isShowValidateLoadEmptyRoom: true,
-                            isAllowToLoadEmptyRooms: false,
-                            updatingIdBooking: id,
-                            actionNotiId: result.actionNotiId,
-                        })
-
-
-                    })
-                }
-                else {
-                    return res.json().then(result => { console.log(result.error) });
-                }
-            }).catch(e => {
-                console.log(e);
-            });
-        }
-        if (requestType === "reportErrorRequest") {
-            fetch(`http://localhost:5000/reportError/edit/${id}`, {
-                credentials: 'include',
-                headers: {
-                    'content-type': 'application/json',
-                },
-                method: 'GET',
-            }).then(res => {
-                if (res.status === 200) {
-                    return res.json().then(result => {
-                        this.setState({
-                            cbbDeviceToReport: result.deviceNames,
-                            cbbRoomToReport: result.roomName,
-                            txtDescriptionToReport: result.description,
-                            updatingIdReport: id,
-                            actionNotiId: result.actionNotiId,
-                        })
-
-
-                    })
-                }
-                else {
-                    return res.json().then(result => { console.log(result.error) });
-                }
-            }).catch(e => {
-                console.log(e);
-            });
-        }
-    }
-
-    updateBookingRequest = (booking: any) => {
-        //dựa vào id trên state, update thông tin thay đổi trong form
-        fetch(`http://localhost:5000/bookRoom/update`, {
-            credentials: 'include',
-            headers: {
-                'content-type': 'application/json',
-            },
-            method: 'PUT',
-            body: JSON.stringify(booking),
-        }).then(res => {
-            if (res.status === 200) {
-                toast.success("Update booking request successfully!");
-
-                //close form
-                document.getElementById('closeBookRoomUpdateModal')?.click();
-                //update history form
+    onDeleteRequest = (status: string, id: string, message: string) => {
+        if (status === "changing") {
+            var result = window.confirm('Are you sure to cancel changing ' + message + ' ?')
+            if (result) {
+                this.deleteBookingRequest(id, message, status);
+                //update state
                 let arr = this.state.historyRequest;
-                let changingIndex = arr.findIndex((x: any) => x.id == this.state.updatingIdBooking);
-
-                arr[changingIndex].title = "request to book room " + booking.roomName + " at " + booking.date + " " + booking.startTime + "-" + booking.endTime;
-                this.setState({ historyRequest: arr })
-
-                //make form empty
-                this.setState({
-                    cbbRoomToBook: "",
-                    txtDateToBook: "",
-                    txtStartTime: "",
-                    txtEndTime: "",
-                    txtReasonToBook: "",
-                    updatingIdBooking: "",
-                    actionNotiId: "",
+                var changingIndex = arr.findIndex((x: any) => x.id == id);
+                arr[changingIndex].status = "accepted",
+                    this.setState({ messageToUser: arr })
+            }
+        }
+        if (status === "accepted" || status === "pending") {
+            var result = window.confirm('Are you sure to cancel ' + message + ' ?')
+            if (result) {
+                this.deleteBookingRequest(id, message, status);
+                //update state
+                const newArr = this.state.historyRequest.filter(mess => {
+                    return mess.id !== id;
                 })
+                this.setState({ historyRequest: newArr })
             }
-            else {
-                return res.json().then(result => { console.log(result.error) });
-            }
-        }).catch(e => {
-            console.log(e);
-        });
+        }
     }
 
-    // onSubmitUpdateBookingForm=(event: any)=>{
-    //     event.preventDefault();
-    // }
-    // onHandleChangeUpdateBookingForm=()=>{
 
-    // }
 
     sendReportError = (reportError: any) => {
         fetch('http://localhost:5000/reportError/sendReportError', {
@@ -950,60 +860,15 @@ class UserHomePage extends Component<Props, State> {
             deviceNames: this.state.cbbDeviceToReport,
             description: this.state.txtDescriptionToReport,
             userId: this.state.currentUser.employeeId,
-            actionNotiId: this.state.actionNotiId,
             id: '',
         }
-        if (this.state.updatingIdReport) {
-            //update
-            errorReport["id"] = this.state.updatingIdReport
-            this.updateReportErrorRequest(errorReport);
-        } else {
-            //insert
-            this.sendReportError(errorReport);
 
-        }
+        //insert
+        this.sendReportError(errorReport);
 
 
-    }
 
 
-    updateReportErrorRequest = (reportError: any) => {
-        //dựa vào id trên state, update thông tin thay đổi trong form
-        fetch(`http://localhost:5000/reportError/update`, {
-            credentials: 'include',
-            headers: {
-                'content-type': 'application/json',
-            },
-            method: 'PUT',
-            body: JSON.stringify(reportError),
-        }).then(res => {
-            if (res.status === 200) {
-
-                //close form
-                document.getElementById('closeUpdateReportErrorModal')?.click();
-                //update history form
-                let arr = this.state.historyRequest;
-                let changingIndex = arr.findIndex((x: any) => x.id == this.state.updatingIdReport);
-                arr[changingIndex].title = "request to report error at room " + reportError.roomName;
-                this.setState({ historyRequest: arr })
-
-                //make form empty
-                this.setState({
-                    cbbDeviceToReport: [],
-                    cbbRoomToReport: "",
-                    txtDescriptionToReport: "",
-                    updatingIdReport: "",
-                    actionNotiId: "",
-                })
-                toast.success("Update report error request successfully!");
-
-            }
-            else {
-                return res.json().then(result => { console.log(result.error) });
-            }
-        }).catch(e => {
-            console.log(e);
-        });
     }
 
     getCurrentRoom = () => {
@@ -1016,8 +881,6 @@ class UserHomePage extends Component<Props, State> {
         }).then(res => {
             if (res.ok) {
                 return res.json().then(result => {
-
-
                     if (result) {
                         this.setState({
                             currentRoomPermission: result.room,
@@ -1027,6 +890,8 @@ class UserHomePage extends Component<Props, State> {
                             currentCalendarId: result.id,
                         })
                     }
+
+
                 })
             }
             else {
@@ -1088,45 +953,71 @@ class UserHomePage extends Component<Props, State> {
         });
 
     }
-    notifyBookingRoomSuccess = () => toast.success("Sent booking room request successfully!");
-    notifyReportErrorSuccess = () => toast.success("Sent report error request successfully!");
-    onHandleChangeBookingForm1 = (date: any) => {
 
-        console.log(date);
+    getAllRooms = () => {
+        fetch(`http://localhost:5000/room/getAllRooms`, {
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+            method: 'GET',
+        }).then(res => {
+            if (res.ok) {
+                return res.json().then(result => {
+                    if (result) {
+                        this.setState({
+                            allRooms: result
+                        })
+                        console.log(this.state.allRooms);
+
+                    }
+
+
+                })
+            }
+            else {
+                return res.json().then(result => { console.log(result.error) });
+            }
+        }).catch(e => {
+            console.log(e);
+        });
 
     }
+
+    notifyBookingRoomSuccess = () => toast.success("Sent booking room request successfully!");
+    notifyReportErrorSuccess = () => toast.success("Sent report error request successfully!");
+
     render() {
-
-
-        var { currentDatePermission, currentEndTimePermission, currentRoomPermission, currentStartTimePermission, availableRooms, messageToUser, lightOn, fanOn, conditionerOn, powerPlugOn, currentUser, isDisableBookingBtn, isDisableLoadEmptyRoomBtn, isShowValidateLoadEmptyRoom } = this.state;
+        var { currentDatePermission, currentEndTimePermission, currentRoomPermission, currentStartTimePermission, availableRooms, messageToUser, lightOn, fanOn, conditionerOn, powerPlugOn, currentUser, isDisableBookingBtn, isDisableLoadEmptyRoomBtn } = this.state;
         return (
             <div>
                 <ToastContainer />
                 <nav className="navbar navbar-primary navbar-transparent navbar-absolute">
-                    <div className="container">
-                        <div className="navbar-header">
+
+                    <div className="container off-canvas-sidebar">
+                        <div className="navbar-header menu-user-homepage-header">
                             <h4><strong>Smart Room Management System</strong></h4>
                         </div>
-                        <div className="collapse navbar-collapse">
+                        <div className="collapse navbar-collapse menu-user-homepage">
                             <ul className="nav navbar-nav navbar-right">
-                                <li className="">
-                                    <a href="#" className="userLoginName">
+                                <li>
+                                    <a href="" className="userLoginName">
                                         <i className="material-icons">assignment_ind</i> {currentUser.name}
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" data-toggle="modal" data-target="#calendarModal">
+                                    <a href="" data-toggle="modal" data-target="#calendarModal">
                                         <i className="material-icons">event_available</i> Calendar
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="#" data-toggle="modal" data-target="#historyRequestModal" onClick={() => this.getHistoryRequest(currentUser.employeeId)}>
+                                    <a href="" data-toggle="modal" data-target="#historyRequestModal" onClick={() => this.getHistoryRequest(currentUser.employeeId)}>
                                         <i className="material-icons">history</i> History request
                                     </a>
                                 </li>
 
                                 <li className="dropdown">
-                                    <a href="#" className="dropdown-toggle" data-toggle="dropdown">
+                                    <a href="" className=" dropdown-toggle" data-toggle="dropdown">
                                         <i className="material-icons">notifications</i>Notification
                                     <span className="notification notiNumber">1</span>
                                         <p className="hidden-lg hidden-md">
@@ -1166,7 +1057,7 @@ class UserHomePage extends Component<Props, State> {
                                 </li>
 
                                 <li>
-                                    <a onClick={() => logout(this.props.history)}>
+                                    <a href="" onClick={() => logout(this.props.history)}>
                                         <i className="material-icons">input</i> Logout
                                     </a>
                                 </li>
@@ -1180,7 +1071,7 @@ class UserHomePage extends Component<Props, State> {
                             <div className="container">
                                 <div className="row">
                                     <div className="col-md-12 app-name-position text-center">
-                                        <h2 className="title">Do what you need - need what you do</h2>
+                                        <h2 className="title title-fontfamily">Do what you need - Need what you do</h2>
                                     </div>
                                 </div>
                                 <div className="row">
@@ -1197,7 +1088,7 @@ class UserHomePage extends Component<Props, State> {
                                                     If you have permission to turn on/off devices, please click here.
                                     </p>
                                                 <button className="btn btn-warning btn-round" data-toggle="modal"
-                                                    data-target="#controlDevicesModal" onClick={this.onControlDevices} disabled={currentRoomPermission === "" ? true : false}>Control now</button>
+                                                    data-target="#controlDevicesModal" onClick={this.onControlDevices} disabled={!currentRoomPermission ? true : false}>Control now</button>
                                             </div>
                                         </div>
                                     </div>
@@ -1230,8 +1121,8 @@ class UserHomePage extends Component<Props, State> {
                                                 <p className="card-description">
                                                     Please send report when finding devices' error
                                     </p>
-                                                <a href="#pablo" className="btn btn-warning btn-round" data-toggle="modal"
-                                                    data-target="#reportErrorModal">Report now</a>
+                                                <button onClick={this.getAllRooms} className="btn btn-warning btn-round" data-toggle="modal"
+                                                    data-target="#reportErrorModal">Report now</button>
                                             </div>
                                         </div>
                                     </div>
@@ -1246,8 +1137,8 @@ class UserHomePage extends Component<Props, State> {
                                                 <p className="card-description">
                                                     Click here if you want to change to another room.
                                     </p>
-                                                <button disabled={currentRoomPermission === "" ? true : false} className="btn btn-warning btn-round" data-toggle="modal"
-                                                    data-target="#changeRoomModal" onClick={this.getCurrentRoom}>Change now</button>
+                                                <button disabled={!currentRoomPermission ? true : false} className="btn btn-warning btn-round" data-toggle="modal"
+                                                    data-target="#changeRoomModal">Change now</button>
                                             </div>
                                         </div>
                                     </div>
@@ -1342,21 +1233,21 @@ class UserHomePage extends Component<Props, State> {
                                                     <div className="col-md-4">
                                                         <div className="form-group is-empty">
                                                             <label className="control-label">Date</label>
-                                                            {/* <input type="date" className="form-control" name="txtDateToBook"  value={this.state.txtDateToBook} onChange={this.onHandleChangeBookingForm} /> */}
-                                                            <input type="" className="form-control datepicker" name="txtDateToBook" value={this.state.txtDateToBook} onSelect={() => this.onHandleChangeBookingForm1("a")} />
+                                                            <input type="date" id="dateToBook" className="form-control" name="txtDateToBook" value={this.state.txtDateToBook} onChange={this.onHandleChangeBookingForm} />
+                                                            {/* <input type="" className="form-control datepicker" name="txtDateToBook"  value={this.state.txtDateToBook} onSelect={()=>this.onHandleChangeBookingForm1("a")} /> */}
                                                         </div>
                                                     </div>
                                                     <div className="col-md-4">
                                                         <div className="form-group is-empty">
-                                                            <label className="control-label">Start Time</label>
-                                                            {/* <input type="time" className="form-control" name="txtStartTime" value={this.state.txtStartTime} onChange={this.onHandleChangeBookingForm1} /> */}
-                                                            <input className="form-control timepicker" name="txtStartTime" value={this.state.txtStartTime} onChange={this.onHandleChangeBookingForm1} ></input>
+                                                            <label className="control-label">Start Time <span className="text-warning">{this.state.isStartTimeValid ? "" : "*Start time must be greater than current time*"}</span></label>
+                                                            <input type="time" className="form-control" name="txtStartTime" value={this.state.txtStartTime} onChange={this.onHandleChangeBookingForm} />
+                                                            {/* <input  className="form-control timepicker" name="txtStartTime" value={this.state.txtStartTime} onChange={this.onHandleChangeBookingForm1} ></input> */}
                                                         </div>
                                                     </div>
                                                     <div className="col-md-4">
                                                         <div className="form-group is-empty">
-                                                            <label className="control-label">End Time</label>
-                                                            <input className="form-control timepicker" name="txtEndTime" value={this.state.txtEndTime} onChange={this.onHandleChangeBookingForm1} />
+                                                            <label className="control-label">End Time<span className="text-warning">{this.state.isEndtimeValid ? "" : "*End time must be greater than start time*"}</span></label>
+                                                            <input type="time" className="form-control" name="txtEndTime" value={this.state.txtEndTime} onChange={this.onHandleChangeBookingForm} />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1370,42 +1261,7 @@ class UserHomePage extends Component<Props, State> {
 
 
 
-                                                {/* <div className="form-group"> */}
-                                                {/* <label className="label-control">Room Name <small className="validate-loadEmptyRoom" hidden={isShowValidateLoadEmptyRoom}>*Please select date and time before choosing room</small> </label> */}
-                                                {/* <select className="selectpicker" data-style="select-with-transition" title="Choose Room" data-size="7" name="cbbRoomToBook" */}
-                                                {/* value={this.state.cbbRoomToBook} onChange={this.onHandleChangeBookingForm}> */}
-                                                {/* <option disabled> Choose room</option>
-                                                        <option value="201">Room 201 </option>
-                                                        <option value="202">Room 202</option>
-                                                        <option value="203">Room 203</option>
-                                                        <option value="204">Room 204</option>
-                                                        <option value="205">Room 205 </option>
-                                                        <option value="206">Room 206</option>
-                                                        <option value="207">Room 207 </option>
-                                                        <option value="208">Room 208</option>
-                                                        <option value="209">Room 209</option>
-                                                        <option value="210">Room 210</option>
-                                                        <option value="211">Room 211</option>
-                                                        <option value="212">Room 212</option>
-                                                        <option value="213">Room 213 </option>
-                                                        <option value="214">Room 214</option>
-                                                        <option value="215">Room 215</option>
-                                                        <option value="216">Room 216</option>
-                                                        <option value="217">Room 217</option>
-                                                        <option value="218">Room 218</option>
-                                                    </select>
-                                                </div> */}
 
-
-
-
-                                                {/* <div className="checkbox">
-                                                    <label>
-                                                        <input type="checkbox" name="isAgreeRuleBooking" checked={this.state.isAgreeRuleBooking} onChange={this.onHandleChangeBookingForm} /><span
-                                                            className="checkbox-material" ></span> I agree to the &nbsp;
-                                                        <a href="#something">rules</a>.
-                                                    </label>
-                                                </div> */}
 
                                                 <div className="form-group is-empty">
                                                     <button className="btn btn-warning" type="button" disabled={isDisableLoadEmptyRoomBtn} onClick={this.loadAvailableRoom}>
@@ -1438,122 +1294,6 @@ class UserHomePage extends Component<Props, State> {
 
 
 
-                <div id="updateBookRoomModal" className="modal fade blur" role="dialog">
-                    <div className="modal-dialog dialogWidth">
-
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <button id="closeBookRoomUpdateModal" type="button" className="close" data-dismiss="modal">&times;</button>
-                                <h2 className="modal-title text-center">Update booking room</h2>
-                            </div>
-                            <div className="modal-body">
-                                <div className="row mgTop3">
-                                    <div className="col-md-5 col-md-offset-1">
-                                        <div className="card-content">
-                                            <div className="info info-horizontal">
-                                                <div className="icon icon-rose">
-                                                    <i className="material-icons">gavel</i><span className="ruleFormat">Rules</span>
-                                                </div>
-                                                <div className="description">
-                                                    <h4 className="info-title">Date and Time</h4>
-                                                    <p className="description">
-                                                        You can book room all day in a week from 7:00 - 22:00
-                                        </p>
-                                                </div>
-                                            </div>
-                                            <div className="info info-horizontal">
-                                                <div className="description">
-                                                    <h4 className="info-title">Rule two</h4>
-                                                    <p className="description">
-                                                        This is rule two 's content. We've developed the website with HTML5 and CSS3.
-                                                        The client has access to the
-                                                        code using GitHub.
-                                        </p>
-                                                </div>
-                                            </div>
-                                            <div className="info info-horizontal">
-                                                <div className="description">
-                                                    <h4 className="info-title">Rule three</h4>
-                                                    <p className="description">
-                                                        This is rule 3's contents. There is also a Fully Customizable CMS Admin
-                                                        Dashboard for this product.
-                                        </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="col-md-5">
-
-                                        <form className="form" method="" action="" onSubmit={this.onSubmitBookingForm}>
-
-                                            <div className="card-content">
-                                                <div className="form-group">
-                                                    <label className="label-control">Date</label>
-                                                    <input type="date" className="form-control" name="txtDateToBook" value={this.state.txtDateToBook} onChange={this.onHandleChangeBookingForm} />
-                                                </div>
-                                                <div className="form-group">
-                                                    <label className="label-control">Start Time</label>
-                                                    <input type="time" className="form-control" name="txtStartTime" value={this.state.txtStartTime} onChange={this.onHandleChangeBookingForm} />
-                                                </div>
-                                                <div className="form-group">
-                                                    <label className="label-control">End Time</label>
-                                                    <input type="time" className="form-control" name="txtEndTime" value={this.state.txtEndTime} onChange={this.onHandleChangeBookingForm} />
-                                                </div>
-                                                <div className="form-group">
-                                                    <label className="label-control">Room Name <small className="validate-loadEmptyRoom" hidden={isShowValidateLoadEmptyRoom}>*Please select date and time before choosing room</small> </label>
-                                                    <select className="selectpicker" data-style="select-with-transition" name="cbbRoomToBook"
-                                                        value={this.state.cbbRoomToBook} onChange={this.onHandleChangeBookingForm}>
-                                                        {/* update */}
-                                                        {/* name="cbbRoomToBook" value={this.state.cbbRoomToBook} onChange={this.onHandleChangeUpdateBookingForm} */}
-                                                        <option disabled> Choose room</option>
-                                                        <option value="201">Room 201 </option>
-                                                        <option value="202">Room 202</option>
-                                                        <option value="203">Room 203</option>
-                                                        <option value="204">Room 204</option>
-                                                        <option value="205">Room 205 </option>
-                                                        <option value="206">Room 206</option>
-                                                        <option value="207">Room 207 </option>
-                                                        <option value="208">Room 208</option>
-                                                        <option value="209">Room 209</option>
-                                                        <option value="210">Room 210</option>
-                                                        <option value="211">Room 211</option>
-                                                        <option value="212">Room 212</option>
-                                                        <option value="213">Room 213 </option>
-                                                        <option value="214">Room 214</option>
-                                                        <option value="215">Room 215</option>
-                                                        <option value="216">Room 216</option>
-                                                        <option value="217">Room 217</option>
-                                                        <option value="218">Room 218</option>
-                                                    </select>
-                                                </div>
-
-                                                <div className="form-group">
-                                                    <label className="control-label">Reason</label>
-                                                    <input className="form-control" name="txtReasonToBook" value={this.state.txtReasonToBook} onChange={this.onHandleChangeBookingForm}></input>
-                                                    <span className="material-input"></span>
-                                                </div>
-
-
-                                                <div className="checkbox">
-                                                    <label>
-                                                        <input type="checkbox" name="isAgreeRuleBooking" checked={this.state.isAgreeRuleBooking} onChange={this.onHandleChangeBookingForm} /><span
-                                                            className="checkbox-material" ></span> I agree to the &nbsp;
-                                                        <a href="#something">rules</a>.
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            <div className="footer text-center pdBottom5">
-                                                <button type="submit" className="btn btn-primary btn-round">Update now</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
 
 
                 <div id="reportErrorModal" className="modal fade blur" role="dialog">
@@ -1575,29 +1315,15 @@ class UserHomePage extends Component<Props, State> {
 
                                                 <div className="form-group">
                                                     <label className="label-control">Room Name</label>
-                                                    <select className="selectpicker" data-style="select-with-transition" name="cbbRoomToReport" title="Choose Room"
+                                                    <select className="form-control" name="cbbRoomToReport" title="Choose Room"
                                                         value={this.state.cbbRoomToReport} onChange={this.onHandleChangeReportErrorForm}>
-                                                        {/* update */}
-                                                        {/* name="cbbRoomToBook" value={this.state.cbbRoomToBook} onChange={this.onHandleChangeUpdateBookingForm} */}
-                                                        <option disabled> Choose room</option>
-                                                        <option value="201">Room 201 </option>
-                                                        <option value="202">Room 202</option>
-                                                        <option value="203">Room 203</option>
-                                                        <option value="204">Room 204</option>
-                                                        <option value="205">Room 205 </option>
-                                                        <option value="206">Room 206</option>
-                                                        <option value="207">Room 207 </option>
-                                                        <option value="208">Room 208</option>
-                                                        <option value="209">Room 209</option>
-                                                        <option value="210">Room 210</option>
-                                                        <option value="211">Room 211</option>
-                                                        <option value="212">Room 212</option>
-                                                        <option value="213">Room 213 </option>
-                                                        <option value="214">Room 214</option>
-                                                        <option value="215">Room 215</option>
-                                                        <option value="216">Room 216</option>
-                                                        <option value="217">Room 217</option>
-                                                        <option value="218">Room 218</option>
+                                                        {
+                                                            this.state.allRooms && this.state.allRooms.map((room, index) => {
+                                                                return <option key={index} value={room}>Room {room} </option>
+
+                                                            })
+                                                        }
+
                                                     </select>
                                                 </div>
                                                 <div className="form-group">
@@ -1622,116 +1348,6 @@ class UserHomePage extends Component<Props, State> {
                                             </div>
                                             <div className="footer text-center textGetStarted">
                                                 <button type="submit" className="btn btn-primary btn-round">Report now</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="updateReportErrorModal" className="modal fade blur" role="dialog">
-                    <div className="modal-dialog dialogWidth">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <button id="closeUpdateReportErrorModal" type="button" className="close" data-dismiss="modal">&times;</button>
-                                <h2 className="modal-title text-center">Update Report Error</h2>
-                            </div>
-                            <div className="modal-body">
-                                <div className="row">
-                                    <div className="col-md-5 col-md-offset-1">
-                                        <div className="card-content">
-                                            <div className="info info-horizontal">
-                                                <div className="icon icon-rose">
-                                                    <i className="material-icons">
-                                                        flutter_dash</i><span className="textSpan">Thank you for feedback error</span>
-                                                </div>
-                                                <div className="description">
-                                                    <h4 className="info-title">Date and Time</h4>
-                                                    <p className="description">
-                                                        You can book room all day in a week from 7:00 - 22:00
-                                        </p>
-                                                </div>
-                                            </div>
-                                            <div className="info info-horizontal">
-                                                <div className="description">
-                                                    <h4 className="info-title">Rule two</h4>
-                                                    <p className="description">
-                                                        This is rule two 's content. We've developed the website with HTML5 and CSS3.
-                                                        The client has access to the
-                                                        code using GitHub.
-                                        </p>
-                                                </div>
-                                            </div>
-                                            <div className="info info-horizontal">
-                                                <div className="description">
-                                                    <h4 className="info-title">Rule three</h4>
-                                                    <p className="description">
-                                                        This is rule 3's contents. There is also a Fully Customizable CMS Admin
-                                                        Dashboard for this product.
-                                        </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="col-md-5">
-
-                                        <form className="form" onSubmit={this.onSubmitReportErrorForm}>
-
-                                            <div className="card-content">
-
-                                                <div className="form-group">
-                                                    <label className="label-control">Room Name</label>
-                                                    <select className="selectpicker" data-style="select-with-transition" name="cbbRoomToReport" title="Choose Room"
-                                                        value={this.state.cbbRoomToReport} onChange={this.onHandleChangeReportErrorForm}>
-                                                        {/* update */}
-                                                        {/* name="cbbRoomToBook" value={this.state.cbbRoomToBook} onChange={this.onHandleChangeUpdateBookingForm} */}
-                                                        <option disabled> Choose room</option>
-                                                        <option value="201">Room 201 </option>
-                                                        <option value="202">Room 202</option>
-                                                        <option value="203">Room 203</option>
-                                                        <option value="204">Room 204</option>
-                                                        <option value="205">Room 205 </option>
-                                                        <option value="206">Room 206</option>
-                                                        <option value="207">Room 207 </option>
-                                                        <option value="208">Room 208</option>
-                                                        <option value="209">Room 209</option>
-                                                        <option value="210">Room 210</option>
-                                                        <option value="211">Room 211</option>
-                                                        <option value="212">Room 212</option>
-                                                        <option value="213">Room 213 </option>
-                                                        <option value="214">Room 214</option>
-                                                        <option value="215">Room 215</option>
-                                                        <option value="216">Room 216</option>
-                                                        <option value="217">Room 217</option>
-                                                        <option value="218">Room 218</option>
-                                                    </select>
-                                                </div>
-                                                <div className="form-group">
-                                                    <label className="label-control">Device Name</label>
-                                                    <select className="selectpicker" data-style="select-with-transition" multiple title="Choose Device" data-size="7" name="cbbDeviceToReport"
-                                                        onChange={this.onHandleChangeReportErrorForm}>
-                                                        {/* update */}
-                                                        {/* name="cbbRoomToBook" value={this.state.cbbRoomToBook} onChange={this.onHandleChangeUpdateBookingForm} */}
-                                                        <option disabled> Choose Device</option>
-                                                        <option value="light">Light </option>
-                                                        <option value="fan">Fan</option>
-                                                        <option value="powerPlug">Power Plug</option>
-                                                        <option value="airConditioner">Air-Conditioner</option>
-                                                    </select>
-                                                </div>
-
-                                                <div className="form-group">
-                                                    <label className="control-label">Description</label>
-                                                    <input className="form-control" name="txtDescriptionToReport" value={this.state.txtDescriptionToReport} onChange={this.onHandleChangeReportErrorForm}></input>
-                                                    <span className="material-input"></span>
-                                                </div>
-
-                                            </div>
-                                            <div className="footer text-center textGetStarted">
-                                                <button type="submit" className="btn btn-primary btn-round">Update</button>
                                             </div>
                                         </form>
                                     </div>
@@ -1799,7 +1415,6 @@ class UserHomePage extends Component<Props, State> {
                                                 columns={
                                                     [
                                                         { title: "ID", field: "id", hidden: true },
-                                                        { title: "actionNotiId", field: "actionNotiId", hidden: true },
                                                         { title: "Title", field: "title" },
                                                         {
                                                             title: "Request Type", field: "requestType",
@@ -1822,15 +1437,27 @@ class UserHomePage extends Component<Props, State> {
                                                             render: (rowData: any) => {
                                                                 return rowData.status == "accepted" ? <span className="label label-success" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
                                                                     rowData.status == "pending" ? <span className="label label-warning" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
-                                                                        <span className="label label-default" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span>
+                                                                        rowData.status == "changing" ? <span className="label label-info" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
+                                                                            rowData.status == "confirmed" ? <span className="label label-rose" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
+                                                                                <span className="label label-default" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span>
                                                             }
                                                         },
                                                         {
                                                             title: "Actions", render: (rowData: any) => {
-                                                                return rowData.requestType == "bookRoomRequest" || rowData.requestType == "changeRoomRequest"
+                                                                let bookingDate = formatDate(rowData.date) + "T" + formatTime(rowData.endTime);
+                                                                let today = new Date();
+                                                                let dd = String(today.getDate()).padStart(2, '0');
+                                                                let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+                                                                let yyyy = today.getFullYear();
+
+                                                                let date = yyyy + '-' + mm + '-' + dd;
+                                                                let time = today.getHours() + ':' + today.getMinutes();
+                                                                let fullDate = date + "T" + time;
+
+                                                                return (rowData.requestType == "bookRoomRequest" && rowData.status == "changing" && bookingDate > fullDate) || (rowData.requestType == "bookRoomRequest" && rowData.status == "accepted" && bookingDate > fullDate) || (rowData.requestType == "bookRoomRequest" && rowData.status == "pending" && bookingDate > fullDate)
                                                                     ?
                                                                     <div className="btn-action-container-flex">
-                                                                        <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" onClick={(e) => this.onDeleteRequest(rowData.requestType, rowData.id, rowData.title, rowData.actionNotiId)}>
+                                                                        <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" onClick={(e) => this.onDeleteRequest(rowData.status, rowData.id, rowData.title)}>
                                                                             <span className="MuiIconButton-label">
                                                                                 <span className="material-icons MuiIcon-root btn-delete-color" aria-hidden="true">delete</span>
                                                                             </span>

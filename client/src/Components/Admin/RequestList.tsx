@@ -31,13 +31,7 @@ var columns = [
             return <small>{moment(formatDateTime(rowData.sendAt)).format('MMMM Do YYYY, h:mm:ss a')}</small>
         }
     },
-    {
-        title: "Solved?", field: "sender",
-        render: (rowData: any) => {
-            return rowData.sender == "accepted" ? <span className="label label-success" style={{ padding: "3px 5px 3px 5px" }}>Yes</span> :
-                    <span className="label label-default" style={{ padding: "3px 5px 3px 5px" }}>No</span>
-        }
-    },
+
 ]
 class BannedList extends Component<Props, State> {
     constructor(props: Props) {
