@@ -89,6 +89,7 @@ class App extends Component<Props, State>{
           <Switch>
             <Route path='/' exact component={Login} ></Route>
             <Route path='/userHomePage' component={UserHomePage}></Route>
+            <Route path='/adminHomePage' component={AdminHomePage}></Route>
             <Route path='/testML' component={testML}></Route>
             {/* <Route component={NotFound} exact={true}></Route> */}
           </Switch>
