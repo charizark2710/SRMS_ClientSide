@@ -58,7 +58,7 @@ class Header extends Component<Props, State> {
     db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_added', (snap: any) => {
       console.log("child-add-on");
       const mail: message = snap.val();
-      if (mail) {
+      if (mail.url !=="") {
         this.setState({ messages: [... this.state.messages, mail] })
       }
     });
@@ -66,14 +66,14 @@ class Header extends Component<Props, State> {
       console.log("child-add-off");
 
       const mail: message = snap.val();
-      if (mail) {
+      if (mail.url !=="") {
         this.setState({ messages: [... this.state.messages, mail] })
       }
     });
     db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_changed', (snap: any) => {
       const mail: message = snap.val();
       console.log("child-change-on");
-      if (mail.isRead) {//đánh dấu ĐÃ ĐỌC
+      if (mail.isRead && mail.url !=="") {//đánh dấu ĐÃ ĐỌC
         const arr = this.state.messages;
         var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
         arr[changingIndex].isRead = true,
@@ -82,21 +82,21 @@ class Header extends Component<Props, State> {
           arr[changingIndex].sendAt = mail.sendAt,
           this.setState({ messages: arr })
       }
-      if(!mail.isValid){//valid->invalid do cập nhật hoặc xóa
-        const arr = this.state.messages;
-        var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-          arr[changingIndex].isRead = mail.isRead,
-          arr[changingIndex].message = mail.message,
-          arr[changingIndex].sender = mail.sender,
-          arr[changingIndex].sendAt = mail.sendAt,
-          arr[changingIndex].isValid =false;
-          this.setState({ messages: arr })
-      }
+      // if(!mail.isValid){//valid->invalid do cập nhật hoặc xóa
+      //   const arr = this.state.messages;
+      //   var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
+      //     arr[changingIndex].isRead = mail.isRead,
+      //     arr[changingIndex].message = mail.message,
+      //     arr[changingIndex].sender = mail.sender,
+      //     arr[changingIndex].sendAt = mail.sendAt,
+      //     arr[changingIndex].isValid =false;
+      //     this.setState({ messages: arr })
+      // }
     });
     db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_changed', (snap: any) => {
       const mail: message = snap.val();
       console.log("child-change-on");
-      if (mail.isRead) {//đánh dấu ĐÃ ĐỌC
+      if (mail.isRead && mail.url !=="") {//đánh dấu ĐÃ ĐỌC
         const arr = this.state.messages;
         var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
           arr[changingIndex].isRead = true,
@@ -106,16 +106,16 @@ class Header extends Component<Props, State> {
           this.setState({ messages: arr })
       }
       
-      if(!mail.isValid){//valid->invalid do cập nhật hoặc xóa
-        const arr = this.state.messages;
-        var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-          arr[changingIndex].isRead = mail.isRead,
-          arr[changingIndex].message = mail.message,
-          arr[changingIndex].sender = mail.sender,
-          arr[changingIndex].sendAt = mail.sendAt,
-          arr[changingIndex].isValid =false;
-          this.setState({ messages: arr })
-      }
+      // if(!mail.isValid){//valid->invalid do cập nhật hoặc xóa
+      //   const arr = this.state.messages;
+      //   var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
+      //     arr[changingIndex].isRead = mail.isRead,
+      //     arr[changingIndex].message = mail.message,
+      //     arr[changingIndex].sender = mail.sender,
+      //     arr[changingIndex].sendAt = mail.sendAt,
+      //     arr[changingIndex].isValid =false;
+      //     this.setState({ messages: arr })
+      // }
     });
 
 
@@ -187,7 +187,7 @@ class Header extends Component<Props, State> {
                   <div className="noti">Notifications</div>
                   {messages && messages.map((message, index) => {
                     return <li key={index}>
-                      <NavLink to={match.url+message.url} className={message.isValid?"":"invalid-noti-bg"}>
+                      <NavLink to={match.url+message.url} className={message.message.includes("cancel")?"invalid-noti-bg":""}>
                         <table className="tbl-width">
                           <tbody>
                             <tr>

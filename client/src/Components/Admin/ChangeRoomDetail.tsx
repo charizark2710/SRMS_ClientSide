@@ -292,7 +292,7 @@ class ChangeRoomDetail extends Component<Props, State> {
                                             <label className="col-sm-2 label-on-left">Find available room</label>
                                             <div className="col-sm-10">
                                                 <div className="form-group label-floating is-empty">
-                                                    <button className="btn btn-warning" type="button" onClick={this.loadAvailableRoom}>
+                                                    <button disabled={status!=="changing" ? true:false} className="btn btn-warning" type="button" onClick={this.loadAvailableRoom}>
                                                         <i className="material-icons">autorenew</i>
                                                     </button>
                                                 </div>

@@ -20,7 +20,18 @@ interface State {
     txtFromDate: string
     txtToDate: string,
     isDisableMornitorBtn: boolean,
-    report: any[]
+    report: any[],
+
+    
+    fanTime:number, 
+    conditionerTime:number, 
+    lightTime:number, 
+    powerPlugTime:number,
+    fanCost:number, 
+    conditionerCost:number, 
+    lightCost:number, 
+    powerPlugCost:number, 
+    totalCost:number 
 }
 
 // const [containerRef, { width: containerWidth }] = useMeasure();
@@ -48,7 +59,18 @@ class BannedList extends Component<Props, State> {
             txtFromDate: '',
             txtToDate: '',
             isDisableMornitorBtn: true,
-            report: []
+            report: [],
+
+            fanTime:0, 
+            conditionerTime:0, 
+            lightTime:0, 
+            powerPlugTime:0,
+            fanCost:0, 
+            conditionerCost:0, 
+            lightCost:0, 
+            powerPlugCost:0, 
+            totalCost:0 
+
         }
     }
 
@@ -61,7 +83,7 @@ class BannedList extends Component<Props, State> {
         await this.setState({
             txtFromDate: d.toISOString().slice(0, 10)
         })
-
+        console.log(this.state);
         this.getReport();
 
     }
@@ -106,6 +128,11 @@ class BannedList extends Component<Props, State> {
                         report: result
                     })
                     console.log(this.state.report);
+                    
+                    if(this.state.report){
+                        this.estimateCost();
+                    }
+
                 }
 
                 )
@@ -119,7 +146,56 @@ class BannedList extends Component<Props, State> {
 
     }
 
+    estimateCost=()=>{
+        let {
+            fanTime, 
+            conditionerTime, 
+            lightTime, 
+            powerPlugTime,
+            fanCost, 
+            conditionerCost, 
+            lightCost, 
+            powerPlugCost, 
+            totalCost }=this.state;
+
+        for (let i = 0; i < this.state.report.length; i++) {
+            const el = this.state.report[i];
+            fanTime += el.fan;
+            conditionerTime += el.conditioner;
+            lightTime += el.light;
+            powerPlugTime += el.powerPlug;
+        }
+
+        conditionerCost=Math.floor(conditionerTime*0.8*2536);
+        fanCost=Math.floor(fanTime*0.055*2536);
+        lightCost=Math.floor(lightTime*0.036*2536);
+        powerPlugCost=Math.floor(powerPlugTime*0.36*2536);
+        totalCost=conditionerCost+lightCost+fanCost+powerPlugCost;
+        this.setState({
+            fanTime:fanTime, 
+            conditionerTime:conditionerTime, 
+            lightTime:lightTime, 
+            powerPlugTime:powerPlugTime,
+            fanCost:fanCost, 
+            conditionerCost:conditionerCost, 
+            lightCost:lightCost, 
+            powerPlugCost:powerPlugCost, 
+            totalCost:totalCost,
+        })        
+
+    }
     render() {
+        let {
+            fanTime, 
+            conditionerTime, 
+            lightTime, 
+            powerPlugTime,
+            fanCost, 
+            conditionerCost, 
+            lightCost, 
+            powerPlugCost, 
+            totalCost }=this.state;
+
         return (
             <div className="content">
                 <div className="container-fluid">
@@ -191,34 +267,34 @@ class BannedList extends Component<Props, State> {
                                                 <tbody>
                                                     <tr>
                                                         <td>Light</td>
-                                                        <td>9000</td>
+                                                        <td>{lightTime}</td>
                                                         <td>36W</td>
-                                                        <td>821.664</td>
+                                                        <td>{lightCost}</td>
                                                     </tr>
                                                     <tr>
                                                         <td>Fan</td>
-                                                        <td>8020</td>
+                                                        <td>{fanTime}</td>
                                                         <td>55W</td>
-                                                        <td>1.118.629</td>
+                                                        <td>{fanCost}</td>
                                                     </tr>
                                                     <tr>
                                                         <td>Conditioner</td>
-                                                        <td>6300</td>
+                                                        <td>{conditionerTime}</td>
                                                         <td>800W</td>
-                                                        <td>12.781.400</td>
+                                                        <td>{conditionerCost}</td>
                                                     </tr>
                                                     <tr>
                                                         <td>Power Plug</td>
-                                                        <td>11923</td>
-                                                        <td>36w</td>
-                                                        <td>821.664</td>
+                                                        <td>{powerPlugTime}</td>
+                                                        <td>36W</td>
+                                                        <td>{powerPlugCost}</td>
                                                     </tr>
 
                                                 </tbody>
                                                 <tfoot>
                                                     <tr>
-                                                        <td className="total-colspan-2" colSpan={3} style={{textAlign:'right'}}><b>Total Cost:</b></td>
-                                                        <td className="total-colspan-2"><b>23.123.121</b></td>
+                                                        <td className="total-colspan-2" colSpan={3} style={{ textAlign: 'right' }}><b>Total Cost:</b></td>
+                                                        <td className="total-colspan-2"><b>{totalCost}</b></td>
                                                     </tr>
                                                 </tfoot>
                                             </table>

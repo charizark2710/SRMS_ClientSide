@@ -64,11 +64,12 @@ class ReportErrorDetail extends Component<Props, State> {
             if (res.status === 200) {
 
                 res.json().then((result) => {
+                    let deviceNames=result.deviceNames.split(" ");
                     this.setState({
                         roomName: result.roomName,
                         fromUser: result.userId,
                         description: result.description,
-                        deviceNames: result.deviceNames,
+                        deviceNames: deviceNames,
                         // status: result.status,
                         title: "Report devices'error at room " + result.roomName,
                     })
@@ -138,7 +139,7 @@ class ReportErrorDetail extends Component<Props, State> {
                                             <div className="col-sm-10">
                                                 <div className="form-group label-floating is-empty">
                                                     <label className="control-label"></label>
-                                                    <input type="text" className="form-control" value={title} disabled />
+                                                    <input type="text" className="form-control" value={title} readOnly />
                                                     <span className="material-input"></span></div>
                                             </div>
                                         </div>
@@ -147,7 +148,7 @@ class ReportErrorDetail extends Component<Props, State> {
                                             <div className="col-sm-10">
                                                 <div className="form-group label-floating is-empty">
                                                     <label className="control-label"></label>
-                                                    <input type="text" className="form-control" value={fromUser} disabled />
+                                                    <input type="text" className="form-control" value={fromUser} readOnly />
                                                     <span className="material-input"></span></div>
                                             </div>
                                         </div>
@@ -156,7 +157,7 @@ class ReportErrorDetail extends Component<Props, State> {
                                             <div className="col-sm-10">
                                                 <div className="form-group label-floating is-empty">
                                                     <label className="control-label"></label>
-                                                    <input type="text" className="form-control" value={roomName} disabled />
+                                                    <input type="text" className="form-control" value={roomName} readOnly />
                                                     <span className="material-input"></span></div>
                                             </div>
                                         </div>
@@ -165,7 +166,7 @@ class ReportErrorDetail extends Component<Props, State> {
                                             <div className="col-sm-10">
                                                 <div className="form-group label-floating is-empty">
                                                     <label className="control-label"></label>
-                                                    <input type="text" className="form-control" value={description} disabled />
+                                                    <input type="text" className="form-control" value={description} readOnly />
                                                     <span className="material-input"></span></div>
                                             </div>
                                         </div>
@@ -178,7 +179,7 @@ class ReportErrorDetail extends Component<Props, State> {
                                                         return (
                                                             <span key={index}>
                                                                 <span  className="label label-danger reportDevice-pd">{device}</span>
-                                                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                                                &nbsp;&nbsp;
                                                             </span>
                                                         )
                                                     })}
@@ -188,7 +189,7 @@ class ReportErrorDetail extends Component<Props, State> {
 
                                         </div>
                                         <div className="card-footer text-center">
-                                            <button type="button" className="btn btn-warning btn-fill" onClick={() => this.onHandleReportError('accepted')}>Confirm</button>
+                                            <button type="button" disabled={status ==="confirmed"? true:false} className="btn btn-warning btn-fill" onClick={() => this.onHandleReportError('confirmed')}>Confirm</button>
                                         </div>
 
                                     </div>

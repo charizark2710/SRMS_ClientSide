@@ -1,5 +1,11 @@
 .userLoginName{
-    color: #ff9800;
+    color: #ff9800 !important;
+}
+.menu-user-homepage{
+    margin-right: -10% !important;
+}
+.menu-user-homepage-header{
+    margin-left: -10% !important;
 }
 .notiNumber{
    margin-right: 62%;
@@ -133,4 +139,6 @@
 .calendar-dialog-width{
     width: 70%;
 }
-
+.title-fontfamily{
+    font-family:'Courier New'
+}
