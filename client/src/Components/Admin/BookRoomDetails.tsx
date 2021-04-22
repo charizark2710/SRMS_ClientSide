@@ -80,10 +80,10 @@ class BookRoomDetail extends Component<Props, State> {
                     // if(bookingRoomData){
                     this.setState({
                         title: 'Request to book room ' + result.roomName,
-                        date: formatDate(result.date),
+                        date: result.date,
                         roomName: result.roomName,
-                        startTime: formatTime(result.startTime),
-                        endTime: formatTime(result.endTime),
+                        startTime: result.startTime,
+                        endTime: result.endTime,
                         fromUser: result.userId,
                         reason: result.reason,
                         status: result.status,
@@ -128,7 +128,7 @@ class BookRoomDetail extends Component<Props, State> {
                 toast.success(status + " successfully!");
             }
             else {
-                return res.json().then(result => { console.log(result)})
+                return res.json().then(result => { console.log(result) })
             }
         }).catch(e => {
             console.log(e);
@@ -210,7 +210,7 @@ class BookRoomDetail extends Component<Props, State> {
                                             <div className="col-sm-10">
                                                 <div className="form-group label-floating is-empty">
                                                     <label className="control-label"></label>
-                                                    <input type="text" className="form-control" readOnly value={status}/>
+                                                    <input type="text" className="form-control" readOnly value={status} />
                                                     <span className="material-input"></span></div>
                                             </div>
                                         </div>
@@ -225,8 +225,8 @@ class BookRoomDetail extends Component<Props, State> {
                                         </div>
                                     </div>
                                     <div className="card-footer text-center">
-                                        <button type="button" disabled={(status==="accepted" || status==="rejected" || status==="deleted") ? true:false} onClick={() => this.onHandleBooking('accepted')} className="btn btn-warning btn-fill">Accept</button>
-                                        <button type="button" disabled={(status==="accepted" || status==="rejected" || status==="deleted") ? true:false} onClick={() => this.onHandleBooking('rejected')} className="btn btn-defalt btn-fill">Reject</button>
+                                        <button type="button" disabled={(status === "accepted" || status === "rejected" || status === "deleted") ? true : false} onClick={() => this.onHandleBooking('accepted')} className="btn btn-warning btn-fill">Accept</button>
+                                        <button type="button" disabled={(status === "accepted" || status === "rejected" || status === "deleted") ? true : false} onClick={() => this.onHandleBooking('rejected')} className="btn btn-defalt btn-fill">Reject</button>
                                     </div>
                                 </form>
 
