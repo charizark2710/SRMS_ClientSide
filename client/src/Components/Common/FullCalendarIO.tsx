@@ -26,91 +26,34 @@ class FullCalendarIO extends Component<Props, State> {
     }
 
     calendarManagement = () => {
-        this.setState({ calendars: [] });
-        db.ref('calendar').on('child_added', snap => {
-            const data: any = snap.val();
-            if (data) {
-                Object.values(data).forEach((calen: any) => {
-                    var calendar: any = {
-                        title: calen.room + '-' + calen.userId,
-                        start: formatDate(calen.date) + 'T' + formatTime(calen.from),
-                        end: formatDate(calen.date) + 'T' + formatTime(calen.to),
-                        id: calen.id
+        const calendar: any = [];
+        fetch('http://localhost:5000/calendar', {
+            method: 'GET',
+            credentials: "include",
+        }).then(res => {
+            res.json().then(result => {
+                for (let cal of result) {
+                    const value = {
+                        title: cal.room + '-' + cal.userId,
+                        start: formatDate(cal.date) + 'T' + formatTime(cal.from),
+                        end: formatDate(cal.date) + 'T' + formatTime(cal.to),
+                        id: cal.id
                     }
-                    this.setState({ calendars: [... this.state.calendars, calendar] })
-                })
-            }
-        });
-        db.ref('calendar').off('child_added', snap => {
-            const data: any = snap.val();
-            if (data) {
-                Object.values(data).forEach((calen: any) => {
-                    var calendar: any = {
-                        title: calen.room + '-' + calen.userId,
-                        start: formatDate(calen.date) + 'T' + formatTime(calen.from),
-                        end: formatDate(calen.date) + 'T' + formatTime(calen.to),
-                        id: calen.id
-                    }
-                    this.setState({ calendars: [... this.state.calendars, calendar] })
-                })
-            }
-        });
-        db.ref('calendar').on('child_changed', snap => {
-            const data: any = snap.val();
-            if (data) {
-                var calendar: any = {
-                    id: data.id,
-                    title: data.roomName + '-' + data.userId,
-                    start: formatDate(data.date) + 'T' + formatTime(data.from),
-                    end: formatDate(data.date) + 'T' + formatTime(data.to),
+                    calendar.push(value);
                 }
-                this.setState({ calendars: [... this.state.calendars, calendar] })
-            }
-        });
-        db.ref('calendar').off('child_changed', snap => {
-            const data: any = snap.val();
-            if (data) {
-                var calendar: any = {
-                    title: data.roomName + '-' + data.userId,
-                    start: formatDate(data.date) + 'T' + formatTime(data.from),
-                    end: formatDate(data.date) + 'T' + formatTime(data.to),
-                }
-                this.setState({ calendars: [... this.state.calendars, calendar] })
-            }
-        });
-
-        db.ref('calendar').on('child_removed', snap => {
-            const data: any = snap.val();
-            if (data) {
-                const arr = this.state.calendars;
-                const newArr = arr.filter((noti: any) => {
-                    return noti.id !== data.id;
-                })
-                this.setState({ calendars: newArr })
-            }
-        });
-
-        db.ref('calendar').off('child_removed', snap => {
-            const data: any = snap.val();
-            if (data) {
-                const arr = this.state.calendars;
-                const newArr = arr.filter((noti: any) => {
-                    return noti.id !== data.id;
-                })
-                this.setState({ calendars: newArr })
-            }
+                this.setState({ calendars: calendar });
+            });
+        }).catch(e => {
+            console.log(e);
         });
     }
     componentDidMount() {
         this.calendarManagement();
     }
 
-
-
     render() {
 
         return (
-
             <FullCalendar
                 plugins={[dayGridPlugin, interactionPlugin, listPlugin]}
                 initialView="dayGridMonth"

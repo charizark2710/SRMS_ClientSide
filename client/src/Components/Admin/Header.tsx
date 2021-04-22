@@ -148,7 +148,7 @@ class Header extends Component<Props, State> {
                   <div className="noti">Notifications</div>
                   {messages && messages.map((message, index) => {
                     return <li key={index}>
-                      <NavLink to={match.url+message.url} className={message.message.includes("cancel")?"invalid-noti-bg":""}>
+                      <NavLink to={message.url as string} className={message.message.includes("cancel")?"invalid-noti-bg":""}>
                         <table className="tbl-width">
                           <tbody>
                             <tr>

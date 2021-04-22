@@ -114,31 +114,6 @@ class AdminHomePage extends Component<Props, State> {
                         </div>
                     </div>
                     <ul className="nav">
-                        {/* <li className="active">
-                            <NavLink to={match.url}>
-                                <i className="material-icons">dashboard</i>
-                                <p> Rooms & Devices </p>
-                            </NavLink>
-                        </li>
-                        <li>
-                            <NavLink to={match.url + '/calendar'}>
-                                <i className="material-icons">date_range</i>
-                                <p> Calendar </p>
-                            </NavLink>
-                        </li>
-                        <li>
-                            <NavLink to={match.url + '/bannedList'}>
-                                <i className="material-icons">subtitles_off</i>
-                                <p> Banned List </p>
-                            </NavLink>
-                        </li>
-                        <li>
-                            <NavLink to={match.url + '/importData'}>
-                                <i className="material-icons">publish</i>
-                                <p> Import Data </p>
-                            </NavLink>
-                        </li> */}
-
                         <CustomNavLink label="Rooms & Devices" to={'/'} activeOnlyWhenExact={true} icon="dashboard"></CustomNavLink>
                         <CustomNavLink label="Calendar" to={'/calendar'} activeOnlyWhenExact={false} icon="date_range"></CustomNavLink>
                         <CustomNavLink label="Banned List" to={'/bannedList'} activeOnlyWhenExact={false} icon="subtitles_off"></CustomNavLink>

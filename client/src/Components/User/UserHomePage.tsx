@@ -5,16 +5,12 @@ import './UserHomePage.css';
 import message from '../../model/Message';
 import moment from 'moment';
 import MaterialTable from 'material-table';
-import Button from "@material-ui/core/Button";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { formatDateTime, formatTime, formatDate } from "../Common/formatDateTime";
 import { logout } from "../Common/logOut"
 import FullCalendarIO from '../Common/FullCalendarIO';
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
-
 
 interface Props {
     // propsFromLoginToUser: any
@@ -45,6 +41,7 @@ interface State {
     selectedRoom: string,
     isStartTimeValid: boolean,
     isEndtimeValid: boolean,
+    ExceedMidNight: boolean,
 
     //notification for user
     messageToUser: message[]
@@ -59,15 +56,14 @@ interface State {
     allRooms: string[]
 
     //change room
-    currentRoomPermission: string,
-    currentDatePermission: string,
-    currentStartTimePermission: string,
-    currentEndTimePermission: string,
+    currentRoomPermission?: string,
+    currentDatePermission?: string,
+    currentStartTimePermission?: string,
+    currentEndTimePermission?: string,
     txtReasonChangeRoom: string,
     isDisableChangeRoomBtn: boolean,
     isDisableSubmitChangeRoomBtn: boolean,
-    currentCalendarId: string,
-
+    currentCalendarId?: string,
 
 }
 
@@ -94,7 +90,7 @@ class UserHomePage extends Component<Props, State> {
             selectedRoom: '',
             isStartTimeValid: true,
             isEndtimeValid: true,
-
+            ExceedMidNight: true,
 
             messageToUser: [],
 
@@ -105,14 +101,14 @@ class UserHomePage extends Component<Props, State> {
             txtDescriptionToReport: '',
             allRooms: [],
 
-            currentRoomPermission: '',
-            currentDatePermission: '',
-            currentStartTimePermission: '',
-            currentEndTimePermission: '',
+            currentRoomPermission: undefined,
+            currentDatePermission: undefined,
+            currentStartTimePermission: undefined,
+            currentEndTimePermission: undefined,
             txtReasonChangeRoom: '',
             isDisableChangeRoomBtn: true,
             isDisableSubmitChangeRoomBtn: true,
-            currentCalendarId: ''
+            currentCalendarId: undefined
         }
 
     }
@@ -153,78 +149,6 @@ class UserHomePage extends Component<Props, State> {
     }
 
     notiReady: boolean = false;
-
-    // notificationManagement = async (user: firebase.User) => {
-    //     this.setState({ messageToUser: [] });
-    //     const userEmail = user.email?.split('@')[0] || ' ';
-    //     db.ref('notification'.concat('/', userEmail)).limitToLast(100).on('child_added', snap => {
-    //         if (this.notiReady) {
-    //             const mail: message = snap.val();
-    //             if (mail) {
-    //                 this.setState({ messageToUser: [... this.state.messageToUser, mail] })
-    //             }
-    //         }
-    //     });
-    //     db.ref('notification'.concat('/', userEmail)).limitToLast(100).off('child_added', (snap) => {
-    //         if (this.notiReady) {
-    //             const mail: message = snap.val();
-    //             if (mail) {
-    //                 this.setState({ messageToUser: [... this.state.messageToUser, mail] })
-    //             }
-    //         }
-    //     });
-    //     db.ref('notification'.concat('/', userEmail)).on('child_changed', snap => {
-    //         const mail: message = snap.val();
-    //         const arr = this.state.messageToUser;
-    //         for (let i = 0; i < arr.length; i++) {
-    //             if (arr[i].id === mail.id) {
-    //                 arr[i] = JSON.parse(JSON.stringify(mail));
-    //             }
-    //         }
-    //         this.setState({ messageToUser: arr });
-    //     });
-    //     db.ref('notification'.concat('/', userEmail)).off('child_changed', (snap) => {
-    //         const mail: message = snap.val();
-    //         const arr = this.state.messageToUser;
-    //         for (let i = 0; i < arr.length; i++) {
-    //             if (arr[i].id === mail.id) {
-    //                 arr[i] = JSON.parse(JSON.stringify(mail));
-    //             }
-    //         }
-    //         this.setState({ messageToUser: arr });
-    //     });
-
-    //     db.ref('notification'.concat('/', userEmail)).on('child_removed', snap => {
-    //         const mail: message = snap.val();
-    //         if (mail) {
-    //             const arr = this.state.messageToUser;
-    //             const newArr = arr.filter(mess => {
-    //                 return mess !== mail;
-    //             })
-    //             this.setState({ messageToUser: newArr });
-    //         }
-    //     });
-
-    //     db.ref('notification'.concat('/', userEmail)).off('child_removed', snap => {
-    //         const mail: message = snap.val();
-    //         if (mail) {
-    //             const arr = this.state.messageToUser;
-    //             const newArr = arr.filter(mess => {
-    //                 return mess !== mail;
-    //             })
-    //             this.setState({ messageToUser: newArr });
-    //         }
-    //     });
-
-    //     db.ref('notification'.concat('/', userEmail)).once('value', snap => {
-    //         const val = snap.val();
-    //         if (val) {
-    //             this.setState({ messageToUser: Object.values(val) });
-    //             this.notification = Object.values(val);
-    //             this.notiReady = true;
-    //         }
-    //     });
-    // }
 
     getHistoryRequest = (currentUser: string) => {
         fetch(`http://localhost:5000/requestList/${currentUser}`, {
@@ -472,17 +396,15 @@ class UserHomePage extends Component<Props, State> {
         })
         this.isTurnOn = this.state.isTurnOnAllDevices ? 1 : 0;
         var data;
-        if (this.isTurnOn)
-
-            data = {
-                roomName: this.state.currentRoomPermission,
-                devices: {
-                    light: this.isTurnOn,
-                    powerPlug: this.isTurnOn,
-                    fan: this.isTurnOn,
-                    conditioner: this.isTurnOn,
-                }
+        data = {
+            roomName: this.state.currentRoomPermission,
+            devices: {
+                light: this.isTurnOn,
+                powerPlug: this.isTurnOn,
+                fan: this.isTurnOn,
+                conditioner: this.isTurnOn,
             }
+        }
         this.UpdateAllDevicesStatus(data);
     }
 
@@ -531,7 +453,6 @@ class UserHomePage extends Component<Props, State> {
 
     //booking room: dùng chung cho update và insert 
     onHandleChangeBookingForm = async (event: any) => {
-
         var target = event.target;
         var name = target.name;
         var value = target.type == 'checkbox' ? target.checked : target.value;
@@ -547,11 +468,18 @@ class UserHomePage extends Component<Props, State> {
             let currentDate = new Date();
             let hh = currentDate.getHours();
             let mm = currentDate.getMinutes();
-            let currentTime = hh + ":" + mm;
+            const hours = hh.toString().length === 2 ? hh.toString() : '0' + hh.toString();
+            const minute = mm.toString().length === 2 ? mm.toString() : '0' + mm.toString();
+            let currentTime = hours + ":" + minute;
             console.log(currentTime);
             var today = new Date().toISOString().split("T")[0];
-
-            if (today === txtDateToBook) {
+            if (txtEndTime.split(':')[0] === '00' && txtStartTime.split(':')[0] !== '00') {
+                if (parseInt(txtEndTime.split(':')[1]) > 0) {
+                    this.setState({
+                        ExceedMidNight: false
+                    })
+                }
+            } else if (today === txtDateToBook) {
                 if (currentTime > txtStartTime) {
                     this.setState({
                         isStartTimeValid: false
@@ -705,6 +633,7 @@ class UserHomePage extends Component<Props, State> {
     //book room: dùng chhung cho update và insert
     onSubmitBookingForm = (event: any) => {
         event.preventDefault();
+        const date = new Date();
         var bookRoom = {
             roomName: this.state.selectedRoom,
             date: this.state.txtDateToBook,
@@ -855,11 +784,16 @@ class UserHomePage extends Component<Props, State> {
                             currentCalendarId: result.id,
                         })
                     }
-
-
                 })
             }
             else {
+                this.setState({
+                    currentRoomPermission: undefined,
+                    currentDatePermission: undefined,
+                    currentStartTimePermission: undefined,
+                    currentEndTimePermission: undefined,
+                    currentCalendarId: undefined,
+                })
                 return res.json().then(result => { console.log(result.error) });
             }
         }).catch(e => {
@@ -1208,7 +1142,12 @@ class UserHomePage extends Component<Props, State> {
                                                     </div>
                                                     <div className="col-md-4">
                                                         <div className="form-group is-empty">
-                                                            <label className="control-label">End Time<span className="text-warning">{this.state.isEndtimeValid ? "" : "*End time must be greater than start time*"}</span></label>
+                                                            <label className="control-label">End Time<span className="text-warning">
+                                                                {
+                                                                    this.state.isEndtimeValid && this.state.ExceedMidNight ? "" : !this.state.ExceedMidNight ? "*End time must not exceed 12h am" : "*End time must be greater than start time*"
+                                                                }
+                                                            </span>
+                                                            </label>
                                                             <input type="time" className="form-control" name="txtEndTime" value={this.state.txtEndTime} onChange={this.onHandleChangeBookingForm} />
                                                         </div>
                                                     </div>

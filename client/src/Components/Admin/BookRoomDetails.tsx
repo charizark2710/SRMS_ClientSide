@@ -109,19 +109,19 @@ class BookRoomDetail extends Component<Props, State> {
         var roomBooking = {
             id: this.state.id,
             status: status,
-            roomName: this.state.roomName,
+            room: this.state.roomName,
             date: this.state.date,
-            startTime: this.state.startTime,
-            endTime: this.state.endTime,
+            from: this.state.startTime,
+            to: this.state.endTime,
             reason: this.state.reason,
             userId: this.state.fromUser
         }
-        fetch('http://localhost:5000/bookRoom/acceptOrRejectBooking', {
+        fetch('http://localhost:5000/calendar/add', {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
             },
-            method: 'PATCH',
+            method: 'POST',
             body: JSON.stringify(roomBooking)
         }).then(res => {
             if (res.status === 200) {
