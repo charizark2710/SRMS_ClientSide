@@ -5,11 +5,11 @@ import { NavLink, RouteComponentProps, Router, Route, useRouteMatch } from 'reac
 
 interface Props {
     match: any,
-    
+
 }
 
-interface ILinkProp{
-    icon:any,
+interface ILinkProp {
+    icon: any,
     label: any,
     to: any,
     activeOnlyWhenExact: any
@@ -19,7 +19,7 @@ interface State {
     currentAdmin: any
 }
 
-const CustomNavLink = ({ label, to, activeOnlyWhenExact, icon}: ILinkProp) => {
+const CustomNavLink = ({ label, to, activeOnlyWhenExact, icon }: ILinkProp) => {
     return (
         <Route path={to} exact={activeOnlyWhenExact} children={({ match }) => {
             var active = match ? "active" : "";
@@ -33,7 +33,7 @@ const CustomNavLink = ({ label, to, activeOnlyWhenExact, icon}: ILinkProp) => {
             )
         }} />
 
-        
+
     )
 }
 
@@ -60,27 +60,18 @@ class AdminHomePage extends Component<Props, State> {
         }
     }
     componentDidMount() {
-        fetch('http://localhost:5000', {
-            credentials: 'include',
-        }).then(res => {
-            if (res.ok) {
-                client.auth().onAuthStateChanged(user => {
-                    if (user) {
-                        var currentUser = {
-                            name: user.displayName,
-                            employeeId: user.email?.split('@')[0] || ' '
-                        }
-                        //this.notificationManagement(user);
-                        this.setState({
-                            currentAdmin: currentUser
-                        })
-                    }
-                });
+        client.auth().onAuthStateChanged(user => {
+            if (user) {
+                var currentUser = {
+                    name: user.displayName,
+                    employeeId: user.email?.split('@')[0] || ' '
+                }
+                //this.notificationManagement(user);
+                this.setState({
+                    currentAdmin: currentUser
+                })
             }
-        }).catch(e => {
-            //Quay lại trang đăng nhập
-            throw new Error(e);
-        })
+        });
         console.log('sidebar');
 
     }

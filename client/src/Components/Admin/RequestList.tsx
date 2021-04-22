@@ -18,7 +18,7 @@ var columns = [
         title: "Request Type", field: "requestType",
         render: (rowData: any) => {
             return rowData.url.includes("/bookRoomRequest/") ? <p style={{ color: "#E87722", fontWeight: "bold" }}>Book room request</p> :
-                rowData.url.includes("/reportErrorRequest/")  ? <p style={{ color: "#008240", fontWeight: "bold" }}>Report Error Request</p> :
+                rowData.url.includes("/reportErrorRequest/") ? <p style={{ color: "#008240", fontWeight: "bold" }}>Report Error Request</p> :
                     <p style={{ color: "#B0B700", fontWeight: "bold" }}>Change Room Request</p>
         }
     },
@@ -75,11 +75,11 @@ class BannedList extends Component<Props, State> {
 
     deleteRequests = (data: any) => {
         if (data) {
-            var deleteIDs: string='';
+            var deleteIDs: string = '';
             data.forEach((request: any) => {
-                deleteIDs+=request.id+','
+                deleteIDs += request.id + ','
             });
-            fetch('http://localhost:5000/requestList/delete?'+deleteIDs, {
+            fetch('http://localhost:5000/requestList/delete?ids=' + deleteIDs, {
                 credentials: 'include',
                 headers: {
                     'content-type': 'application/json',
@@ -87,23 +87,22 @@ class BannedList extends Component<Props, State> {
                 method: 'DELETE',
             }).then(res => {
                 if (res.status === 200) {
-                    return res.json().then((result:string[]) => 
-                    {
+                    return res.json().then((result: string[]) => {
                         console.log(result);
 
-                        let requestList=this.state.requestList;
+                        let requestList = this.state.requestList;
 
-                        var newRequestList  = requestList.filter(function(requestList){
-                            return result.filter(function(result){
-                               return result === requestList.id;
+                        var newRequestList = requestList.filter(function (requestList) {
+                            return result.filter(function (result) {
+                                return result === requestList.id;
                             }).length == 0
-                         });
+                        });
 
                         this.setState({
-                            requestList:newRequestList
+                            requestList: newRequestList
                         })
                         console.log(newRequestList);
-                        
+
                     })
                 }
                 else {
@@ -124,9 +123,9 @@ class BannedList extends Component<Props, State> {
                     <div className="row">
                         <div className="col-md-12">
                             <div className="card">
-                                
+
                                 <div className="card-content">
-                                    
+
                                     <div className="material-datatables">
                                         <MaterialTable
                                             title="Notifications"
@@ -134,15 +133,15 @@ class BannedList extends Component<Props, State> {
                                             data={this.state.requestList}
                                             options={
                                                 {
-                                                selection: true
+                                                    selection: true
                                                 }
                                             }
 
                                             actions={[
                                                 {
-                                                    icon:'delete',
-                                                    tooltip:'Delete',
-                                                    onClick:(event, rowData)=>this.deleteRequests(rowData),
+                                                    icon: 'delete',
+                                                    tooltip: 'Delete',
+                                                    onClick: (event, rowData) => this.deleteRequests(rowData),
                                                 }
                                             ]}
                                         />
