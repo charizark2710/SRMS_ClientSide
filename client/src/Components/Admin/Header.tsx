@@ -171,7 +171,7 @@ class Header extends Component<Props, State> {
                     </li>
                   })}
 
-                  <div className="noti-seemore"><NavLink to="/adminHomePage/requests">See more <i
+                  <div className="noti-seemore"><NavLink to="/requests">See more <i
                     className="material-icons">navigate_next</i> </NavLink> </div>
                 </ul>
               </li>
