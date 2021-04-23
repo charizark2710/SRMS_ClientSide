@@ -36,7 +36,7 @@ class ImportData extends Component<Props, State> {
 
     readExcel = (e: any) => {
         const file = e.target.files[0];
-        var fileName = file.name;
+        const fileName = file.name;
 
         const promise = new Promise((resolve, reject) => {
             const fileReader = new FileReader();

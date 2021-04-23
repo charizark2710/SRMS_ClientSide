@@ -1,11 +1,9 @@
-import React, { ChangeEvent, Component } from 'react';
-import { client, messaging } from './../../FireBase/config'
-import { NavLink, RouteComponentProps, Router, Route, useRouteMatch } from 'react-router-dom';
-
+import { Component } from 'react';
+import { client } from './../../FireBase/config'
+import { NavLink, Route } from 'react-router-dom';
 
 interface Props {
-    match: any,
-
+    match: any
 }
 
 interface ILinkProp {
@@ -22,7 +20,7 @@ interface State {
 const CustomNavLink = ({ label, to, activeOnlyWhenExact, icon }: ILinkProp) => {
     return (
         <Route path={to} exact={activeOnlyWhenExact} children={({ match }) => {
-            var active = match ? "active" : "";
+            const active = match ? "active" : "";
             return (
                 <li className={active}>
                     <NavLink to={to}>
@@ -32,8 +30,6 @@ const CustomNavLink = ({ label, to, activeOnlyWhenExact, icon }: ILinkProp) => {
                 </li>
             )
         }} />
-
-
     )
 }
 
@@ -62,7 +58,7 @@ class AdminHomePage extends Component<Props, State> {
     componentDidMount() {
         client.auth().onAuthStateChanged(user => {
             if (user) {
-                var currentUser = {
+                const currentUser = {
                     name: user.displayName,
                     employeeId: user.email?.split('@')[0] || ' '
                 }
@@ -79,7 +75,7 @@ class AdminHomePage extends Component<Props, State> {
 
 
     render() {
-        var { match } = this.props;
+        const { match } = this.props;
 
         return (
             <div className="sidebar" data-active-color="orange" data-background-color="white" data-image="/img/sidebar-1.jpg">

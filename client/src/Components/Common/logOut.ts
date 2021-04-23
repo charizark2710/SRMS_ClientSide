@@ -8,8 +8,7 @@ export const logout = (history:any) => {
     }).then(async res => {
         try {
             if (res.ok) {
-                await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-                localStorage.clear();
+                await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.NONE);
                 firebase.auth().signOut();
                 history.push('/');
                 location.reload();

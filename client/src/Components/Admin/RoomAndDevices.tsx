@@ -25,8 +25,8 @@ interface State {
     //checkbox turn on/off all devices
     isTurnOnAllDevices: boolean,
     //room đang được điều khiển
-    controllingRoom:string,
-    usingRooms:string[],
+    controllingRoom: string,
+    usingRooms: string[],
 }
 
 class RoomAndDevices extends Component<Props, State> {
@@ -51,9 +51,9 @@ class RoomAndDevices extends Component<Props, State> {
 
             isTurnOnAllDevices: false,
 
-            controllingRoom:"",
-            usingRooms:[],
-           
+            controllingRoom: "",
+            usingRooms: [],
+
         }
     }
 
@@ -100,7 +100,7 @@ class RoomAndDevices extends Component<Props, State> {
                 } else {
                     res.json().then(result => {
                         console.log(result);
-                                            });
+                    });
                 }
             } catch (error) {
                 console.log(error);
@@ -114,11 +114,11 @@ class RoomAndDevices extends Component<Props, State> {
 
 
     //control devices
-    onControlDevices = (room:string) => {
+    onControlDevices = (room: string) => {
         this.setState({
-            controllingRoom:room
+            controllingRoom: room
         })
-        var roomName = {
+        const roomName = {
             roomName: room
         }
         fetch('http://localhost:5000/room/sendDevicesStatus', {
@@ -157,16 +157,13 @@ class RoomAndDevices extends Component<Props, State> {
         });
     }
 
-
-  
-
     toggleDeviceStatus = (device: string) => {
         switch (device) {
             case "light":
                 this.setState({
                     lightOn: !this.state.lightOn
                 })
-                var lightUpdating = {
+                const lightUpdating = {
                     roomName: this.state.controllingRoom,
                     device: {
                         light: (this.state.lightOn) ? 0 : 1,
@@ -178,7 +175,7 @@ class RoomAndDevices extends Component<Props, State> {
                 this.setState({
                     fanOn: !this.state.fanOn
                 })
-                var fanUpdating = {
+                const fanUpdating = {
                     roomName: this.state.controllingRoom,
                     device: {
                         fan: (this.state.fanOn) ? 0 : 1,
@@ -190,7 +187,7 @@ class RoomAndDevices extends Component<Props, State> {
                 this.setState({
                     conditionerOn: !this.state.conditionerOn
                 })
-                var conditionerUpdating = {
+                const conditionerUpdating = {
                     roomName: this.state.controllingRoom,
                     device: {
                         conditioner: (this.state.conditionerOn) ? 0 : 1,
@@ -202,7 +199,7 @@ class RoomAndDevices extends Component<Props, State> {
                 this.setState({
                     powerPlugOn: !this.state.powerPlugOn
                 })
-                var powerPlugUpdating = {
+                const powerPlugUpdating = {
                     roomName: this.state.controllingRoom,
                     device: {
                         powerPlug: (this.state.powerPlugOn) ? 0 : 1,
@@ -238,12 +235,12 @@ class RoomAndDevices extends Component<Props, State> {
 
                 if (this.state.lightOn || this.state.fanOn || this.state.powerPlugOn || this.state.conditionerOn) {
                     this.setState({
-                        usingRooms:[...this.state.usingRooms, this.state.controllingRoom]
+                        usingRooms: [...this.state.usingRooms, this.state.controllingRoom]
                     })
                 } else {
-                    let usingRooms=this.state.usingRooms;
-                    let newUsingRooms=usingRooms.filter(r=>{
-                        return r!==this.state.controllingRoom
+                    const usingRooms = this.state.usingRooms;
+                    const newUsingRooms = usingRooms.filter(r => {
+                        return r !== this.state.controllingRoom
                     })
                     this.setState({
                         usingRooms: newUsingRooms
@@ -259,8 +256,6 @@ class RoomAndDevices extends Component<Props, State> {
         });
     }
 
-
-
     isTurnOn: number | undefined = undefined;
     //turn on/off all devices
     onChange = async (event: any) => {
@@ -268,10 +263,7 @@ class RoomAndDevices extends Component<Props, State> {
             isTurnOnAllDevices: event.target.checked
         })
         this.isTurnOn = this.state.isTurnOnAllDevices ? 1 : 0;
-        var data;
-        if (this.isTurnOn)
-            console.log('aaaa');
-        data = {
+        const data = {
             roomName: this.state.controllingRoom,
             devices: {
                 light: this.isTurnOn,
@@ -299,7 +291,7 @@ class RoomAndDevices extends Component<Props, State> {
                         fanOn: true,
                         powerPlugOn: true,
                         conditionerOn: true,
-                        usingRooms:[...this.state.usingRooms, this.state.controllingRoom]
+                        usingRooms: [...this.state.usingRooms, this.state.controllingRoom]
                     })
                 } else {
                     this.setState({
@@ -308,9 +300,9 @@ class RoomAndDevices extends Component<Props, State> {
                         powerPlugOn: false,
                         conditionerOn: false,
                     })
-                    let usingRooms=this.state.usingRooms;
-                    let newUsingRooms=usingRooms.filter(r=>{
-                        return r!==this.state.controllingRoom
+                    const usingRooms = this.state.usingRooms;
+                    const newUsingRooms = usingRooms.filter(r => {
+                        return r !== this.state.controllingRoom
                     })
                     this.setState({
                         usingRooms: newUsingRooms
@@ -337,7 +329,7 @@ class RoomAndDevices extends Component<Props, State> {
                     //set state   
                     await res.json().then(result => {
                         this.setState({
-                            usingRooms:result
+                            usingRooms: result
                         })
                         console.log(this.state);
 
@@ -355,10 +347,9 @@ class RoomAndDevices extends Component<Props, State> {
             console.log(e);
         });
     }
+
     render() {
-        console.log(usingRooms);
-        
-        var {usingRooms,onConditioner, onConditioner, onFan, onPowerPlug, onLight, totalConditioner, totalFan, totalPowerPlug, totalLight, lightOn, fanOn, conditionerOn, powerPlugOn } = this.state;
+        const { usingRooms, onConditioner, onFan, onPowerPlug, onLight, totalConditioner, totalFan, totalPowerPlug, totalLight, lightOn, fanOn, conditionerOn, powerPlugOn } = this.state;
 
         return (
             <div className="content">
@@ -393,7 +384,7 @@ class RoomAndDevices extends Component<Props, State> {
                                 </div>
                                 <div className="card-footer">
                                     <div className="stats">
-                                    <i className="material-icons">local_offer</i>
+                                        <i className="material-icons">local_offer</i>
                                         Number of "on" AC /all AC
                 </div>
                                 </div>
@@ -410,7 +401,7 @@ class RoomAndDevices extends Component<Props, State> {
                                 </div>
                                 <div className="card-footer">
                                     <div className="stats">
-                                    <i className="material-icons">local_offer</i>
+                                        <i className="material-icons">local_offer</i>
                                        Number of "on" fans /all fans
                 </div>
                                 </div>
@@ -427,7 +418,7 @@ class RoomAndDevices extends Component<Props, State> {
                                 </div>
                                 <div className="card-footer">
                                     <div className="stats">
-                                    <i className="material-icons">local_offer</i>
+                                        <i className="material-icons">local_offer</i>
                                         Number of "on" powerplugs /all powerplugs
                             </div>
                                 </div>
@@ -451,39 +442,39 @@ class RoomAndDevices extends Component<Props, State> {
                                     <div id="collapseOne" className="panel-collapse collapse" role="tabpanel"
                                         aria-labelledby="headingOne">
                                         <div className="panel-body bg-panelbody">
-                                        <table className="margin-auto" cell-spacing="1">
+                                            <table className="margin-auto" cell-spacing="1">
                                                 <tbody>
                                                     <tr>
-                                                        <td><button className={usingRooms.includes("218")?"btn btn-success btn-lg":"btn btn-default btn-lg"} 
-                                                        data-toggle="modal" data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('218') }}>218</button></td>
+                                                        <td><button className={usingRooms.includes("218") ? "btn btn-success btn-lg" : "btn btn-default btn-lg"}
+                                                            data-toggle="modal" data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('218') }}>218</button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className={usingRooms.includes("219")?"btn btn-success btn-lg":"btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("219") ? "btn btn-success btn-lg" : "btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('219') }}>219</button></td>
-                                                        <td><button className={usingRooms.includes("201")?"btn btn-success btn-lg":"btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("201") ? "btn btn-success btn-lg" : "btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('201') }}>201</button></td>
-                                                        <td><button className={usingRooms.includes("203")?"btn btn-success btn-lg":"btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("203") ? "btn btn-success btn-lg" : "btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('203') }}>203</button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className={usingRooms.includes("204")?"btn btn-success btn-lg":"btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("204") ? "btn btn-success btn-lg" : "btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('204') }}>204</button></td>
                                                     </tr>
                                                     <tr>
-                                                        <td><button  className={usingRooms.includes("217")?"btn-margin-top btn btn-success btn-lg":"btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("217") ? "btn-margin-top btn btn-success btn-lg" : "btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('217') }}>217
                                             <div className="ripple-container"></div>
                                                         </button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className={usingRooms.includes("220")?"btn-margin-top btn btn-success btn-lg":"btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("220") ? "btn-margin-top btn btn-success btn-lg" : "btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('220') }}>220
                                             <div className="ripple-container"></div>
                                                         </button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className={usingRooms.includes("202")?"btn-margin-top btn btn-success btn-lg":"btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("202") ? "btn-margin-top btn btn-success btn-lg" : "btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('202') }}>202
                                             <div className="ripple-container"></div>
                                                         </button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className={usingRooms.includes("205")?"btn-margin-top btn btn-success btn-lg":"btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("205") ? "btn-margin-top btn btn-success btn-lg" : "btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('205') }}>205
                                             <div className="ripple-container"></div>
                                                         </button></td>
@@ -498,14 +489,14 @@ class RoomAndDevices extends Component<Props, State> {
                                                         <td className="td-height"></td>
                                                     </tr>
                                                     <tr>
-                                                        <td><button className={usingRooms.includes("216")?"btn btn-success btn-lg":"btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("216") ? "btn btn-success btn-lg" : "btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('216') }}>216</button></td>
                                                         <td className="td-width"></td>
                                                         <td className="td-width"></td>
                                                         <td className="td-width"></td>
                                                         <td className="td-width"></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className={usingRooms.includes("WC")?"btn btn-success btn-lg":"btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("WC") ? "btn btn-success btn-lg" : "btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('WC') }}>WC</button></td>
                                                     </tr>
                                                     <tr>
@@ -520,14 +511,14 @@ class RoomAndDevices extends Component<Props, State> {
                                                             className="height-img-70" /></td>
                                                     </tr>
                                                     <tr>
-                                                        <td><button className={usingRooms.includes("215")?"btn btn-success btn-lg":"btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("215") ? "btn btn-success btn-lg" : "btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('215') }}>215</button></td>
                                                         <td className="td-width"></td>
                                                         <td className="td-width"></td>
                                                         <td className="td-width"></td>
                                                         <td className="td-width"></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className={usingRooms.includes("WC")?"btn btn-success btn-lg":"btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("WC") ? "btn btn-success btn-lg" : "btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('WC') }}>WC</button></td>
                                                     </tr>
                                                     <tr>
@@ -540,38 +531,38 @@ class RoomAndDevices extends Component<Props, State> {
                                                         <td className="td-height"></td>
                                                     </tr>
                                                     <tr>
-                                                        <td><button className={usingRooms.includes("214")?"btn btn-success btn-lg":"btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("214") ? "btn btn-success btn-lg" : "btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('214') }}>214</button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className={usingRooms.includes("211")?"btn btn-success btn-lg":"btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("211") ? "btn btn-success btn-lg" : "btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('211') }}>211</button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className={usingRooms.includes("209")?"btn btn-success btn-lg":"btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("209") ? "btn btn-success btn-lg" : "btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('209') }}>209</button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className={usingRooms.includes("206")?"btn btn-success btn-lg":"btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("206") ? "btn btn-success btn-lg" : "btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('206') }}>206</button></td>
                                                     </tr>
                                                     <tr>
-                                                        <td><button className={usingRooms.includes("213")?"btn-margin-top btn btn-success btn-lg":"btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("213") ? "btn-margin-top btn btn-success btn-lg" : "btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('213') }}>213
                                                             <div className="ripple-container"></div>
                                                         </button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className={usingRooms.includes("212")?"btn-margin-top btn btn-success btn-lg":"btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("212") ? "btn-margin-top btn btn-success btn-lg" : "btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('212') }}>212
                                                             <div className="ripple-container"></div>
                                                         </button></td>
-                                                        <td><button className={usingRooms.includes("210")?"btn-margin-top btn btn-success btn-lg":"btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("210") ? "btn-margin-top btn btn-success btn-lg" : "btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('210') }}>210
                                                             <div className="ripple-container"></div>
                                                         </button></td>
-                                                        <td><button className={usingRooms.includes("208")?"btn-margin-top btn btn-success btn-lg":"btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("208") ? "btn-margin-top btn btn-success btn-lg" : "btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('208') }}>208
                                                             <div className="ripple-container"></div>
                                                         </button></td>
                                                         <td className="td-width"></td>
-                                                        <td><button className={usingRooms.includes("207")?"btn-margin-top btn btn-success btn-lg":"btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
+                                                        <td><button className={usingRooms.includes("207") ? "btn-margin-top btn btn-success btn-lg" : "btn-margin-top btn btn-default btn-lg"} data-toggle="modal"
                                                             data-target="#controlDevicesModal" onClick={() => { this.onControlDevices('207') }}>207
                                                             <div className="ripple-container"></div>
                                                         </button></td>
@@ -583,8 +574,7 @@ class RoomAndDevices extends Component<Props, State> {
                                         </div>
                                     </div>
                                 </div>
-                                
-                                
+
                                 <div className="panel panel-default">
                                     <div className="panel-heading" role="tab" id="headingTwo">
                                         <h4 className="panel-title">
@@ -598,7 +588,7 @@ class RoomAndDevices extends Component<Props, State> {
                                     <div id="collapseTwo" className="panel-collapse collapse" role="tabpanel"
                                         aria-labelledby="headingTwo">
                                         <div className="panel-body">
-                                        abc
+                                            abc
                                         </div>
                                     </div>
                                 </div>
@@ -616,7 +606,7 @@ class RoomAndDevices extends Component<Props, State> {
                                         aria-labelledby="headingThree">
                                         <div className="panel-body">
                                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis ac
-                                            leo vel rutrum. Integer varius tristique magna vel dictum. Vestibulum augue
+                                            leo vel rutrum. Integer constius tristique magna vel dictum. Vestibulum augue
                                             magna, convallis id velit a, porttitor fermentum sem.
                                         </div>
                                     </div>
@@ -635,7 +625,7 @@ class RoomAndDevices extends Component<Props, State> {
                                         aria-labelledby="headingFour">
                                         <div className="panel-body">
                                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis ac
-                                            leo vel rutrum. Integer varius tristique magna vel dictum. Vestibulum augue
+                                            leo vel rutrum. Integer constius tristique magna vel dictum. Vestibulum augue
                                             magna, convallis id velit a, porttitor fermentum sem.
                                         </div>
                                     </div>
@@ -654,7 +644,7 @@ class RoomAndDevices extends Component<Props, State> {
                                         aria-labelledby="headingFive">
                                         <div className="panel-body">
                                             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas mattis ac
-                                            leo vel rutrum. Integer varius tristique magna vel dictum. Vestibulum augue
+                                            leo vel rutrum. Integer constius tristique magna vel dictum. Vestibulum augue
                                             magna, convallis id velit a, porttitor fermentum sem.
                                         </div>
                                     </div>

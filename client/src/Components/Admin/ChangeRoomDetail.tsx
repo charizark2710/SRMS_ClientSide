@@ -1,8 +1,4 @@
-import React, { ChangeEvent, Component } from 'react';
-import message from '../../model/Message';
-import moment from 'moment';
-import { NavLink, RouteComponentProps } from 'react-router-dom';
-import { title } from 'process';
+import { Component } from 'react';
 import { formatDate, formatTime } from '../Common/formatDateTime'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -106,57 +102,11 @@ class ChangeRoomDetail extends Component<Props, State> {
         });
     }
 
-    // acceptOrRejectBooking = (status: string) => {
-    //     console.log(this.state.id);
-
-    //     var roomBooking = {
-    //         id: this.state.id,
-    //         status: status,
-    //         roomName: this.state.roomName,
-    //         date: this.state.date,
-    //         time: this.state.time,
-    //         userId:this.state.fromUser
-    //     }
-    //     fetch('http://localhost:5000/bookRoom/acceptOrRejectBooking', {
-    //         credentials: 'include',
-    //         headers: {
-    //             'content-type': 'application/json',
-    //         },
-    //         method: 'PATCH',
-    //         body: JSON.stringify(roomBooking)
-    //     }).then(res => {
-    //         if (res.status === 200) {
-    //         toast.success(status+" successfully!");
-    //         }
-    //         else {
-    //             return res.json().then(result => { throw Error(result.error) });
-    //         }
-    //     }).catch(e => {
-    //         console.log(e);
-    //     });
-    // }
-
-    // onHandleBooking = (status: string) => {
-    //     this.acceptOrRejectBooking(status);
-    // }
-    // traverse(jsonObj: any) {
-    //     if (jsonObj !== null && typeof jsonObj == "object") {
-    //         Object.entries(jsonObj).forEach(([key, value]) => {
-    //             // key is either an array index or object key
-    //             bookingRoomData.set(key, value);
-    //             this.traverse(value);
-
-    //         });
-    //     }
-    //     else {
-    //         // jsonObj is a number or string
-    //     }
-    // }
     loadAvailableRoom = () => {
         this.setState({
             newRoom: ''
         })
-        var { date, startTime, endTime } = this.state;
+        const { date, startTime, endTime } = this.state;
         fetch(`http://localhost:5000/bookRoom/getAvailableRooms?date=${date}&startTime=${startTime}&endTime=${endTime}`, {
             credentials: 'include',
             headers: {
@@ -179,12 +129,12 @@ class ChangeRoomDetail extends Component<Props, State> {
         });
 
     }
-    onSelectNewRoom = async(newRoom: string) => {
+    onSelectNewRoom = async(newR: string) => {
         await this.setState({
-            newRoom: newRoom
+            newRoom: newR
         })
         //validate button Booking
-        var {  title, fromUser, date, startTime, endTime, reason, currentRoon, newRoom} = this.state;
+        const {  title, fromUser, date, startTime, endTime, reason, currentRoon, newRoom} = this.state;
         if (title && fromUser && date && startTime && endTime && reason && currentRoon && newRoom) {
             this.setState({
                 isDisableAcceptBtn: false
@@ -216,11 +166,9 @@ class ChangeRoomDetail extends Component<Props, State> {
             body: JSON.stringify(changeRoom)
         }).then(res => {
             if (res.status === 200) {
-               
                 //thông báo đặt phòng thành công
                 toast.success('Accept change room request successfully.');
-                this.props.history.back();
-
+                this.props.history.push('/');
             }
             else {
                 return res.json().then(result => { console.log(result.error) });
@@ -230,7 +178,7 @@ class ChangeRoomDetail extends Component<Props, State> {
         });
     }
     render() {
-        var { title, fromUser, date, startTime, endTime, reason, currentRoon, newRoom, isDisableAcceptBtn, availableRooms } = this.state;
+        const { title, fromUser, date, startTime, endTime, reason, currentRoon, newRoom, isDisableAcceptBtn, availableRooms } = this.state;
         return (
             <div className="content">
                 <ToastContainer />
@@ -326,10 +274,6 @@ class ChangeRoomDetail extends Component<Props, State> {
                     </div>
                 </div>
             </div >
-
-
-
-
         )
 
     }

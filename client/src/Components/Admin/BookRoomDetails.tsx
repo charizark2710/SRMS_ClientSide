@@ -106,7 +106,7 @@ class BookRoomDetail extends Component<Props, State> {
     acceptOrRejectBooking = (status: string) => {
         console.log(this.state.id);
 
-        var roomBooking = {
+        const roomBooking = {
             id: this.state.id,
             status: status,
             room: this.state.roomName,
@@ -131,6 +131,7 @@ class BookRoomDetail extends Component<Props, State> {
                 return res.json().then(result => { console.log(result) })
             }
         }).catch(e => {
+            toast.error(e);
             console.log(e);
         });
     }
@@ -139,7 +140,7 @@ class BookRoomDetail extends Component<Props, State> {
         this.acceptOrRejectBooking(status);
     }
     // traverse(jsonObj: any) {
-    //     if (jsonObj !== null && typeof jsonObj == "object") {
+    //     if (jsonObj !== null && typeof jsonObj === "object") {
     //         Object.entries(jsonObj).forEach(([key, value]) => {
     //             // key is either an array index or object key
     //             bookingRoomData.set(key, value);
@@ -154,7 +155,7 @@ class BookRoomDetail extends Component<Props, State> {
 
 
     render() {
-        var { date, reason, fromUser, startTime, endTime, roomName, status, title } = this.state;
+        const { date, reason, fromUser, startTime, endTime, roomName, status, title } = this.state;
         return (
             <div className="content">
                 <ToastContainer />
@@ -201,7 +202,7 @@ class BookRoomDetail extends Component<Props, State> {
                                             <div className="col-sm-10">
                                                 <div className="form-group label-floating is-empty">
                                                     <label className="control-label"></label>
-                                                    <input type="text" className="form-control" value={date + ' ' + startTime + "-" + endTime} readOnly />
+                                                    <input type="text" className="form-control" value={formatDate(date) + ' ' + formatTime(startTime) + "-" + formatTime(endTime)} readOnly />
                                                     <span className="material-input"></span></div>
                                             </div>
                                         </div>

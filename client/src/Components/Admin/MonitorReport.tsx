@@ -9,9 +9,6 @@ import {
     YAxis
 } from "recharts";
 
-
-
-
 interface Props {
 
 }
@@ -75,7 +72,7 @@ class BannedList extends Component<Props, State> {
     }
 
     componentDidMount = async () => {
-        var d = new Date();
+        const d = new Date();
         await this.setState({
             txtToDate: d.toISOString().slice(0, 10)
         })
@@ -89,16 +86,16 @@ class BannedList extends Component<Props, State> {
     }
 
     onHandleChangeDate = async (event: any) => {
-        var target = event.target;
-        var name = target.name;
-        var value = target.value;
+        const target = event.target;
+        const name = target.name;
+        const value = target.value;
         await this.setState({
             [name]: value
         } as Pick<State, keyof State>);
         console.log(this.state);
 
         //validate button Booking
-        var { txtFromDate, txtToDate } = this.state;
+        const { txtFromDate, txtToDate } = this.state;
         if (txtFromDate && txtToDate) {
             this.setState({
                 isDisableMornitorBtn: false,
@@ -114,7 +111,7 @@ class BannedList extends Component<Props, State> {
         this.setState({
             report: []
         })
-        var { txtFromDate, txtToDate } = this.state;
+        const { txtFromDate, txtToDate } = this.state;
         fetch(`http://localhost:5000/report?fromDate=${txtFromDate}&toDate=${txtToDate}`, {
             credentials: 'include',
             headers: {

@@ -32,10 +32,10 @@ class AdminHomePage extends Component<Props, State> {
     }
 
     createScript() {
-        var scripts = ["/js/material-dashboard.js?v=1.2.1"];
+        const scripts = ["/js/material-dashboard.js?v=1.2.1"];
 
-        for (var index = 0; index < scripts.length; ++index) {
-            var script = document.createElement('script');
+        for (let index = 0; index < scripts.length; ++index) {
+            const script = document.createElement('script');
             script.src = scripts[index];
             document.getElementsByTagName("body")[0].appendChild(script);
         }

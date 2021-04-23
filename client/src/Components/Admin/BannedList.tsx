@@ -13,7 +13,7 @@ interface State {
     unbannedList: string[]
     selectedUserToBan: any[]
 }
-var columns = [
+const columns = [
     // { title: "Avatar", render: rowData => <Avataratar maxInitials={1} size={40} round={true} name={rowData === undefined ? " " : rowData.first_name} /> },
     { title: "Account", field: "email" },
     { title: "Role", field: "role" },
@@ -119,10 +119,10 @@ class BannedList extends Component<Props, State> {
                         let unbanArr = this.state.unbannedList;
 
 
-                        var newUbanArr = unbanArr.filter(function (unban_el) {
+                        const newUbanArr = unbanArr.filter(function (unban_el) {
                             return result.filter(function (anotherOne_el) {
-                                return anotherOne_el.email == unban_el;
-                            }).length == 0
+                                return anotherOne_el.email === unban_el;
+                            }).length === 0
                         });
 
                         this.setState({
@@ -190,9 +190,9 @@ class BannedList extends Component<Props, State> {
 
 
     onHandleChangeBannedList = (event: any) => {
-        var target = event.target;
-        var name = target.name;
-        var value = target.type == 'select-multiple' ? Array.from(target.selectedOptions, (option: any) => option.value) : target.value;
+        const target = event.target;
+        const name = target.name;
+        const value = target.type === 'select-multiple' ? Array.from(target.selectedOptions, (option: any) => option.value) : target.value;
         this.setState({
             [name]: value
         } as Pick<State, keyof State>);
@@ -285,7 +285,7 @@ class BannedList extends Component<Props, State> {
                                             <select className="form-control" multiple onChange={this.onHandleChangeBannedList} name="selectedUserToBan">
                                                 {
                                                     this.state.unbannedList && this.state.unbannedList.map((mail, i) => {
-                                                        var value = {
+                                                        const value = {
                                                             email: mail
                                                         }
                                                         return <option key={i} value={JSON.stringify(value)}>{mail}</option>

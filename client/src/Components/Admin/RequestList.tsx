@@ -1,5 +1,4 @@
-import React, { ChangeEvent, Component } from 'react';
-import message from "../../model/Message";
+import { Component } from 'react';
 import MaterialTable from 'material-table';
 import moment from 'moment';
 import { formatDateTime } from "../Common/formatDateTime";
@@ -11,7 +10,8 @@ interface Props {
 interface State {
     requestList: any[]
 }
-var columns = [
+
+const columns = [
     // { title: "Avatar", render: rowData => <Avataratar maxInitials={1} size={40} round={true} name={rowData === undefined ? " " : rowData.first_name} /> },
     { title: "Sender", field: "sender" },
     {
@@ -75,7 +75,7 @@ class BannedList extends Component<Props, State> {
 
     deleteRequests = (data: any) => {
         if (data) {
-            var deleteIDs: string = '';
+            let deleteIDs: string = '';
             data.forEach((request: any) => {
                 deleteIDs += request.id + ','
             });
@@ -92,10 +92,10 @@ class BannedList extends Component<Props, State> {
 
                         let requestList = this.state.requestList;
 
-                        var newRequestList = requestList.filter(function (requestList) {
+                        const newRequestList = requestList.filter(function (requestList) {
                             return result.filter(function (result) {
                                 return result === requestList.id;
-                            }).length == 0
+                            }).length === 0
                         });
 
                         this.setState({

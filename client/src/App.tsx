@@ -39,6 +39,8 @@ class App extends Component<Props, State>{
         this.setState({ isDone: true });
       }
     }).catch(e => {
+      window.history.pushState('', '', '/');
+      location.reload();
       throw new Error(e);
     })
   }
@@ -55,7 +57,7 @@ class App extends Component<Props, State>{
             <Route path="/" render={({ match, history }) => (
               <AdminHomePage match={match} history={history} />)} />
             <Route path='/testML' component={testML}></Route>
-            <Route component={NotFound} exact={true}></Route>
+            <Route component={NotFound}></Route>
           </Switch>
         );
       } else if (this.state.role && this.state.role !== 'admin') {
@@ -64,7 +66,7 @@ class App extends Component<Props, State>{
             <Route path='/' component={UserHomePage}>
             </Route>
             <Route path='/testML' component={testML}></Route>
-            <Route component={NotFound} exact={true}></Route>
+            <Route component={NotFound}></Route>
           </Switch>
         );
       } else {
@@ -74,12 +76,12 @@ class App extends Component<Props, State>{
               <Login updateRole={this.updateRole}></Login>
             </Route>
             <Route path='/testML' component={testML}></Route>
-            <Route component={NotFound} exact={true}></Route>
+            <Route component={NotFound}></Route>
           </Switch>
         );
       }
     } else {
-      return null;
+      return (<Route component={NotFound}></Route>);
     }
   }
 }

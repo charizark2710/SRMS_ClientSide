@@ -88,7 +88,7 @@ class ReportErrorDetail extends Component<Props, State> {
     }
 
     acceptOrRejectReportError = (status: string) => {
-        var reportErr = {
+        const reportErr = {
             id: this.state.id,
             status: status,
             roomName: this.state.roomName,
@@ -122,7 +122,7 @@ class ReportErrorDetail extends Component<Props, State> {
 
 
     render() {
-        var { title, fromUser, roomName, description, deviceNames } = this.state;
+        const { title, fromUser, roomName, description, deviceNames } = this.state;
         return (
             <div className="content">
                 <div className="container-fluid">

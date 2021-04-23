@@ -14,14 +14,16 @@ interface Props {
 }
 
 interface State {
-  messages: message[]
+  messages: message[],
+  countMessage: number
 }
 
 class Header extends Component<Props, State> {
   constructor(props: Props) {
     super(props)
     this.state = {
-      messages: []
+      messages: [],
+      countMessage: 0
     }
   }
   componentDidMount() {
@@ -43,76 +45,107 @@ class Header extends Component<Props, State> {
   notificationManagement = () => {
     this.setState({ messages: [] });
     const userEmail = "admin";
-    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_added', (snap: any) => {
-      console.log("child-add-on");
+    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').limitToLast(30).on('child_added', (snap: any) => {
       const mail: message = snap.val();
-      if (mail.url !=="") {
-        this.setState({ messages: [... this.state.messages, mail] })
+      let count = this.state.countMessage;
+      if (mail) {
+        if (mail.isRead)
+          this.setState({ messages: [... this.state.messages, mail] })
+        else
+          this.setState({ messages: [... this.state.messages, mail], countMessage: ++count })
       }
     });
-    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_added', (snap: any) => {
-      console.log("child-add-off");
-
+    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').limitToLast(30).off('child_added', (snap: any) => {
       const mail: message = snap.val();
-      if (mail.url !=="") {
-        this.setState({ messages: [... this.state.messages, mail] })
+      let count = this.state.countMessage;
+      if (mail) {
+        if (mail.isRead)
+          this.setState({ messages: [... this.state.messages, mail] })
+        else
+          this.setState({ messages: [... this.state.messages, mail], countMessage: ++count })
       }
     });
     db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_changed', (snap: any) => {
       const mail: message = snap.val();
-      console.log("child-change-on");
-      if (mail.isRead && mail.url !=="") {//đánh dấu ĐÃ ĐỌC
+      let count = this.state.countMessage;
+      if (mail.url) {
+        if (!mail.isRead) {
+          const arr = this.state.messages;
+          const changingIndex = arr.findIndex((x: any) => x.id === mail.id);
+          arr[changingIndex].isRead = true;
+          arr[changingIndex].message = mail.message;
+          arr[changingIndex].sender = mail.sender;
+          arr[changingIndex].sendAt = mail.sendAt;
+          arr[changingIndex].url = mail.url;
+          this.setState({ messages: arr, countMessage: ++count });
+        } else {
+          this.setState({ countMessage: count < 0 ? 0 : --count });
+        }
+      } else {
         const arr = this.state.messages;
-        var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-        arr[changingIndex].isRead = true,
-          arr[changingIndex].message = mail.message,
-          arr[changingIndex].sender = mail.sender,
-          arr[changingIndex].sendAt = mail.sendAt,
-          this.setState({ messages: arr })
+        const newArr = arr.filter(mess => {
+          if (mess.id !== mail.id) --count;
+          return mess.id !== mail.id;
+        })
+        this.setState({ messages: newArr, countMessage: count < 0 ? 0 : --count });
       }
-      if (!mail.isValid) {//valid->invalid do cập nhật hoặc xóa
-        const arr = this.state.messages;
-        var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-        arr[changingIndex].isRead = mail.isRead,
-          arr[changingIndex].message = mail.message,
-          arr[changingIndex].sender = mail.sender,
-          arr[changingIndex].sendAt = mail.sendAt,
-          arr[changingIndex].isValid = false;
-        this.setState({ messages: arr })
-      }
-
     });
     db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_changed', (snap: any) => {
       const mail: message = snap.val();
-      console.log("child-change-on");
-      if (mail.isRead && mail.url !=="") {//đánh dấu ĐÃ ĐỌC
+      let count = this.state.countMessage;
+      if (mail.url) {
+        if (!mail.isRead) {
+          const arr = this.state.messages;
+          const changingIndex = arr.findIndex((x: any) => x.id === mail.id);
+          arr[changingIndex].isRead = true;
+          arr[changingIndex].message = mail.message;
+          arr[changingIndex].sender = mail.sender;
+          arr[changingIndex].sendAt = mail.sendAt;
+          arr[changingIndex].url = mail.url;
+          this.setState({ messages: arr, countMessage: ++count });
+        } else {
+          this.setState({ countMessage: count < 0 ? 0 : --count });
+        }
+      } else {
         const arr = this.state.messages;
-        var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-        arr[changingIndex].isRead = true,
-          arr[changingIndex].message = mail.message,
-          arr[changingIndex].sender = mail.sender,
-          arr[changingIndex].sendAt = mail.sendAt,
-          this.setState({ messages: arr })
+        const newArr = arr.filter(mess => {
+          if (mess.id !== mail.id) --count;
+          return mess.id !== mail.id;
+        })
+        this.setState({ messages: newArr, countMessage: count < 0 ? 0 : --count });
       }
+    });
 
-      if (!mail.isValid) {//valid->invalid do cập nhật hoặc xóa
+    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_removed', (snap: any) => {
+      const mail: message = snap.val();
+      let count = this.state.countMessage;
+      if (mail) {
         const arr = this.state.messages;
-        var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-        arr[changingIndex].isRead = mail.isRead,
-          arr[changingIndex].message = mail.message,
-          arr[changingIndex].sender = mail.sender,
-          arr[changingIndex].sendAt = mail.sendAt,
-          arr[changingIndex].isValid = false;
-        this.setState({ messages: arr })
+        const newArr = arr.filter(mess => {
+          if (mess.id !== mail.id) --count;
+          return mess.id !== mail.id;
+        })
+        this.setState({ messages: newArr, countMessage: count < 0 ? 0 : --count })
       }
+    });
 
+    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_removed', (snap: any) => {
+      const mail: message = snap.val();
+      let count = this.state.countMessage;
+      if (mail) {
+        const arr = this.state.messages;
+        const newArr = arr.filter(mess => {
+          if (mess.id !== mail.id) --count;
+          return mess.id !== mail.id;
+        })
+        this.setState({ messages: newArr, countMessage: count < 0 ? 0 : --count })
+      }
     });
   }
 
-
   render() {
-    var { messages } = this.state;
-    var { match } = this.props;
+    const { messages } = this.state;
+    const { match } = this.props;
     console.log(match);
 
     return (
@@ -138,7 +171,7 @@ class Header extends Component<Props, State> {
               <li className="dropdown">
                 <a href="#" className="dropdown-toggle" data-toggle="dropdown">
                   <i className="material-icons">notifications</i>
-                  <span className="notification">5</span>
+                  <span className="notification">{this.state.countMessage}</span>
                   <p className="hidden-lg hidden-md">
                     Notifications
                             <b className="caret"></b>
@@ -148,7 +181,7 @@ class Header extends Component<Props, State> {
                   <div className="noti">Notifications</div>
                   {messages && messages.map((message, index) => {
                     return <li key={index}>
-                      <NavLink to={message.url as string} className={message.message.includes("cancel")?"invalid-noti-bg":""}>
+                      <NavLink to={message.url as string} className={message.message.includes("cancel") ? "invalid-noti-bg" : ""}>
                         <table className="tbl-width">
                           <tbody>
                             <tr>

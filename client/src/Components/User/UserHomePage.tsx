@@ -18,6 +18,8 @@ interface Props {
 }
 
 interface State {
+    countMessage: number,
+
     //current user info
     currentUser: any
 
@@ -64,13 +66,13 @@ interface State {
     isDisableChangeRoomBtn: boolean,
     isDisableSubmitChangeRoomBtn: boolean,
     currentCalendarId?: string,
-
 }
 
 class UserHomePage extends Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
+            countMessage: 0,
             currentUser: {},
             lightOn: false,
             fanOn: false,
@@ -176,90 +178,107 @@ class UserHomePage extends Component<Props, State> {
     notificationManagement = (user: firebase.User) => {
         this.setState({ messageToUser: [] });
         const userEmail = user.email?.split("@")[0] || '';
-        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_added', (snap: any) => {
-
+        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').limitToLast(30).on('child_added', (snap: any) => {
             const mail: message = snap.val();
-            if (mail) {
-                this.setState({ messageToUser: [... this.state.messageToUser, mail] })
+            let count = this.state.countMessage;
+            if (mail.url) {
+                if (mail.isRead)
+                    this.setState({ messageToUser: [... this.state.messageToUser, mail] })
+                else
+                    this.setState({ messageToUser: [... this.state.messageToUser, mail], countMessage: ++count })
             }
         });
-        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_added', (snap: any) => {
-
-
+        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').limitToLast(30).off('child_added', (snap: any) => {
             const mail: message = snap.val();
-            if (mail) {
-                this.setState({ messageToUser: [... this.state.messageToUser, mail] })
+            let count = this.state.countMessage;
+            if (mail.url) {
+                if (mail.isRead)
+                    this.setState({ messageToUser: [... this.state.messageToUser, mail] })
+                else
+                    this.setState({ messageToUser: [... this.state.messageToUser, mail], countMessage: ++count })
             }
         });
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_changed', (snap: any) => {
             const mail: message = snap.val();
-            if (mail.isRead) {//đánh dấu ĐÃ ĐỌC
-                const arr = this.state.messageToUser;
-                var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-                arr[changingIndex].isRead = true,
-                    arr[changingIndex].message = mail.message,
-                    arr[changingIndex].sender = mail.sender,
-                    arr[changingIndex].sendAt = mail.sendAt,
-                    this.setState({ messageToUser: arr })
+            let count = this.state.countMessage;
+            if (mail.url) {
+                if (!mail.isRead) {
+                    const arr = this.state.messageToUser;
+                    const changingIndex = arr.findIndex((x: any) => x.id === mail.id);
+                    arr[changingIndex].isRead = true;
+                    arr[changingIndex].message = mail.message;
+                    arr[changingIndex].sender = mail.sender;
+                    arr[changingIndex].sendAt = mail.sendAt;
+                    arr[changingIndex].url = mail.url;
+                    this.setState({ messageToUser: arr, countMessage: ++count });
+                } else {
+                    this.setState({ countMessage: count < 0 ? 0 : --count });
+                }
             } else {
                 const arr = this.state.messageToUser;
-                var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-                arr[changingIndex].isRead = false,
-                    arr[changingIndex].message = mail.message,
-                    arr[changingIndex].sender = mail.sender,
-                    arr[changingIndex].sendAt = mail.sendAt,
-                    this.setState({ messageToUser: arr })
+                const newArr = arr.filter(mess => {
+                    if (mess.id !== mail.id) --count;
+                    return mess.id !== mail.id;
+                })
+                this.setState({ messageToUser: newArr, countMessage: count < 0 ? 0 : --count });
             }
         });
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_changed', (snap: any) => {
             const mail: message = snap.val();
-
-            if (mail.isRead) {//đánh dấu ĐÃ ĐỌC
-                const arr = this.state.messageToUser;
-                var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-                arr[changingIndex].isRead = true,
-                    arr[changingIndex].message = mail.message,
-                    arr[changingIndex].sender = mail.sender,
-                    arr[changingIndex].sendAt = mail.sendAt,
-                    this.setState({ messageToUser: arr })
+            let count = this.state.countMessage;
+            if (mail.url) {
+                if (!mail.isRead) {
+                    const arr = this.state.messageToUser;
+                    const changingIndex = arr.findIndex((x: any) => x.id === mail.id);
+                    arr[changingIndex].isRead = true;
+                    arr[changingIndex].message = mail.message;
+                    arr[changingIndex].sender = mail.sender;
+                    arr[changingIndex].sendAt = mail.sendAt;
+                    arr[changingIndex].url = mail.url;
+                    this.setState({ messageToUser: arr, countMessage: ++count });
+                } else {
+                    this.setState({ countMessage: count < 0 ? 0 : --count });
+                }
             } else {
                 const arr = this.state.messageToUser;
-                var changingIndex = arr.findIndex((x: any) => x.id == mail.id);
-                arr[changingIndex].isRead = false,
-                    arr[changingIndex].message = mail.message,
-                    arr[changingIndex].sender = mail.sender,
-                    arr[changingIndex].sendAt = mail.sendAt,
-                    this.setState({ messageToUser: arr })
+                const newArr = arr.filter(mess => {
+                    if (mess.id !== mail.id) --count;
+                    return mess.id !== mail.id;
+                })
+                this.setState({ messageToUser: newArr, countMessage: count < 0 ? 0 : --count });
             }
         });
 
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_removed', (snap: any) => {
             const mail: message = snap.val();
+            let count = this.state.countMessage;
             if (mail) {
                 const arr = this.state.messageToUser;
                 const newArr = arr.filter(mess => {
+                    if (mess.id !== mail.id) --count;
                     return mess.id !== mail.id;
                 })
-                this.setState({ messageToUser: newArr })
+                this.setState({ messageToUser: newArr, countMessage: count < 0 ? 0 : --count })
             }
         });
 
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_removed', (snap: any) => {
             const mail: message = snap.val();
+            let count = this.state.countMessage;
             if (mail) {
                 const arr = this.state.messageToUser;
                 const newArr = arr.filter(mess => {
+                    if (mess.id !== mail.id) --count;
                     return mess.id !== mail.id;
                 })
-                this.setState({ messageToUser: newArr })
+                this.setState({ messageToUser: newArr, countMessage: count < 0 ? 0 : --count })
             }
         });
     }
 
     //control devices
     onControlDevices = () => {
-
-        var roomName = {
+        const roomName = {
             roomName: this.state.currentRoomPermission
         }
         fetch('http://localhost:5000/room/sendDevicesStatus', {
@@ -307,7 +326,7 @@ class UserHomePage extends Component<Props, State> {
                 this.setState({
                     lightOn: !this.state.lightOn
                 })
-                var lightUpdating = {
+                const lightUpdating = {
                     roomName: this.state.currentRoomPermission,
                     device: {
                         light: (this.state.lightOn) ? 0 : 1,
@@ -319,7 +338,7 @@ class UserHomePage extends Component<Props, State> {
                 this.setState({
                     fanOn: !this.state.fanOn
                 })
-                var fanUpdating = {
+                const fanUpdating = {
                     roomName: this.state.currentRoomPermission,
                     device: {
                         fan: (this.state.fanOn) ? 0 : 1,
@@ -331,7 +350,7 @@ class UserHomePage extends Component<Props, State> {
                 this.setState({
                     conditionerOn: !this.state.conditionerOn
                 })
-                var conditionerUpdating = {
+                const conditionerUpdating = {
                     roomName: this.state.currentRoomPermission,
                     device: {
                         conditioner: (this.state.conditionerOn) ? 0 : 1,
@@ -343,7 +362,7 @@ class UserHomePage extends Component<Props, State> {
                 this.setState({
                     powerPlugOn: !this.state.powerPlugOn
                 })
-                var powerPlugUpdating = {
+                const powerPlugUpdating = {
                     roomName: this.state.currentRoomPermission,
                     device: {
                         powerPlug: (this.state.powerPlugOn) ? 0 : 1,
@@ -395,8 +414,7 @@ class UserHomePage extends Component<Props, State> {
             isTurnOnAllDevices: event.target.checked
         })
         this.isTurnOn = this.state.isTurnOnAllDevices ? 1 : 0;
-        var data;
-        data = {
+        const data = {
             roomName: this.state.currentRoomPermission,
             devices: {
                 light: this.isTurnOn,
@@ -409,8 +427,6 @@ class UserHomePage extends Component<Props, State> {
     }
 
     UpdateAllDevicesStatus = (data: any) => {
-        console.log(data.roomName);
-
         const url = 'http://localhost:5000/room/switchAllDevicesStatus/' + data.roomName + '?q=' + this.isTurnOn;
         fetch(url, {
             credentials: 'include',
@@ -445,24 +461,18 @@ class UserHomePage extends Component<Props, State> {
         });
     }
 
-    //validate text
-    //date=today => so sanh now <= start < end
-    //date > today => so sanh start<end
-
-
-
     //booking room: dùng chung cho update và insert 
     onHandleChangeBookingForm = async (event: any) => {
-        var target = event.target;
-        var name = target.name;
-        var value = target.type == 'checkbox' ? target.checked : target.value;
+        const target = event.target;
+        const name = target.name;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
 
         await this.setState({
             [name]: value
         } as Pick<State, keyof State>);
 
         //validate button Booking
-        var { txtDateToBook, txtStartTime, txtEndTime, txtReasonToBook, selectedRoom } = this.state;
+        const { txtDateToBook, txtStartTime, txtEndTime, txtReasonToBook, selectedRoom } = this.state;
 
         if (txtDateToBook && txtStartTime && txtEndTime && txtReasonToBook) {
             let currentDate = new Date();
@@ -472,7 +482,7 @@ class UserHomePage extends Component<Props, State> {
             const minute = mm.toString().length === 2 ? mm.toString() : '0' + mm.toString();
             let currentTime = hours + ":" + minute;
             console.log(currentTime);
-            var today = new Date().toISOString().split("T")[0];
+            const today = new Date().toISOString().split("T")[0];
             if (txtEndTime.split(':')[0] === '00' && txtStartTime.split(':')[0] !== '00') {
                 if (parseInt(txtEndTime.split(':')[1]) > 0) {
                     this.setState({
@@ -538,7 +548,7 @@ class UserHomePage extends Component<Props, State> {
         this.setState({
             selectedRoom: ''
         })
-        var { txtDateToBook, txtStartTime, txtEndTime } = this.state;
+        const { txtDateToBook, txtStartTime, txtEndTime } = this.state;
         fetch(`http://localhost:5000/bookRoom/getAvailableRooms?date=${txtDateToBook}&startTime=${txtStartTime}&endTime=${txtEndTime}`, {
             credentials: 'include',
             headers: {
@@ -577,7 +587,7 @@ class UserHomePage extends Component<Props, State> {
             selectedRoom: room
         })
         //validate button Booking
-        var { txtDateToBook, txtStartTime, txtEndTime, selectedRoom, txtReasonToBook } = this.state;
+        const { txtDateToBook, txtStartTime, txtEndTime, selectedRoom, txtReasonToBook } = this.state;
         if (txtDateToBook && txtStartTime && txtEndTime && selectedRoom && txtReasonToBook) {
             this.setState({
                 isDisableBookingBtn: false
@@ -587,7 +597,6 @@ class UserHomePage extends Component<Props, State> {
                 isDisableBookingBtn: true
             })
         }
-
     }
 
     createBookingRoom = (bookingRoom: any) => {
@@ -634,7 +643,7 @@ class UserHomePage extends Component<Props, State> {
     onSubmitBookingForm = (event: any) => {
         event.preventDefault();
         const date = new Date();
-        var bookRoom = {
+        const bookRoom = {
             roomName: this.state.selectedRoom,
             date: this.state.txtDateToBook,
             startTime: this.state.txtStartTime,
@@ -645,9 +654,6 @@ class UserHomePage extends Component<Props, State> {
         }
         this.createBookingRoom(bookRoom);
     }
-
-
-
 
     deleteBookingRequest = (idBooking: string, message: string, status: string) => {
         fetch(`http://localhost:5000/bookRoom/delete/${idBooking}/?message=${message}&status=${status}`, {
@@ -691,18 +697,18 @@ class UserHomePage extends Component<Props, State> {
 
     onDeleteRequest = (status: string, id: string, message: string) => {
         if (status === "changing") {
-            var result = window.confirm('Are you sure to cancel changing ' + message + ' ?')
+            const result = window.confirm('Are you sure to cancel changing ' + message + ' ?')
             if (result) {
                 this.deleteBookingRequest(id, message, status);
                 //update state
                 let arr = this.state.historyRequest;
-                var changingIndex = arr.findIndex((x: any) => x.id == id);
+                const changingIndex = arr.findIndex((x: any) => x.id === id);
                 arr[changingIndex].status = "accepted",
                     this.setState({ messageToUser: arr })
             }
         }
         if (status === "accepted" || status === "pending") {
-            var result = window.confirm('Are you sure to cancel ' + message + ' ?')
+            const result = window.confirm('Are you sure to cancel ' + message + ' ?')
             if (result) {
                 this.deleteBookingRequest(id, message, status);
                 //update state
@@ -744,9 +750,9 @@ class UserHomePage extends Component<Props, State> {
     }
 
     onHandleChangeReportErrorForm = async (event: any) => {
-        var target = event.target;
-        var name = target.name;
-        var value = target.type == 'select-multiple' ? Array.from(target.selectedOptions, (option: any) => option.value) : target.value;
+        const target = event.target;
+        const name = target.name;
+        const value = target.type === 'select-multiple' ? Array.from(target.selectedOptions, (option: any) => option.value) : target.value;
         await this.setState({
             [name]: value
         } as Pick<State, keyof State>);
@@ -754,7 +760,7 @@ class UserHomePage extends Component<Props, State> {
 
     onSubmitReportErrorForm = (event: any) => {
         event.preventDefault();
-        var errorReport = {
+        const errorReport = {
             roomName: this.state.cbbRoomToReport,
             deviceNames: this.state.cbbDeviceToReport,
             description: this.state.txtDescriptionToReport,
@@ -799,13 +805,12 @@ class UserHomePage extends Component<Props, State> {
         }).catch(e => {
             console.log(e);
         });
-
     }
 
     onHandleChangeChangeRoomForm = async (event: any) => {
-        var target = event.target;
-        var name = target.name;
-        var value = target.value;
+        const target = event.target;
+        const name = target.name;
+        const value = target.value;
         await this.setState({
             [name]: value
         } as Pick<State, keyof State>);
@@ -813,7 +818,7 @@ class UserHomePage extends Component<Props, State> {
 
     onSubmitChangeRoomForm = (event: any) => {
         event.preventDefault();
-        var changeRoomReq = {
+        const changeRoomReq = {
             room: this.state.currentRoomPermission,
             calendarId: this.state.currentCalendarId,
             userId: this.state.currentUser.employeeId,
@@ -865,10 +870,7 @@ class UserHomePage extends Component<Props, State> {
                             allRooms: result
                         })
                         console.log(this.state.allRooms);
-
                     }
-
-
                 })
             }
             else {
@@ -884,7 +886,7 @@ class UserHomePage extends Component<Props, State> {
     notifyReportErrorSuccess = () => toast.success("Sent report error request successfully!");
 
     render() {
-        var { currentDatePermission, currentEndTimePermission, currentRoomPermission, currentStartTimePermission, availableRooms, messageToUser, lightOn, fanOn, conditionerOn, powerPlugOn, currentUser, isDisableBookingBtn, isDisableLoadEmptyRoomBtn } = this.state;
+        const { currentDatePermission, currentEndTimePermission, currentRoomPermission, currentStartTimePermission, availableRooms, messageToUser, lightOn, fanOn, conditionerOn, powerPlugOn, currentUser, isDisableBookingBtn, isDisableLoadEmptyRoomBtn } = this.state;
         return (
             <div>
                 <ToastContainer />
@@ -912,10 +914,10 @@ class UserHomePage extends Component<Props, State> {
                                     </a>
                                 </li>
 
-                                <li className="dropdown">
+                                <li id='notification' onClick={() => this.setState({ countMessage: 0 })} className="dropdown">
                                     <a href="" className=" dropdown-toggle" data-toggle="dropdown">
                                         <i className="material-icons">notifications</i>Notification
-                                    <span className="notification notiNumber">1</span>
+                                    <span className="notification notiNumber">{this.state.countMessage}</span>
                                         <p className="hidden-lg hidden-md">
                                             Notifications
                                         <b className="caret"></b>
@@ -1193,10 +1195,6 @@ class UserHomePage extends Component<Props, State> {
                     </div>
                 </div>
 
-
-
-
-
                 <div id="reportErrorModal" className="modal fade blur" role="dialog">
                     <div className="modal-dialog reportError-dialogWidth">
                         <div className="modal-content">
@@ -1206,7 +1204,6 @@ class UserHomePage extends Component<Props, State> {
                             </div>
                             <div className="modal-body">
                                 <div className="row">
-
 
                                     <div className="col-md-12">
 
@@ -1320,8 +1317,8 @@ class UserHomePage extends Component<Props, State> {
                                                         {
                                                             title: "Request Type", field: "requestType",
                                                             render: (rowData: any) => {
-                                                                return rowData.requestType == "bookRoomRequest" ? <p style={{ color: "#E87722", fontWeight: "bold" }}>Book room request</p> :
-                                                                    rowData.requestType == "reportErrorRequest" ? <p style={{ color: "#008240", fontWeight: "bold" }}>Report Error Request</p> :
+                                                                return rowData.requestType === "bookRoomRequest" ? <p style={{ color: "#E87722", fontWeight: "bold" }}>Book room request</p> :
+                                                                    rowData.requestType === "reportErrorRequest" ? <p style={{ color: "#008240", fontWeight: "bold" }}>Report Error Request</p> :
                                                                         <p style={{ color: "#B0B700", fontWeight: "bold" }}>Change Room Request</p>
                                                             }
                                                         },
@@ -1336,26 +1333,26 @@ class UserHomePage extends Component<Props, State> {
                                                         {
                                                             title: "Status", field: "status",
                                                             render: (rowData: any) => {
-                                                                return rowData.status == "accepted" ? <span className="label label-success" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
-                                                                    rowData.status == "pending" ? <span className="label label-warning" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
-                                                                        rowData.status == "changing" ? <span className="label label-info" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
-                                                                            rowData.status == "confirmed" ? <span className="label label-rose" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
+                                                                return rowData.status === "accepted" ? <span className="label label-success" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
+                                                                    rowData.status === "pending" ? <span className="label label-warning" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
+                                                                        rowData.status === "changing" ? <span className="label label-info" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
+                                                                            rowData.status === "confirmed" ? <span className="label label-rose" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span> :
                                                                                 <span className="label label-default" style={{ padding: "3px 5px 3px 5px" }}>{rowData.status}</span>
                                                             }
                                                         },
                                                         {
                                                             title: "Actions", render: (rowData: any) => {
-                                                                let bookingDate = formatDate(rowData.date) + "T" + formatTime(rowData.endTime);
-                                                                let today = new Date();
-                                                                let dd = String(today.getDate()).padStart(2, '0');
-                                                                let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-                                                                let yyyy = today.getFullYear();
+                                                                const bookingDate = formatDate(rowData.date) + "T" + formatTime(rowData.endTime);
+                                                                const today = new Date();
+                                                                const dd = String(today.getDate()).padStart(2, '0');
+                                                                const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+                                                                const yyyy = today.getFullYear();
 
-                                                                let date = yyyy + '-' + mm + '-' + dd;
-                                                                let time = today.getHours() + ':' + today.getMinutes();
-                                                                let fullDate = date + "T" + time;
+                                                                const date = yyyy + '-' + mm + '-' + dd;
+                                                                const time = today.getHours() + ':' + today.getMinutes();
+                                                                const fullDate = date + "T" + time;
 
-                                                                return (rowData.requestType == "bookRoomRequest" && rowData.status == "changing" && bookingDate > fullDate) || (rowData.requestType == "bookRoomRequest" && rowData.status == "accepted" && bookingDate > fullDate) || (rowData.requestType == "bookRoomRequest" && rowData.status == "pending" && bookingDate > fullDate)
+                                                                return (rowData.requestType === "bookRoomRequest" && rowData.status === "changing" && bookingDate > fullDate) || (rowData.requestType === "bookRoomRequest" && rowData.status === "accepted" && bookingDate > fullDate) || (rowData.requestType === "bookRoomRequest" && rowData.status === "pending" && bookingDate > fullDate)
                                                                     ?
                                                                     <div className="btn-action-container-flex">
                                                                         <button className="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorInherit" type="button" onClick={(e) => this.onDeleteRequest(rowData.status, rowData.id, rowData.title)}>
