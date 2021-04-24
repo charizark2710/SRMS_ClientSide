@@ -75,24 +75,30 @@ class AdminHomePage extends Component<Props, State> {
     notificationManagement = () => {
         this.setState({ messages: [] });
         const userEmail = "admin";
+        const tempMessage: any[] = [];
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').limitToLast(30).on('child_added', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail) {
-                if (mail.isRead)
-                    this.setState({ messages: [... this.state.messages, mail] })
+                tempMessage.unshift(mail);
+                if (mail.isRead) {
+                    this.setState({ messages: tempMessage })
+                }
                 else
-                    this.setState({ messages: [... this.state.messages, mail], countMessage: ++count })
+                    this.setState({ messages: tempMessage, countMessage: ++count })
             }
         });
+
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').limitToLast(30).off('child_added', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail) {
-                if (mail.isRead)
-                    this.setState({ messages: [... this.state.messages, mail] })
+                tempMessage.unshift(mail);
+                if (mail.isRead) {
+                    this.setState({ messages: tempMessage })
+                }
                 else
-                    this.setState({ messages: [... this.state.messages, mail], countMessage: ++count })
+                    this.setState({ messages: tempMessage, countMessage: ++count })
             }
         });
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_changed', (snap: any) => {

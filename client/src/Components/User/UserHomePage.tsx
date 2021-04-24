@@ -178,24 +178,27 @@ class UserHomePage extends Component<Props, State> {
     notificationManagement = (user: firebase.User) => {
         this.setState({ messageToUser: [] });
         const userEmail = user.email?.split("@")[0] || '';
+        const tempMessage: any[] = [];
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_added', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail.url) {
+                tempMessage.unshift(mail);
                 if (mail.isRead)
-                    this.setState({ messageToUser: [... this.state.messageToUser, mail] })
+                    this.setState({ messageToUser: tempMessage })
                 else
-                    this.setState({ messageToUser: [... this.state.messageToUser, mail], countMessage: ++count })
+                    this.setState({ messageToUser: tempMessage, countMessage: ++count })
             }
         });
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_added', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail.url) {
+                tempMessage.unshift(mail);
                 if (mail.isRead)
-                    this.setState({ messageToUser: [... this.state.messageToUser, mail] })
+                    this.setState({ messageToUser: tempMessage })
                 else
-                    this.setState({ messageToUser: [... this.state.messageToUser, mail], countMessage: ++count })
+                    this.setState({ messageToUser: tempMessage, countMessage: ++count })
             }
         });
         db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_changed', (snap: any) => {
@@ -595,7 +598,7 @@ class UserHomePage extends Component<Props, State> {
     getSelectedRoom = async (room: string) => {
         this.bookingFormState['selectedRoom'] = room;
         //validate button Booking
-        const { txtDateToBook, txtStartTime, txtEndTime, selectedRoom, txtReasonToBook } =  this.bookingFormState;
+        const { txtDateToBook, txtStartTime, txtEndTime, selectedRoom, txtReasonToBook } = this.bookingFormState;
         if (txtDateToBook && txtStartTime && txtEndTime && selectedRoom && txtReasonToBook) {
             this.setState({
                 isDisableBookingBtn: false
