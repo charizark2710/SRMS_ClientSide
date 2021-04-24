@@ -887,9 +887,9 @@ class UserHomePage extends Component<Props, State> {
     notifyBookingRoomSuccess = () => toast.success("Sent booking room request successfully!");
     notifyReportErrorSuccess = () => toast.success("Sent report error request successfully!");
 
-    onGetFullMessage=(fullMessage:string)=>{
+    onGetFullMessage = (fullMessage: string) => {
         const message = document.getElementById("full-notification-message");
-        if(message) {
+        if (message) {
             message.innerHTML = fullMessage;
         }
     }
@@ -912,10 +912,22 @@ class UserHomePage extends Component<Props, State> {
                                         <i className="material-icons">assignment_ind</i> {currentUser.name}
                                     </a>
                                 </li>
-                                <li>
-                                    <a href="" data-toggle="modal" data-target="#calendarModal">
-                                        <i className="material-icons">event_available</i> Calendar
+                               
+                                <li id='notification' className="dropdown">
+                                    <a href="" className="dropdown-toggle" data-toggle="dropdown">
+                                        <i className="material-icons">event_available</i>Calendar
                                     </a>
+                                    <ul className="dropdown-menu custom-ul-calendar" onClick={(e) => e.stopPropagation()}>
+                                        <div className="row calendar-user-width">
+                                            <div className="col-md-10 col-md-offset-1">
+                                                <div className="card card-calendar">
+                                                    <div className="card-content ps-child">
+                                                        <FullCalendarIO />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ul>
                                 </li>
                                 <li>
                                     <a href="" data-toggle="modal" data-target="#historyRequestModal" onClick={() => this.getHistoryRequest(currentUser.employeeId)}>
@@ -937,7 +949,7 @@ class UserHomePage extends Component<Props, State> {
                                             messageToUser && messageToUser.map((message: message, index) => {
                                                 return <li key={index}>
                                                     <a data-toggle="modal"
-                                                        data-target="#notifications" onClick={()=>this.onGetFullMessage(message.message)}>
+                                                        data-target="#notifications" onClick={() => this.onGetFullMessage(message.message)}>
                                                         <table className="tbl-width">
                                                             <tbody>
                                                                 <tr>
@@ -1432,9 +1444,9 @@ class UserHomePage extends Component<Props, State> {
                                 <h2 className="modal-title text-center">Full Message</h2>
                             </div>
                             <div className="modal-body">
-                                
-                            <p id="full-notification-message">one two three one two three one two three one two threeone two three one two three one two three one two threeone two three one two three one two three one two threeone two three one two three one two three one two three</p>
-                                      
+
+                                <p id="full-notification-message">one two three one two three one two three one two threeone two three one two three one two three one two threeone two three one two three one two three one two threeone two three one two three one two three one two three</p>
+
                             </div>
                         </div>
                     </div>

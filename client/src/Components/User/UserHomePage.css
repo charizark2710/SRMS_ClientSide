@@ -145,3 +145,11 @@
 .fc-col-header{
     width: 100% !important
 }
+
+.calendar-user-width{
+    width:850px;
+    margin-left: -6.7% !important;
+}
+.custom-ul-calendar{
+    width: 750px;
+}
