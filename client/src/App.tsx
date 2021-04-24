@@ -81,7 +81,7 @@ class App extends Component<Props, State>{
         );
       }
     } else {
-      return (<Route component={NotFound}></Route>);
+      return null;
     }
   }
 }

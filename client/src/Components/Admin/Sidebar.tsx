@@ -1,9 +1,9 @@
 import { Component } from 'react';
-import { client } from './../../FireBase/config'
 import { NavLink, Route } from 'react-router-dom';
 
 interface Props {
-    match: any
+    match: any,
+    currentAdmin: string
 }
 
 interface ILinkProp {
@@ -14,7 +14,6 @@ interface ILinkProp {
 }
 
 interface State {
-    currentAdmin: any
 }
 
 const CustomNavLink = ({ label, to, activeOnlyWhenExact, icon }: ILinkProp) => {
@@ -33,50 +32,14 @@ const CustomNavLink = ({ label, to, activeOnlyWhenExact, icon }: ILinkProp) => {
     )
 }
 
-// const customNavLink=({ label, to, activeOnlyWhenExact }: Props) =>{
-//     let match = useRouteMatch({
-//       path: to,
-//       exact: activeOnlyWhenExact
-//     });
-
-//     return (
-//       <li className={match ? "active" : ""}>
-//         {match && "> "}
-//         <NavLink to={to}>{label}</NavLink>
-//       </li>
-//     );
-//   }
 
 class AdminHomePage extends Component<Props, State> {
 
     constructor(props: Props) {
         super(props)
-        this.state = {
-            currentAdmin: {}
-        }
     }
-    componentDidMount() {
-        client.auth().onAuthStateChanged(user => {
-            if (user) {
-                const currentUser = {
-                    name: user.displayName,
-                    employeeId: user.email?.split('@')[0] || ' '
-                }
-                //this.notificationManagement(user);
-                this.setState({
-                    currentAdmin: currentUser
-                })
-            }
-        });
-        console.log('sidebar');
-
-    }
-
-
 
     render() {
-        const { match } = this.props;
-
         return (
             <div className="sidebar" data-active-color="orange" data-background-color="white" data-image="/img/sidebar-1.jpg">
                 <div className="logo">
@@ -95,7 +58,7 @@ class AdminHomePage extends Component<Props, State> {
                         <div className="info">
                             <a data-toggle="collapse" href="#collapseExample" className="collapsed text-align-right-for-link">
                                 <span>
-                                    {this.state.currentAdmin.name}
+                                    {this.props.currentAdmin}
                                 </span>
                             </a>
                         </div>

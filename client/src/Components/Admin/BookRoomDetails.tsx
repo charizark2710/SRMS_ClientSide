@@ -128,7 +128,9 @@ class BookRoomDetail extends Component<Props, State> {
                 toast.success(status + " successfully!");
             }
             else {
-                return res.json().then(result => { console.log(result) })
+                return res.json().then(result => {
+                    toast.warning(result);
+                })
             }
         }).catch(e => {
             toast.error(e);

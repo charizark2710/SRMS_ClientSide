@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import message from '../../model/Message';
 import moment from 'moment';
 import { NavLink } from 'react-router-dom';
-import { db, client } from './../../FireBase/config';
 import { formatDateTime } from "../Common/formatDateTime";
 import { logout } from "../Common/logOut";
 
@@ -10,12 +9,12 @@ import { logout } from "../Common/logOut";
 
 interface Props {
   match: any,
-  history: any
+  history: any,
+  messages: message[],
+  countMessage: number
 }
 
 interface State {
-  messages: message[],
-  countMessage: number
 }
 
 class Header extends Component<Props, State> {
@@ -26,125 +25,8 @@ class Header extends Component<Props, State> {
       countMessage: 0
     }
   }
-  componentDidMount() {
-    fetch('http://localhost:5000', {
-      credentials: 'include',
-    }).then(res => {
-      if (res.ok) {
-        client.auth().onAuthStateChanged((user: any) => {
-          if (user) {
-            this.notificationManagement();
-          }
-        });
-      }
-    }).catch(e => {
-      console.log(e);
-    })
-  }
-
-  notificationManagement = () => {
-    this.setState({ messages: [] });
-    const userEmail = "admin";
-    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').limitToLast(30).on('child_added', (snap: any) => {
-      const mail: message = snap.val();
-      let count = this.state.countMessage;
-      if (mail) {
-        if (mail.isRead)
-          this.setState({ messages: [... this.state.messages, mail] })
-        else
-          this.setState({ messages: [... this.state.messages, mail], countMessage: ++count })
-      }
-    });
-    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').limitToLast(30).off('child_added', (snap: any) => {
-      const mail: message = snap.val();
-      let count = this.state.countMessage;
-      if (mail) {
-        if (mail.isRead)
-          this.setState({ messages: [... this.state.messages, mail] })
-        else
-          this.setState({ messages: [... this.state.messages, mail], countMessage: ++count })
-      }
-    });
-    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_changed', (snap: any) => {
-      const mail: message = snap.val();
-      let count = this.state.countMessage;
-      if (mail.url) {
-        if (!mail.isRead) {
-          const arr = this.state.messages;
-          const changingIndex = arr.findIndex((x: any) => x.id === mail.id);
-          arr[changingIndex].isRead = true;
-          arr[changingIndex].message = mail.message;
-          arr[changingIndex].sender = mail.sender;
-          arr[changingIndex].sendAt = mail.sendAt;
-          arr[changingIndex].url = mail.url;
-          this.setState({ messages: arr, countMessage: ++count });
-        } else {
-          this.setState({ countMessage: count < 0 ? 0 : --count });
-        }
-      } else {
-        const arr = this.state.messages;
-        const newArr = arr.filter(mess => {
-          if (mess.id !== mail.id) --count;
-          return mess.id !== mail.id;
-        })
-        this.setState({ messages: newArr, countMessage: count < 0 ? 0 : --count });
-      }
-    });
-    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_changed', (snap: any) => {
-      const mail: message = snap.val();
-      let count = this.state.countMessage;
-      if (mail.url) {
-        if (!mail.isRead) {
-          const arr = this.state.messages;
-          const changingIndex = arr.findIndex((x: any) => x.id === mail.id);
-          arr[changingIndex].isRead = true;
-          arr[changingIndex].message = mail.message;
-          arr[changingIndex].sender = mail.sender;
-          arr[changingIndex].sendAt = mail.sendAt;
-          arr[changingIndex].url = mail.url;
-          this.setState({ messages: arr, countMessage: ++count });
-        } else {
-          this.setState({ countMessage: count < 0 ? 0 : --count });
-        }
-      } else {
-        const arr = this.state.messages;
-        const newArr = arr.filter(mess => {
-          if (mess.id !== mail.id) --count;
-          return mess.id !== mail.id;
-        })
-        this.setState({ messages: newArr, countMessage: count < 0 ? 0 : --count });
-      }
-    });
-
-    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_removed', (snap: any) => {
-      const mail: message = snap.val();
-      let count = this.state.countMessage;
-      if (mail) {
-        const arr = this.state.messages;
-        const newArr = arr.filter(mess => {
-          if (mess.id !== mail.id) --count;
-          return mess.id !== mail.id;
-        })
-        this.setState({ messages: newArr, countMessage: count < 0 ? 0 : --count })
-      }
-    });
-
-    db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_removed', (snap: any) => {
-      const mail: message = snap.val();
-      let count = this.state.countMessage;
-      if (mail) {
-        const arr = this.state.messages;
-        const newArr = arr.filter(mess => {
-          if (mess.id !== mail.id) --count;
-          return mess.id !== mail.id;
-        })
-        this.setState({ messages: newArr, countMessage: count < 0 ? 0 : --count })
-      }
-    });
-  }
-
   render() {
-    const { messages } = this.state;
+    const { messages } = this.props;
     const { match } = this.props;
     console.log(match);
 
@@ -171,7 +53,7 @@ class Header extends Component<Props, State> {
               <li className="dropdown">
                 <a href="#" className="dropdown-toggle" data-toggle="dropdown">
                   <i className="material-icons">notifications</i>
-                  <span className="notification">{this.state.countMessage}</span>
+                  <span className="notification">{this.props.countMessage}</span>
                   <p className="hidden-lg hidden-md">
                     Notifications
                             <b className="caret"></b>
@@ -181,7 +63,7 @@ class Header extends Component<Props, State> {
                   <div className="noti">Notifications</div>
                   {messages && messages.map((message, index) => {
                     return <li key={index}>
-                      <NavLink to={message.url as string} className={message.message.includes("cancel") ? "invalid-noti-bg" : ""}>
+                      {message.url ? <NavLink to={message.url as string} className={message.message ? "invalid-noti-bg" : ""}>
                         <table className="tbl-width">
                           <tbody>
                             <tr>
@@ -200,7 +82,7 @@ class Header extends Component<Props, State> {
                             </tr>
                           </tbody>
                         </table>
-                      </NavLink>
+                      </NavLink> : null}
                     </li>
                   })}
 

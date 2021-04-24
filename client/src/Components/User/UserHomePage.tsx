@@ -178,7 +178,7 @@ class UserHomePage extends Component<Props, State> {
     notificationManagement = (user: firebase.User) => {
         this.setState({ messageToUser: [] });
         const userEmail = user.email?.split("@")[0] || '';
-        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').limitToLast(30).on('child_added', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_added', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail.url) {
@@ -188,7 +188,7 @@ class UserHomePage extends Component<Props, State> {
                     this.setState({ messageToUser: [... this.state.messageToUser, mail], countMessage: ++count })
             }
         });
-        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').limitToLast(30).off('child_added', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_added', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail.url) {
@@ -461,18 +461,18 @@ class UserHomePage extends Component<Props, State> {
         });
     }
 
+    bookingFormState: any = { txtDateToBook: '', txtStartTime: '', txtEndTime: '', txtReasonToBook: '', selectedRoom: '' }
+
     //booking room: dùng chung cho update và insert 
     onHandleChangeBookingForm = async (event: any) => {
         const target = event.target;
         const name = target.name;
         const value = target.type === 'checkbox' ? target.checked : target.value;
 
-        await this.setState({
-            [name]: value
-        } as Pick<State, keyof State>);
+        this.bookingFormState[name] = value
 
         //validate button Booking
-        const { txtDateToBook, txtStartTime, txtEndTime, txtReasonToBook, selectedRoom } = this.state;
+        const { txtDateToBook, txtStartTime, txtEndTime, txtReasonToBook, selectedRoom } = this.bookingFormState;
 
         if (txtDateToBook && txtStartTime && txtEndTime && txtReasonToBook) {
             let currentDate = new Date();
@@ -546,9 +546,17 @@ class UserHomePage extends Component<Props, State> {
     }
 
 
-    loadAvailableRoom = () => {
-        this.setState({
-            selectedRoom: ''
+    loadAvailableRoom = async () => {
+        const date = (this.bookingFormState.txtDateToBook as string).split('-');
+        const tempStartTime = (this.bookingFormState.txtStartTime as string).split(":");
+        const fullStartTime = tempStartTime[0] + tempStartTime[1] + "00000";
+        const tempEndTime = (this.bookingFormState.txtEndTime as string).split(":");
+        const fullEndTime = tempEndTime[0] + tempEndTime[1] + "00000";
+        await this.setState({
+            selectedRoom: '',
+            txtDateToBook: date[0] + date[1] + date[2],
+            txtStartTime: fullStartTime,
+            txtEndTime: fullEndTime
         })
         const { txtDateToBook, txtStartTime, txtEndTime } = this.state;
         fetch(`http://localhost:5000/bookRoom/getAvailableRooms?date=${txtDateToBook}&startTime=${txtStartTime}&endTime=${txtEndTime}`, {
@@ -585,11 +593,9 @@ class UserHomePage extends Component<Props, State> {
     }
 
     getSelectedRoom = async (room: string) => {
-        await this.setState({
-            selectedRoom: room
-        })
+        this.bookingFormState['selectedRoom'] = room;
         //validate button Booking
-        const { txtDateToBook, txtStartTime, txtEndTime, selectedRoom, txtReasonToBook } = this.state;
+        const { txtDateToBook, txtStartTime, txtEndTime, selectedRoom, txtReasonToBook } =  this.bookingFormState;
         if (txtDateToBook && txtStartTime && txtEndTime && selectedRoom && txtReasonToBook) {
             this.setState({
                 isDisableBookingBtn: false
@@ -644,7 +650,6 @@ class UserHomePage extends Component<Props, State> {
     //book room: dùng chhung cho update và insert
     onSubmitBookingForm = (event: any) => {
         event.preventDefault();
-        const date = new Date();
         const bookRoom = {
             roomName: this.state.selectedRoom,
             date: this.state.txtDateToBook,
@@ -786,9 +791,9 @@ class UserHomePage extends Component<Props, State> {
                     if (result) {
                         this.setState({
                             currentRoomPermission: result.room,
-                            currentDatePermission: formatDate(result.date),
-                            currentStartTimePermission: formatTime(result.from),
-                            currentEndTimePermission: formatTime(result.to),
+                            currentDatePermission: result.date,
+                            currentStartTimePermission: result.from,
+                            currentEndTimePermission: result.to,
                             currentCalendarId: result.id,
                         })
                     }
@@ -887,9 +892,9 @@ class UserHomePage extends Component<Props, State> {
     notifyBookingRoomSuccess = () => toast.success("Sent booking room request successfully!");
     notifyReportErrorSuccess = () => toast.success("Sent report error request successfully!");
 
-    onGetFullMessage=(fullMessage:string)=>{
+    onGetFullMessage = (fullMessage: string) => {
         const message = document.getElementById("full-notification-message");
-        if(message) {
+        if (message) {
             message.innerHTML = fullMessage;
         }
     }
@@ -937,7 +942,7 @@ class UserHomePage extends Component<Props, State> {
                                             messageToUser && messageToUser.map((message: message, index) => {
                                                 return <li key={index}>
                                                     <a data-toggle="modal"
-                                                        data-target="#notifications" onClick={()=>this.onGetFullMessage(message.message)}>
+                                                        data-target="#notifications" onClick={() => this.onGetFullMessage(message.message)}>
                                                         <table className="tbl-width">
                                                             <tbody>
                                                                 <tr>
@@ -1141,14 +1146,14 @@ class UserHomePage extends Component<Props, State> {
                                                     <div className="col-md-4">
                                                         <div className="form-group is-empty">
                                                             <label className="control-label">Date</label>
-                                                            <input type="date" id="dateToBook" className="form-control" name="txtDateToBook" value={this.state.txtDateToBook} onChange={this.onHandleChangeBookingForm} />
+                                                            <input type="date" id="dateToBook" className="form-control" name="txtDateToBook" value={this.bookingFormState.txtDateToBook} onChange={this.onHandleChangeBookingForm} />
                                                             {/* <input type="" className="form-control datepicker" name="txtDateToBook"  value={this.state.txtDateToBook} onSelect={()=>this.onHandleChangeBookingForm1("a")} /> */}
                                                         </div>
                                                     </div>
                                                     <div className="col-md-4">
                                                         <div className="form-group is-empty">
                                                             <label className="control-label">Start Time <span className="text-warning">{this.state.isStartTimeValid ? "" : "*Start time must be greater than current time*"}</span></label>
-                                                            <input type="time" className="form-control" name="txtStartTime" value={this.state.txtStartTime} onChange={this.onHandleChangeBookingForm} />
+                                                            <input type="time" className="form-control" name="txtStartTime" value={this.bookingFormState.txtStartTime} onChange={this.onHandleChangeBookingForm} />
                                                             {/* <input  className="form-control timepicker" name="txtStartTime" value={this.state.txtStartTime} onChange={this.onHandleChangeBookingForm1} ></input> */}
                                                         </div>
                                                     </div>
@@ -1160,7 +1165,7 @@ class UserHomePage extends Component<Props, State> {
                                                                 }
                                                             </span>
                                                             </label>
-                                                            <input type="time" className="form-control" name="txtEndTime" value={this.state.txtEndTime} onChange={this.onHandleChangeBookingForm} />
+                                                            <input type="time" className="form-control" name="txtEndTime" value={this.bookingFormState.txtEndTime} onChange={this.onHandleChangeBookingForm} />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1168,13 +1173,9 @@ class UserHomePage extends Component<Props, State> {
 
                                                 <div className="form-group is-empty">
                                                     <label className="control-label">Reason</label>
-                                                    <input className="form-control" value={this.state.txtReasonToBook} name="txtReasonToBook" onChange={this.onHandleChangeBookingForm}></input>
+                                                    <input className="form-control" value={this.bookingFormState.txtReasonToBook} name="txtReasonToBook" onChange={this.onHandleChangeBookingForm}></input>
                                                     <span className="material-input"></span>
                                                 </div>
-
-
-
-
 
                                                 <div className="form-group is-empty">
                                                     <button className="btn btn-warning" type="button" disabled={isDisableLoadEmptyRoomBtn} onClick={this.loadAvailableRoom}>
@@ -1184,7 +1185,7 @@ class UserHomePage extends Component<Props, State> {
                                                         {
                                                             availableRooms && availableRooms.map((room, index) => {
                                                                 return (
-                                                                    <button key={index} type="button" className={this.state.selectedRoom === room ? "btn btn-warning" : "btn btn-success"} onClick={() => this.getSelectedRoom(room)}>{room}</button>
+                                                                    <button key={index} type="button" className={this.bookingFormState.selectedRoom === room ? "btn btn-warning" : "btn btn-success"} onClick={() => this.getSelectedRoom(room)}>{room}</button>
                                                                 )
                                                             })
                                                         }
@@ -1195,7 +1196,6 @@ class UserHomePage extends Component<Props, State> {
                                             </div>
                                             <div className="footer text-center pdBottom5">
                                                 <button type="submit" className="btn btn-primary btn-round" disabled={isDisableBookingBtn}>Book now</button>
-
                                             </div>
                                         </form>
                                     </div>
@@ -1284,7 +1284,7 @@ class UserHomePage extends Component<Props, State> {
 
                                             <div className="card-content">
                                                 <div className="form-group">
-                                                    <div className="alert alert-success alert-bg">You have permisstion to control devices in room <b>{currentRoomPermission}</b> on <b>{currentDatePermission} {currentStartTimePermission}-{currentEndTimePermission}</b></div>
+                                                    <div className="alert alert-success alert-bg">You have permisstion to control devices in room <b>{currentRoomPermission}</b> on <b>{formatDate(currentDatePermission as string)} {formatTime(currentStartTimePermission as string)}-{formatTime(currentEndTimePermission as string)}</b></div>
                                                 </div>
 
                                                 <div className="form-group label-floating is-empty">
@@ -1432,9 +1432,9 @@ class UserHomePage extends Component<Props, State> {
                                 <h2 className="modal-title text-center">Full Message</h2>
                             </div>
                             <div className="modal-body">
-                                
-                            <p id="full-notification-message">one two three one two three one two three one two threeone two three one two three one two three one two threeone two three one two three one two three one two threeone two three one two three one two three one two three</p>
-                                      
+
+                                <p id="full-notification-message">one two three one two three one two three one two threeone two three one two three one two three one two threeone two three one two three one two three one two threeone two three one two three one two three one two three</p>
+
                             </div>
                         </div>
                     </div>
