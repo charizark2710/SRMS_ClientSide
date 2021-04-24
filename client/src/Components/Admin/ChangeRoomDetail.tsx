@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 interface Props {
     match: any,
-    history:any
+    history: any
 }
 
 interface State {
@@ -44,7 +44,7 @@ class ChangeRoomDetail extends Component<Props, State> {
         }
     }
 
-    componentDidMount =async()=> {
+    componentDidMount = async () => {
         // if (!this.state.isLoad) {
 
         let date = this.props.match.params.id?.split('~')[0];
@@ -83,13 +83,13 @@ class ChangeRoomDetail extends Component<Props, State> {
                 res.json().then((result) => {
                     //this.traverse(result)
                     console.log(result);
-                    
+
                     this.setState({
                         title: 'Request to change room ' + result.room,
-                        date: formatDate(result.date),
+                        date: result.date,
                         currentRoon: result.room,
-                        startTime: formatTime(result.from),
-                        endTime: formatTime(result.to),
+                        startTime: result.from,
+                        endTime: result.to,
                         fromUser: result.userId,
                         reason: result.reason,
                         status: result.status
@@ -132,12 +132,12 @@ class ChangeRoomDetail extends Component<Props, State> {
         });
 
     }
-    onSelectNewRoom = async(newR: string) => {
+    onSelectNewRoom = async (newR: string) => {
         await this.setState({
             newRoom: newR
         })
         //validate button Booking
-        const {  title, fromUser, date, startTime, endTime, reason, currentRoon, newRoom} = this.state;
+        const { title, fromUser, date, startTime, endTime, reason, currentRoon, newRoom } = this.state;
         if (title && fromUser && date && startTime && endTime && reason && currentRoon && newRoom) {
             this.setState({
                 isDisableAcceptBtn: false
@@ -150,15 +150,15 @@ class ChangeRoomDetail extends Component<Props, State> {
 
     }
 
-    onAcceptChangeRoom=()=>{
-        let changeRoom={
-            userId:this.state.fromUser,
-            from:this.state.startTime,
-            to:this.state.endTime,
-            date:this.state.date,
-            newRoom:this.state.newRoom,
-            room:this.state.currentRoon,
-            calendarId:this.state.calendarId,
+    onAcceptChangeRoom = () => {
+        let changeRoom = {
+            userId: this.state.fromUser,
+            from: this.state.startTime,
+            to: this.state.endTime,
+            date: this.state.date,
+            newRoom: this.state.newRoom,
+            room: this.state.currentRoon,
+            calendarId: this.state.calendarId,
         }
         fetch('http://localhost:5000/changeRoom/sendChangeRoomRequest', {
             credentials: 'include',
@@ -226,7 +226,7 @@ class ChangeRoomDetail extends Component<Props, State> {
                                             <div className="col-sm-10">
                                                 <div className="form-group label-floating is-empty">
                                                     <label className="control-label"></label>
-                                                    <input type="text" className="form-control" value={date + ' ' + startTime + '-' + endTime} readOnly />
+                                                    <input type="text" className="form-control" value={formatDate(date) + ' ' + formatTime(startTime) + '-' + formatTime(endTime)} readOnly />
                                                     <span className="material-input"></span></div>
                                             </div>
                                         </div>
