@@ -40,6 +40,9 @@ class AdminHomePage extends Component<Props, State> {
             document.getElementsByTagName("body")[0].appendChild(script);
         }
     }
+    componentDidMount(){
+        this.createScript();
+    }
 
     render() {
         return (

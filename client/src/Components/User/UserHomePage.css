@@ -7,6 +7,9 @@
 .menu-user-homepage-header{
     margin-left: -10% !important;
 }
+.title-fontfamily{
+    font-family: 'Courier New', Courier, monospace;
+}
 .notiNumber{
    margin-right: 62%;
 }

@@ -491,8 +491,10 @@ class UserHomePage extends Component<Props, State> {
                 }
             } else if (today === txtDateToBook) {
                 if (currentTime > txtStartTime) {
+
                     this.setState({
-                        isStartTimeValid: false
+                        isStartTimeValid: false,
+                        isDisableLoadEmptyRoomBtn: false,
                     })
                 } else if (currentTime < txtStartTime) {
                     this.setState({
@@ -885,6 +887,13 @@ class UserHomePage extends Component<Props, State> {
     notifyBookingRoomSuccess = () => toast.success("Sent booking room request successfully!");
     notifyReportErrorSuccess = () => toast.success("Sent report error request successfully!");
 
+    onGetFullMessage=(fullMessage:string)=>{
+        const message = document.getElementById("full-notification-message");
+        if(message) {
+            message.innerHTML = fullMessage;
+        }
+    }
+
     render() {
         const { currentDatePermission, currentEndTimePermission, currentRoomPermission, currentStartTimePermission, availableRooms, messageToUser, lightOn, fanOn, conditionerOn, powerPlugOn, currentUser, isDisableBookingBtn, isDisableLoadEmptyRoomBtn } = this.state;
         return (
@@ -927,7 +936,8 @@ class UserHomePage extends Component<Props, State> {
                                         {
                                             messageToUser && messageToUser.map((message: message, index) => {
                                                 return <li key={index}>
-                                                    <a>
+                                                    <a data-toggle="modal"
+                                                        data-target="#notifications" onClick={()=>this.onGetFullMessage(message.message)}>
                                                         <table className="tbl-width">
                                                             <tbody>
                                                                 <tr>
@@ -1410,6 +1420,27 @@ class UserHomePage extends Component<Props, State> {
                         </div>
                     </div>
                 </div>
+
+
+                {/* notification message */}
+                <div id="notifications" className="modal fade blur" role="dialog">
+                    <div className="modal-dialog">
+
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <button type="button" className="close" data-dismiss="modal">&times;</button>
+                                <h2 className="modal-title text-center">Full Message</h2>
+                            </div>
+                            <div className="modal-body">
+                                
+                            <p id="full-notification-message">one two three one two three one two three one two threeone two three one two three one two three one two threeone two three one two three one two three one two threeone two three one two three one two three one two three</p>
+                                      
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
             </div>
         )
     }

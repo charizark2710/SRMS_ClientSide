@@ -4,7 +4,7 @@ import moment from 'moment';
 import { formatDateTime } from "../Common/formatDateTime";
 
 interface Props {
-
+    history:any
 }
 
 interface State {
@@ -26,9 +26,15 @@ const columns = [
     {
         title: "Request Time", field: "sendAt",
         render: (rowData: any) => {
-            console.log(rowData.sendAt?.split("-")[1]);
-
             return <small>{moment(formatDateTime(rowData.sendAt)).format('MMMM Do YYYY, h:mm:ss a')}</small>
+        }
+    },
+    {
+        title: "Read?", field: "isRead",
+        render: (rowData: any) => {
+            return rowData.isRead ? <span className="label label-default" style={{ padding: "3px 5px 3px 5px" }}>Yes</span> :
+             <span className="label label-success" style={{ padding: "3px 5px 3px 5px" }}>no</span> 
+               
         }
     },
 
@@ -114,6 +120,9 @@ class BannedList extends Component<Props, State> {
 
         }
     }
+    onRedicrectToActionPage=(url:string)=>{
+        this.props.history.push(url);
+    }
 
     render() {
         return (
@@ -129,6 +138,7 @@ class BannedList extends Component<Props, State> {
                                     <div className="material-datatables">
                                         <MaterialTable
                                             title="Notifications"
+                                            onRowClick={(event, rowData) => this.onRedicrectToActionPage(rowData.url as string)}
                                             columns={columns}
                                             data={this.state.requestList}
                                             options={
