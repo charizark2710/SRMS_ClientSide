@@ -20,6 +20,7 @@ interface State {
     isDisableAcceptBtn: boolean,
     availableRooms: any[],
     calendarId: string,
+    status?: string
 }
 
 //let bookingRoomData = new Map();
@@ -38,7 +39,8 @@ class ChangeRoomDetail extends Component<Props, State> {
             newRoom: '',
             isDisableAcceptBtn: true,
             availableRooms: [],
-            calendarId: ''
+            calendarId: '',
+            status: undefined
         }
     }
 
@@ -89,7 +91,8 @@ class ChangeRoomDetail extends Component<Props, State> {
                         startTime: formatTime(result.from),
                         endTime: formatTime(result.to),
                         fromUser: result.userId,
-                        reason: result.reason
+                        reason: result.reason,
+                        status: result.status
                     })
                     // }
                 })
@@ -157,7 +160,7 @@ class ChangeRoomDetail extends Component<Props, State> {
             room:this.state.currentRoon,
             calendarId:this.state.calendarId,
         }
-        fetch('http://localhost:5000/changeRoom/acceptChangeRoomRequest', {
+        fetch('http://localhost:5000/changeRoom/sendChangeRoomRequest', {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -240,7 +243,7 @@ class ChangeRoomDetail extends Component<Props, State> {
                                             <label className="col-sm-2 label-on-left">Find available room</label>
                                             <div className="col-sm-10">
                                                 <div className="form-group label-floating is-empty">
-                                                    <button disabled={status!=="changing" ? true:false} className="btn btn-warning" type="button" onClick={this.loadAvailableRoom}>
+                                                    <button className="btn btn-warning" type="button" onClick={this.loadAvailableRoom}>
                                                         <i className="material-icons">autorenew</i>
                                                     </button>
                                                 </div>
