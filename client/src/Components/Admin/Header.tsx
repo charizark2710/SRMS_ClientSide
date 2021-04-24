@@ -20,11 +20,8 @@ interface State {
 class Header extends Component<Props, State> {
   constructor(props: Props) {
     super(props)
-    this.state = {
-      messages: [],
-      countMessage: 0
-    }
   }
+  
   render() {
     const { messages } = this.props;
     const { match } = this.props;
