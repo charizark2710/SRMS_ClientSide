@@ -54,7 +54,8 @@ interface State {
     cbbDeviceToReport: string[]
     cbbRoomToReport: string
     txtDescriptionToReport: string
-    allRooms: string[]
+    allRooms: string[],
+    isDisableReportErrorBtn:boolean,
 
     //change room
     currentRoomPermission?: string,
@@ -100,6 +101,7 @@ class UserHomePage extends Component<Props, State> {
             cbbRoomToReport: '',
             txtDescriptionToReport: '',
             allRooms: [],
+            isDisableReportErrorBtn:true,
 
             currentRoomPermission: undefined,
             currentDatePermission: undefined,
@@ -485,7 +487,7 @@ class UserHomePage extends Component<Props, State> {
             console.log(currentTime);
             const today = new Date().toISOString().split("T")[0];
             if (today === txtDateToBook) {
-                if (currentTime > txtStartTime) {
+                if (currentTime >= txtStartTime) {
 
                     this.setState({
                         isStartTimeValid: false,
@@ -777,6 +779,15 @@ class UserHomePage extends Component<Props, State> {
         await this.setState({
             [name]: value
         } as Pick<State, keyof State>);
+        if(this.state.cbbRoomToReport && this.state.cbbDeviceToReport&&this.state.txtDescriptionToReport){
+            this.setState({
+                isDisableReportErrorBtn:false
+            })
+        }else{
+            this.setState({
+                isDisableReportErrorBtn:true
+            })
+        }
     }
 
     onSubmitReportErrorForm = (event: any) => {
@@ -1286,7 +1297,7 @@ class UserHomePage extends Component<Props, State> {
 
                                             </div>
                                             <div className="footer text-center textGetStarted">
-                                                <button type="submit" className="btn btn-primary btn-round">Report now</button>
+                                                <button disabled={this.state.isDisableReportErrorBtn} type="submit" className="btn btn-primary btn-round">Report now</button>
                                             </div>
                                         </form>
                                     </div>

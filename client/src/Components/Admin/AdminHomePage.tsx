@@ -54,8 +54,6 @@ class AdminHomePage extends Component<Props, State> {
         }
     }
     componentDidMount() {
-        this.createScript();
-
         fetch('http://localhost:5000', {
             credentials: 'include',
         }).then(res => {
@@ -65,6 +63,7 @@ class AdminHomePage extends Component<Props, State> {
                         this.notificationManagement().then(() => {
                             this.setState({ currentAdmin: user.displayName, isLoaded: true });
                         });
+                        this.createScript();
                     }
                 });
             }
