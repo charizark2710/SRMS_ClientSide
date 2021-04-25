@@ -55,7 +55,7 @@ interface State {
     cbbRoomToReport: string
     txtDescriptionToReport: string
     allRooms: string[],
-    isDisableReportErrorBtn:boolean,
+    isDisableReportErrorBtn: boolean,
 
     //change room
     currentRoomPermission?: string,
@@ -101,7 +101,7 @@ class UserHomePage extends Component<Props, State> {
             cbbRoomToReport: '',
             txtDescriptionToReport: '',
             allRooms: [],
-            isDisableReportErrorBtn:true,
+            isDisableReportErrorBtn: true,
 
             currentRoomPermission: undefined,
             currentDatePermission: undefined,
@@ -779,13 +779,13 @@ class UserHomePage extends Component<Props, State> {
         await this.setState({
             [name]: value
         } as Pick<State, keyof State>);
-        if(this.state.cbbRoomToReport && this.state.cbbDeviceToReport&&this.state.txtDescriptionToReport){
+        if (this.state.cbbRoomToReport && this.state.cbbDeviceToReport && this.state.txtDescriptionToReport) {
             this.setState({
-                isDisableReportErrorBtn:false
+                isDisableReportErrorBtn: false
             })
-        }else{
+        } else {
             this.setState({
-                isDisableReportErrorBtn:true
+                isDisableReportErrorBtn: true
             })
         }
     }
@@ -1012,7 +1012,7 @@ class UserHomePage extends Component<Props, State> {
                                 </li>
 
                                 <li>
-                                    <a href="" onClick={() => logout(this.props.history)}>
+                                    <a href="#pablo" onClick={() => logout(this.props.history)} className="dropdown-toggle" data-toggle="dropdown">
                                         <i className="material-icons">input</i> Logout
                                     </a>
                                 </li>

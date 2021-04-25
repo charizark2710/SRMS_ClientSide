@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 interface Props {
     match: any,
-    history:any
+    history: any
 }
 
 interface State {
@@ -126,31 +126,59 @@ class BookRoomDetail extends Component<Props, State> {
             userId: this.state.fromUser
         }
 
-        if (parseInt(fullDate) <= parseInt(this.state.date) && parseInt(this.state.endTime) > parseInt(time)) {
-            if (parseInt(this.state.startTime) < parseInt(time)) {
-                roomBooking.from = time;
+        if (parseInt(fullDate) <= parseInt(this.state.date)) {
+            if (parseInt(fullDate) === parseInt(this.state.date)) {
+                if (parseInt(this.state.endTime) < parseInt(time)) {
+                    toast.warning('Check your time');
+                    return;
+                }
+                if (parseInt(this.state.startTime) < parseInt(time)) {
+                    roomBooking.from = time;
+                }
+                fetch('http://localhost:5000/calendar/add', {
+                    credentials: 'include',
+                    headers: {
+                        'content-type': 'application/json',
+                    },
+                    method: 'POST',
+                    body: JSON.stringify(roomBooking)
+                }).then(res => {
+                    if (res.status === 200) {
+                        toast.success(status + " successfully!");
+                        this.props.history.push("/");
+                    }
+                    else {
+                        return res.json().then(result => {
+                            toast.warning(result);
+                        })
+                    }
+                }).catch(e => {
+                    toast.error(e);
+                    console.log(e);
+                });
+            } else {
+                fetch('http://localhost:5000/calendar/add', {
+                    credentials: 'include',
+                    headers: {
+                        'content-type': 'application/json',
+                    },
+                    method: 'POST',
+                    body: JSON.stringify(roomBooking)
+                }).then(res => {
+                    if (res.status === 200) {
+                        toast.success(status + " successfully!");
+                        this.props.history.push("/");
+                    }
+                    else {
+                        return res.json().then(result => {
+                            toast.warning(result);
+                        })
+                    }
+                }).catch(e => {
+                    toast.error(e);
+                    console.log(e);
+                });
             }
-            fetch('http://localhost:5000/calendar/add', {
-                credentials: 'include',
-                headers: {
-                    'content-type': 'application/json',
-                },
-                method: 'POST',
-                body: JSON.stringify(roomBooking)
-            }).then(res => {
-                if (res.status === 200) {
-                    toast.success(status + " successfully!");
-                    this.props.history.push("/");
-                }
-                else {
-                    return res.json().then(result => {
-                        toast.warning(result);
-                    })
-                }
-            }).catch(e => {
-                toast.error(e);
-                console.log(e);
-            });
         } else {
             toast.warning('Check your time');
         }

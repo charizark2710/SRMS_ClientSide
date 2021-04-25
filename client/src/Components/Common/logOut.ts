@@ -1,6 +1,6 @@
 import firebase from 'firebase'
 
-export const logout = (history:any) => {
+export const logout = (history: any) => {
     fetch('http://localhost:5000/logout', {
         credentials: "include",
         method: 'POST',
@@ -15,13 +15,16 @@ export const logout = (history:any) => {
                 // this.props.history.go(1);
             } else {
                 res.json().then(result => {
+                    console.log(result);
                     throw Error(result);
                 });
             }
         } catch (error) {
+            console.log(JSON.stringify(error));
             throw Error(error);
         }
     }).catch(e => {
+        console.log(JSON.stringify(e));
         throw Error(e);
     });
 }
