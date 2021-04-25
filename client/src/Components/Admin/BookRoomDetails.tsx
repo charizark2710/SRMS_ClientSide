@@ -8,7 +8,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface Props {
-    match: any
+    match: any,
+    history:any
 }
 
 interface State {
@@ -144,6 +145,7 @@ class BookRoomDetail extends Component<Props, State> {
             }).then(res => {
                 if (res.status === 200) {
                     toast.success(status + " successfully!");
+                    this.props.history.push("/");
                 }
                 else {
                     return res.json().then(result => {
