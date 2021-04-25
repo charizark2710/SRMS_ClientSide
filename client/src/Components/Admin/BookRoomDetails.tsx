@@ -108,7 +108,7 @@ class BookRoomDetail extends Component<Props, State> {
 
         const now = new Date();
         const tempH = now.getHours().toString();
-        const tempMin = now.getMinutes().toString();
+        const tempMin = (now.getMinutes() + 1) === 60 ? '0' : (now.getMinutes() + 1).toString();
         const hours = tempH.length === 2 ? tempH : '0' + tempH;
         const min = tempMin.length === 2 ? tempMin : '0' + tempMin;
         const tempM = (now.getMonth() + 1).toString();
