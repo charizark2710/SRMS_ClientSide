@@ -137,6 +137,7 @@ class AdminHomePage extends Component<Props, State> {
                 if (!mail.isRead) {
                     this.setState({ messages: arr, countMessage: ++count });
                 } else {
+                    console.log(mail);
                     this.setState({ countMessage: count < 0 ? 0 : --count });
                 }
             } else {

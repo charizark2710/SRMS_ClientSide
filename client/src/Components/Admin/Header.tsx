@@ -21,7 +21,7 @@ class Header extends Component<Props, State> {
   constructor(props: Props) {
     super(props)
   }
-  
+
   render() {
     const { messages } = this.props;
     const { match } = this.props;
@@ -60,7 +60,7 @@ class Header extends Component<Props, State> {
                   <div className="noti">Notifications</div>
                   {messages && messages.map((message, index) => {
                     return <li key={index}>
-                      {message.url ? <NavLink to={message.url as string} className={message.message.includes("cancel") ? "invalid-noti-bg" : ""}>
+                      {message.url ? <NavLink to={message.url + "?notiId=" + message.id as string} className={message.message.includes("cancel") ? "invalid-noti-bg" : ""}>
                         <table className="tbl-width">
                           <tbody>
                             <tr>

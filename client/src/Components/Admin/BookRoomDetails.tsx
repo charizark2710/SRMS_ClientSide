@@ -1,8 +1,4 @@
-import React, { ChangeEvent, Component } from 'react';
-import message from '../../model/Message';
-import moment from 'moment';
-import { NavLink, RouteComponentProps } from 'react-router-dom';
-import { title } from 'process';
+import { Component } from 'react';
 import { formatDate, formatTime } from '../Common/formatDateTime'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -52,22 +48,21 @@ class BookRoomDetail extends Component<Props, State> {
 
     componentDidMount() {
         // if (!this.state.isLoad) {
-        this.viewDetailBookingRoom(this.state.id)
+        this.viewDetailBookingRoom(this.state.id, location.search)
         // }
-
     }
 
     UNSAFE_componentWillReceiveProps(nextProps: any) {
         this.setState({
             id: nextProps.match.params.id
         })
-        this.viewDetailBookingRoom(nextProps.match.params.id)
 
+        this.viewDetailBookingRoom(nextProps.match.params.id, nextProps.location.search)
     }
 
-    viewDetailBookingRoom = (id: string) => {
+    viewDetailBookingRoom = (id: string, notiId: string) => {
         // bookingRoomData.clear();
-        fetch(`http://localhost:5000/bookRoom/${id}`, {
+        fetch(`http://localhost:5000/bookRoom/${id}${notiId}`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',

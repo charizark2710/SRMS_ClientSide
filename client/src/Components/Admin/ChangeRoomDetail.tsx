@@ -49,20 +49,20 @@ class ChangeRoomDetail extends Component<Props, State> {
 
         const date = this.props.match.params.id?.split('~')[0];
         const id = this.props.match.params.id?.split('~')[1];
-        const notiId = this.props.match.params.id?.split('~')[2];
+
         await this.setState({
             calendarId: id,
             date: date
         })
-        this.viewDetailCalendar(this.state.calendarId, notiId)
-        // }
+        this.viewDetailCalendar(this.state.calendarId, location.search)
+        // // }
 
     }
 
     UNSAFE_componentWillReceiveProps = async (nextProps: any) => {
         let date = nextProps.match.params.id?.split('~')[0];
         let id = nextProps.match.params.id?.split('~')[1];
-        const notiId = this.props.match.params.id?.split('~')[2];
+        const notiId = nextProps.location.search;
         await this.setState({
             calendarId: id,
             date: date
@@ -72,7 +72,7 @@ class ChangeRoomDetail extends Component<Props, State> {
 
     viewDetailCalendar = (id: string, notiId: string) => {
         // bookingRoomData.clear();
-        fetch(`http://localhost:5000/calendar/${id}?date=${this.state.date}&notiId=${notiId}`, {
+        fetch(`http://localhost:5000/calendar/${id}${notiId}&date=${this.state.date}`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
