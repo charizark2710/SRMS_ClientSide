@@ -106,7 +106,20 @@ class BookRoomDetail extends Component<Props, State> {
     acceptOrRejectBooking = (status: string) => {
         console.log(this.state.id);
 
-        const roomBooking = {
+        const now = new Date();
+        const tempH = now.getHours().toString();
+        const tempMin = now.getMinutes().toString();
+        const hours = tempH.length === 2 ? tempH : '0' + tempH;
+        const min = tempMin.length === 2 ? tempMin : '0' + tempMin;
+        const tempM = (now.getMonth() + 1).toString();
+        const tempD = now.getDate().toString();
+        const year = now.getFullYear().toString();
+        const month = tempM.length === 2 ? tempM : '0' + tempM;
+        const date = tempD.length === 2 ? tempD : '0' + tempD;
+        const time = hours.concat(min, '00', '000');
+        const fullDate = year.concat(month, date);
+
+        let roomBooking = {
             id: this.state.id,
             status: status,
             room: this.state.roomName,
@@ -116,26 +129,34 @@ class BookRoomDetail extends Component<Props, State> {
             reason: this.state.reason,
             userId: this.state.fromUser
         }
-        fetch('http://localhost:5000/calendar/add', {
-            credentials: 'include',
-            headers: {
-                'content-type': 'application/json',
-            },
-            method: 'POST',
-            body: JSON.stringify(roomBooking)
-        }).then(res => {
-            if (res.status === 200) {
-                toast.success(status + " successfully!");
+
+        if (parseInt(fullDate) <= parseInt(this.state.date) && parseInt(this.state.endTime) > parseInt(time)) {
+            if (parseInt(this.state.startTime) < parseInt(time)) {
+                roomBooking.from = time;
             }
-            else {
-                return res.json().then(result => {
-                    toast.warning(result);
-                })
-            }
-        }).catch(e => {
-            toast.error(e);
-            console.log(e);
-        });
+            fetch('http://localhost:5000/calendar/add', {
+                credentials: 'include',
+                headers: {
+                    'content-type': 'application/json',
+                },
+                method: 'POST',
+                body: JSON.stringify(roomBooking)
+            }).then(res => {
+                if (res.status === 200) {
+                    toast.success(status + " successfully!");
+                }
+                else {
+                    return res.json().then(result => {
+                        toast.warning(result);
+                    })
+                }
+            }).catch(e => {
+                toast.error(e);
+                console.log(e);
+            });
+        } else {
+            toast.warning('Check your time');
+        }
     }
 
     onHandleBooking = (status: string) => {

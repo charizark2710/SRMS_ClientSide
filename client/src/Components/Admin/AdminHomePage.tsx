@@ -62,8 +62,9 @@ class AdminHomePage extends Component<Props, State> {
             if (res.ok) {
                 client.auth().onAuthStateChanged((user: any) => {
                     if (user) {
-                        this.notificationManagement();
-                        this.setState({ currentAdmin: user.displayName, isLoaded: true });
+                        this.notificationManagement().then(() => {
+                            this.setState({ currentAdmin: user.displayName, isLoaded: true });
+                        });
                     }
                 });
             }
@@ -72,47 +73,44 @@ class AdminHomePage extends Component<Props, State> {
         })
     }
 
-    notificationManagement = () => {
+    notificationManagement = async () => {
         this.setState({ messages: [] });
         const userEmail = "admin";
         const tempMessage: any[] = [];
-        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').limitToLast(30).on('child_added', (snap: any) => {
-            const mail: message = snap.val();
-            let count = this.state.countMessage;
-            if (mail) {
-                tempMessage.unshift(mail);
-                if (mail.isRead) {
-                    this.setState({ messages: tempMessage })
-                }
-                else
-                    this.setState({ messages: tempMessage, countMessage: ++count })
-            }
-        });
-
-        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').limitToLast(30).off('child_added', (snap: any) => {
-            const mail: message = snap.val();
-            let count = this.state.countMessage;
-            if (mail) {
-                tempMessage.unshift(mail);
-                if (mail.isRead) {
-                    this.setState({ messages: tempMessage })
-                }
-                else
-                    this.setState({ messages: tempMessage, countMessage: ++count })
-            }
-        });
-        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_changed', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).limitToLast(30).on('child_added', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail.url) {
+                tempMessage.unshift(mail);
+                if (mail.isRead)
+                    this.setState({ messages: tempMessage })
+                else
+                    this.setState({ messages: tempMessage, countMessage: ++count })
+            }
+        });
+        db.ref('notification'.concat('/', userEmail)).limitToLast(30).off('child_added', (snap: any) => {
+            const mail: message = snap.val();
+            let count = this.state.countMessage;
+            if (mail.url) {
+                tempMessage.unshift(mail);
+                if (mail.isRead)
+                    this.setState({ messages: tempMessage })
+                else
+                    this.setState({ messages: tempMessage, countMessage: ++count })
+            }
+        });
+        db.ref('notification'.concat('/', userEmail)).limitToLast(30).on('child_changed', (snap: any) => {
+            const mail: message = snap.val();
+            let count = this.state.countMessage;
+            if (mail.url) {
+                const arr = this.state.messages;
+                const changingIndex = arr.findIndex((x: any) => x.id === mail.id);
+                arr[changingIndex].isRead = mail.isRead;
+                arr[changingIndex].message = mail.message;
+                arr[changingIndex].sender = mail.sender;
+                arr[changingIndex].sendAt = mail.sendAt;
+                arr[changingIndex].url = mail.url;
                 if (!mail.isRead) {
-                    const arr = this.state.messages;
-                    const changingIndex = arr.findIndex((x: any) => x.id === mail.id);
-                    arr[changingIndex].isRead = true;
-                    arr[changingIndex].message = mail.message;
-                    arr[changingIndex].sender = mail.sender;
-                    arr[changingIndex].sendAt = mail.sendAt;
-                    arr[changingIndex].url = mail.url;
                     this.setState({ messages: arr, countMessage: ++count });
                 } else {
                     this.setState({ countMessage: count < 0 ? 0 : --count });
@@ -126,18 +124,18 @@ class AdminHomePage extends Component<Props, State> {
                 this.setState({ messages: newArr, countMessage: count < 0 ? 0 : --count });
             }
         });
-        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_changed', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).limitToLast(30).off('child_changed', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail.url) {
+                const arr = this.state.messages;
+                const changingIndex = arr.findIndex((x: any) => x.id === mail.id);
+                arr[changingIndex].isRead = mail.isRead;
+                arr[changingIndex].message = mail.message;
+                arr[changingIndex].sender = mail.sender;
+                arr[changingIndex].sendAt = mail.sendAt;
+                arr[changingIndex].url = mail.url;
                 if (!mail.isRead) {
-                    const arr = this.state.messages;
-                    const changingIndex = arr.findIndex((x: any) => x.id === mail.id);
-                    arr[changingIndex].isRead = true;
-                    arr[changingIndex].message = mail.message;
-                    arr[changingIndex].sender = mail.sender;
-                    arr[changingIndex].sendAt = mail.sendAt;
-                    arr[changingIndex].url = mail.url;
                     this.setState({ messages: arr, countMessage: ++count });
                 } else {
                     this.setState({ countMessage: count < 0 ? 0 : --count });
@@ -152,7 +150,7 @@ class AdminHomePage extends Component<Props, State> {
             }
         });
 
-        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_removed', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).limitToLast(30).on('child_removed', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail) {
@@ -165,7 +163,7 @@ class AdminHomePage extends Component<Props, State> {
             }
         });
 
-        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_removed', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).limitToLast(30).off('child_removed', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail) {

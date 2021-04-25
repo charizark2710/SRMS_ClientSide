@@ -20,7 +20,7 @@ interface State {
     isDisableAcceptBtn: boolean,
     availableRooms: any[],
     calendarId: string,
-    status?: string
+    status?: string,
 }
 
 //let bookingRoomData = new Map();
@@ -40,20 +40,21 @@ class ChangeRoomDetail extends Component<Props, State> {
             isDisableAcceptBtn: true,
             availableRooms: [],
             calendarId: '',
-            status: undefined
+            status: undefined,
         }
     }
 
     componentDidMount = async () => {
         // if (!this.state.isLoad) {
 
-        let date = this.props.match.params.id?.split('~')[0];
-        let id = this.props.match.params.id?.split('~')[1];
+        const date = this.props.match.params.id?.split('~')[0];
+        const id = this.props.match.params.id?.split('~')[1];
+        const notiId = this.props.match.params.id?.split('~')[2];
         await this.setState({
             calendarId: id,
             date: date
         })
-        this.viewDetailCalendar(this.state.calendarId)
+        this.viewDetailCalendar(this.state.calendarId, notiId)
         // }
 
     }
@@ -61,17 +62,17 @@ class ChangeRoomDetail extends Component<Props, State> {
     UNSAFE_componentWillReceiveProps = async (nextProps: any) => {
         let date = nextProps.match.params.id?.split('~')[0];
         let id = nextProps.match.params.id?.split('~')[1];
+        const notiId = this.props.match.params.id?.split('~')[2];
         await this.setState({
             calendarId: id,
             date: date
         })
-        this.viewDetailCalendar(this.state.calendarId)
-
+        this.viewDetailCalendar(this.state.calendarId, notiId)
     }
 
-    viewDetailCalendar = (id: string) => {
+    viewDetailCalendar = (id: string, notiId: string) => {
         // bookingRoomData.clear();
-        fetch(`http://localhost:5000/calendar/${id}?date=${this.state.date}`, {
+        fetch(`http://localhost:5000/calendar/${id}?date=${this.state.date}&notiId=${notiId}`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',

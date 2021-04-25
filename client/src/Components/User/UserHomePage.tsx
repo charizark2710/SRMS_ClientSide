@@ -43,7 +43,6 @@ interface State {
     selectedRoom: string,
     isStartTimeValid: boolean,
     isEndtimeValid: boolean,
-    ExceedMidNight: boolean,
 
     //notification for user
     messageToUser: message[]
@@ -92,7 +91,6 @@ class UserHomePage extends Component<Props, State> {
             selectedRoom: '',
             isStartTimeValid: true,
             isEndtimeValid: true,
-            ExceedMidNight: true,
 
             messageToUser: [],
 
@@ -179,7 +177,7 @@ class UserHomePage extends Component<Props, State> {
         this.setState({ messageToUser: [] });
         const userEmail = user.email?.split("@")[0] || '';
         const tempMessage: any[] = [];
-        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_added', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).limitToFirst(30).on('child_added', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail.url) {
@@ -190,7 +188,7 @@ class UserHomePage extends Component<Props, State> {
                     this.setState({ messageToUser: tempMessage, countMessage: ++count })
             }
         });
-        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_added', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).limitToFirst(30).off('child_added', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail.url) {
@@ -201,18 +199,18 @@ class UserHomePage extends Component<Props, State> {
                     this.setState({ messageToUser: tempMessage, countMessage: ++count })
             }
         });
-        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_changed', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).limitToFirst(30).on('child_changed', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail.url) {
+                const arr = this.state.messageToUser;
+                const changingIndex = arr.findIndex((x: any) => x.id === mail.id);
+                arr[changingIndex].isRead = mail.isRead;
+                arr[changingIndex].message = mail.message;
+                arr[changingIndex].sender = mail.sender;
+                arr[changingIndex].sendAt = mail.sendAt;
+                arr[changingIndex].url = mail.url;
                 if (!mail.isRead) {
-                    const arr = this.state.messageToUser;
-                    const changingIndex = arr.findIndex((x: any) => x.id === mail.id);
-                    arr[changingIndex].isRead = true;
-                    arr[changingIndex].message = mail.message;
-                    arr[changingIndex].sender = mail.sender;
-                    arr[changingIndex].sendAt = mail.sendAt;
-                    arr[changingIndex].url = mail.url;
                     this.setState({ messageToUser: arr, countMessage: ++count });
                 } else {
                     this.setState({ countMessage: count < 0 ? 0 : --count });
@@ -226,18 +224,18 @@ class UserHomePage extends Component<Props, State> {
                 this.setState({ messageToUser: newArr, countMessage: count < 0 ? 0 : --count });
             }
         });
-        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_changed', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).limitToFirst(30).off('child_changed', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail.url) {
+                const arr = this.state.messageToUser;
+                const changingIndex = arr.findIndex((x: any) => x.id === mail.id);
+                arr[changingIndex].isRead = mail.isRead;
+                arr[changingIndex].message = mail.message;
+                arr[changingIndex].sender = mail.sender;
+                arr[changingIndex].sendAt = mail.sendAt;
+                arr[changingIndex].url = mail.url;
                 if (!mail.isRead) {
-                    const arr = this.state.messageToUser;
-                    const changingIndex = arr.findIndex((x: any) => x.id === mail.id);
-                    arr[changingIndex].isRead = true;
-                    arr[changingIndex].message = mail.message;
-                    arr[changingIndex].sender = mail.sender;
-                    arr[changingIndex].sendAt = mail.sendAt;
-                    arr[changingIndex].url = mail.url;
                     this.setState({ messageToUser: arr, countMessage: ++count });
                 } else {
                     this.setState({ countMessage: count < 0 ? 0 : --count });
@@ -252,7 +250,7 @@ class UserHomePage extends Component<Props, State> {
             }
         });
 
-        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').on('child_removed', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).limitToFirst(30).on('child_removed', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail) {
@@ -265,7 +263,7 @@ class UserHomePage extends Component<Props, State> {
             }
         });
 
-        db.ref('notification'.concat('/', userEmail)).orderByChild('sendAt').off('child_removed', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).limitToFirst(30).off('child_removed', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail) {
@@ -486,13 +484,7 @@ class UserHomePage extends Component<Props, State> {
             let currentTime = hours + ":" + minute;
             console.log(currentTime);
             const today = new Date().toISOString().split("T")[0];
-            if (txtEndTime.split(':')[0] === '00' && txtStartTime.split(':')[0] !== '00') {
-                if (parseInt(txtEndTime.split(':')[1]) > 0) {
-                    this.setState({
-                        ExceedMidNight: false
-                    })
-                }
-            } else if (today === txtDateToBook) {
+            if (today === txtDateToBook) {
                 if (currentTime > txtStartTime) {
 
                     this.setState({
@@ -556,10 +548,10 @@ class UserHomePage extends Component<Props, State> {
         const tempEndTime = (this.bookingFormState.txtEndTime as string).split(":");
         const fullEndTime = tempEndTime[0] + tempEndTime[1] + "00000";
         await this.setState({
-            selectedRoom: '',
+            selectedRoom: this.bookingFormState.room,
             txtDateToBook: date[0] + date[1] + date[2],
             txtStartTime: fullStartTime,
-            txtEndTime: fullEndTime
+            txtEndTime: fullEndTime,
         })
         const { txtDateToBook, txtStartTime, txtEndTime } = this.state;
         fetch(`http://localhost:5000/bookRoom/getAvailableRooms?date=${txtDateToBook}&startTime=${txtStartTime}&endTime=${txtEndTime}`, {
@@ -596,7 +588,7 @@ class UserHomePage extends Component<Props, State> {
     }
 
     getSelectedRoom = async (room: string) => {
-        this.bookingFormState['selectedRoom'] = room;
+        this.bookingFormState.selectedRoom = room;
         //validate button Booking
         const { txtDateToBook, txtStartTime, txtEndTime, selectedRoom, txtReasonToBook } = this.bookingFormState;
         if (txtDateToBook && txtStartTime && txtEndTime && selectedRoom && txtReasonToBook) {
@@ -631,7 +623,14 @@ class UserHomePage extends Component<Props, State> {
                     isDisableBookingBtn: true,
                     isDisableLoadEmptyRoomBtn: true,
                     availableRooms: [],
-                })
+                });
+                this.bookingFormState = {
+                    txtDateToBook: '',
+                    txtStartTime: '',
+                    txtEndTime: '',
+                    selectedRoom: '',
+                    txtReasonToBook: '',
+                }
 
                 //đóng form
                 document.getElementById('closeBookRoomModal')?.click();
@@ -651,8 +650,20 @@ class UserHomePage extends Component<Props, State> {
     }
 
     //book room: dùng chhung cho update và insert
-    onSubmitBookingForm = (event: any) => {
+    onSubmitBookingForm = async (event: any) => {
         event.preventDefault();
+        const date = (this.bookingFormState.txtDateToBook as string).split('-');
+        const tempStartTime = (this.bookingFormState.txtStartTime as string).split(":");
+        const fullStartTime = tempStartTime[0] + tempStartTime[1] + "00000";
+        const tempEndTime = (this.bookingFormState.txtEndTime as string).split(":");
+        const fullEndTime = tempEndTime[0] + tempEndTime[1] + "00000";
+        await this.setState({
+            selectedRoom: this.bookingFormState.selectedRoom,
+            txtDateToBook: date[0] + date[1] + date[2],
+            txtStartTime: fullStartTime,
+            txtEndTime: fullEndTime,
+            txtReasonToBook: this.bookingFormState.txtReasonToBook
+        })
         const bookRoom = {
             roomName: this.state.selectedRoom,
             date: this.state.txtDateToBook,
@@ -895,10 +906,15 @@ class UserHomePage extends Component<Props, State> {
     notifyBookingRoomSuccess = () => toast.success("Sent booking room request successfully!");
     notifyReportErrorSuccess = () => toast.success("Sent report error request successfully!");
 
-    onGetFullMessage = (fullMessage: string) => {
+    onGetFullMessage = (fullMessage: message, index: number) => {
+        const $this = this;
         const message = document.getElementById("full-notification-message");
         if (message) {
-            message.innerHTML = fullMessage;
+            fetch('http://localhost:5000/notify/' + fullMessage.id, {
+                method: 'PATCH',
+                credentials: 'include'
+            })
+            message.innerHTML = fullMessage.message;
         }
     }
 
@@ -920,12 +936,12 @@ class UserHomePage extends Component<Props, State> {
                                         <i className="material-icons">assignment_ind</i> {currentUser.name}
                                     </a>
                                 </li>
-                               
+
                                 <li id='notification' className="dropdown">
                                     <a href="" className="dropdown-toggle" data-toggle="dropdown">
                                         <i className="material-icons">event_available</i>Calendar
                                     </a>
-                                    <ul className="dropdown-menu custom-ul-calendar" onClick={(e) => e.stopPropagation()}>
+                                    <ul className="dropdown-menu custom-ul-calendar" onClick={(e) => { e.stopPropagation(); }}>
                                         <div className="row calendar-user-width">
                                             <div className="col-md-10 col-md-offset-1">
                                                 <div className="card card-calendar">
@@ -943,7 +959,7 @@ class UserHomePage extends Component<Props, State> {
                                     </a>
                                 </li>
 
-                                <li id='notification' onClick={() => this.setState({ countMessage: 0 })} className="dropdown">
+                                <li id='notification' className="dropdown">
                                     <a href="" className=" dropdown-toggle" data-toggle="dropdown">
                                         <i className="material-icons">notifications</i>Notification
                                     <span className="notification notiNumber">{this.state.countMessage}</span>
@@ -957,7 +973,7 @@ class UserHomePage extends Component<Props, State> {
                                             messageToUser && messageToUser.map((message: message, index) => {
                                                 return <li key={index}>
                                                     <a data-toggle="modal"
-                                                        data-target="#notifications" onClick={() => this.onGetFullMessage(message.message)}>
+                                                        data-target="#notifications" onClick={() => this.onGetFullMessage(message, index)}>
                                                         <table className="tbl-width">
                                                             <tbody>
                                                                 <tr>
@@ -1176,7 +1192,7 @@ class UserHomePage extends Component<Props, State> {
                                                         <div className="form-group is-empty">
                                                             <label className="control-label">End Time<span className="text-warning">
                                                                 {
-                                                                    this.state.isEndtimeValid && this.state.ExceedMidNight ? "" : !this.state.ExceedMidNight ? "*End time must not exceed 12h am" : "*End time must be greater than start time*"
+                                                                    !this.state.isEndtimeValid ? "*End time must be greater than start time*" : ''
                                                                 }
                                                             </span>
                                                             </label>
@@ -1411,10 +1427,9 @@ class UserHomePage extends Component<Props, State> {
                     </div>
                 </div>
 
-                {/* <!-- Calendar modal --> */}
+                {/* <!-- Calendar modal -->
                 <div id="calendarModal" className="modal fade blur" role="dialog">
-                    <div className="modal-dialog calendar-dialog-width">
-                        {/* <!-- Modal content--> */}
+                    <div className="modal-dialog calendar-dialog-width"> 
                         <div className="modal-content">
                             <div className="modal-header">
                                 <button type="button" className="close" data-dismiss="modal">&times;</button>
@@ -1435,6 +1450,7 @@ class UserHomePage extends Component<Props, State> {
                         </div>
                     </div>
                 </div>
+             */}
 
 
                 {/* notification message */}
