@@ -2,6 +2,8 @@ import React, { ChangeEvent, Component } from 'react';
 import bannedList from "./../../model/BannedList";
 import MaterialTable from 'material-table';
 import Checkbox from '@material-ui/core/Checkbox';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 interface Props {
@@ -130,10 +132,14 @@ class BannedList extends Component<Props, State> {
                             unbannedList: newUbanArr
                         })
 
+                        //đóng form
+                        document.getElementById('closeBanModal')?.click();
+                        toast.success("Ban successfully!");
+
                     });
                 } else {
                     res.json().then(result => {
-                        console.log(result);
+                        toast.error("Failed to ban")
 
                     });
                 }
@@ -170,14 +176,12 @@ class BannedList extends Component<Props, State> {
                                 unbannedList: arrUnban
                             })
 
-                            console.log(this.state);
+                            toast.success("Unban successfully!");
+
 
                         });
                     } else {
-                        res.json().then(result => {
-                            console.log(result);
-
-                        });
+                        toast.error("Failed to unban")
                     }
                 } catch (error) {
                     console.log(error)
@@ -207,6 +211,7 @@ class BannedList extends Component<Props, State> {
         return (
 
             <div className="content">
+                 <ToastContainer />
                 <div className="container-fluid">
                     <div className="row">
                         <div className="col-md-12">
@@ -255,7 +260,7 @@ class BannedList extends Component<Props, State> {
 
                         <div className="modal-content">
                             <div className="modal-header">
-                                <button type="button" className="close" data-dismiss="modal">&times;</button>
+                                <button type="button" className="close" data-dismiss="modal" id="closeBanModal">&times;</button>
                                 <h3 className="modal-title text-center">Ban account</h3>
                             </div>
                             <div className="modal-body">

@@ -2,6 +2,9 @@ import { Component } from 'react';
 import MaterialTable from 'material-table';
 import moment from 'moment';
 import { formatDateTime } from "../Common/formatDateTime";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 interface Props {
     history:any
@@ -17,8 +20,8 @@ const columns = [
     {
         title: "Request Type", field: "requestType",
         render: (rowData: any) => {
-            return rowData.url.includes("/bookRoomRequest/") ? <p style={{ color: "#E87722", fontWeight: "bold" }}>Book room request</p> :
-                rowData.url.includes("/reportErrorRequest/") ? <p style={{ color: "#008240", fontWeight: "bold" }}>Report Error Request</p> :
+            return rowData.url?.includes("/bookRoomRequest/") ? <p style={{ color: "#E87722", fontWeight: "bold" }}>Book room request</p> :
+                rowData.url?.includes("/reportErrorRequest/") ? <p style={{ color: "#008240", fontWeight: "bold" }}>Report Error Request</p> :
                     <p style={{ color: "#B0B700", fontWeight: "bold" }}>Change Room Request</p>
         }
     },
@@ -107,12 +110,12 @@ class BannedList extends Component<Props, State> {
                         this.setState({
                             requestList: newRequestList
                         })
-                        console.log(newRequestList);
+                        toast.success("Delete request successfully.")
 
                     })
                 }
                 else {
-                    return res.json().then(result => { console.log(result.error) });
+                    toast.error("Failed to delete request.")
                 }
             }).catch(e => {
                 console.log(e);
@@ -128,6 +131,7 @@ class BannedList extends Component<Props, State> {
         return (
 
             <div className="content">
+                <ToastContainer />
                 <div className="container-fluid">
                     <div className="row">
                         <div className="col-md-12">

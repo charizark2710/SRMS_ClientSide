@@ -419,7 +419,7 @@ class RoomAndDevices extends Component<Props, State> {
                                 <div className="card-footer">
                                     <div className="stats">
                                         <i className="material-icons">local_offer</i>
-                                        Number of "on" powerplugs /all powerplugs
+                                        Nb of "on" powerplugs /all powerplugs
                             </div>
                                 </div>
                             </div>

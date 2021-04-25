@@ -1326,7 +1326,7 @@ class UserHomePage extends Component<Props, State> {
 
                                             <div className="card-content">
                                                 <div className="form-group">
-                                                    <div className="alert alert-success alert-bg">You have permisstion to control devices in room <b>{currentRoomPermission}</b> on <b>{formatDate(currentDatePermission as string)} {formatTime(currentStartTimePermission as string)}-{formatTime(currentEndTimePermission as string)}</b></div>
+                                                    <div className="alert alert-success alert-bg">You have permisstion to control devices in room <strong>{currentRoomPermission}</strong> on <strong>{formatDate(currentDatePermission as string)} {formatTime(currentStartTimePermission as string)}-{formatTime(currentEndTimePermission as string)}</strong></div>
                                                 </div>
 
                                                 <div className="form-group label-floating is-empty">
