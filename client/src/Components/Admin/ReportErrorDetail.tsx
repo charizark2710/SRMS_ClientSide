@@ -35,12 +35,13 @@ class ReportErrorDetail extends Component<Props, State> {
 
     componentDidMount() {
         // if (!this.state.isLoad) {
-        this.viewReportErrorDetail(this.state.id)
         // }
+        this.viewReportErrorDetail(this.state.id, location.search);
+
     }
 
     UNSAFE_componentWillReceiveProps(nextProps: any) {
-        this.viewReportErrorDetail(nextProps.match.params.id)
+        this.viewReportErrorDetail(nextProps.match.params.id, nextProps.location.search);
     }
 
     reloadScript() {
@@ -53,8 +54,8 @@ class ReportErrorDetail extends Component<Props, State> {
     }
 
 
-    viewReportErrorDetail = (id: string) => {
-        fetch(`http://localhost:5000/reportError/${id}`, {
+    viewReportErrorDetail = (id: string, notiId: string) => {
+        fetch(`http://localhost:5000/reportError/${id}${notiId}`, {
             credentials: 'include',
             headers: {
                 'content-type': 'application/json',
@@ -64,7 +65,7 @@ class ReportErrorDetail extends Component<Props, State> {
             if (res.status === 200) {
 
                 res.json().then((result) => {
-                    let deviceNames=result.deviceNames.split(" ");
+                    let deviceNames = result.deviceNames.split(" ");
                     this.setState({
                         roomName: result.roomName,
                         fromUser: result.userId,
@@ -178,7 +179,7 @@ class ReportErrorDetail extends Component<Props, State> {
                                                     {deviceNames.map((device, index) => {
                                                         return (
                                                             <span key={index}>
-                                                                <span  className="label label-danger reportDevice-pd">{device}</span>
+                                                                <span className="label label-danger reportDevice-pd">{device}</span>
                                                                 &nbsp;&nbsp;
                                                             </span>
                                                         )
@@ -189,7 +190,7 @@ class ReportErrorDetail extends Component<Props, State> {
 
                                         </div>
                                         <div className="card-footer text-center">
-                                            <button type="button" disabled={status ==="confirmed"? true:false} className="btn btn-warning btn-fill" onClick={() => this.onHandleReportError('confirmed')}>Confirm</button>
+                                            <button type="button" disabled={status === "confirmed" ? true : false} className="btn btn-warning btn-fill" onClick={() => this.onHandleReportError('confirmed')}>Confirm</button>
                                         </div>
 
                                     </div>
