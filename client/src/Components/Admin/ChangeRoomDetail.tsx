@@ -175,7 +175,7 @@ class ChangeRoomDetail extends Component<Props, State> {
                 this.props.history.push('/');
             }
             else {
-                return res.json().then(result => { console.log(result.error) });
+                toast.error("Failed to accept change room")
             }
         }).catch(e => {
             console.log(e);

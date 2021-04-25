@@ -1,9 +1,11 @@
 import React, { ChangeEvent, Component } from 'react';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 interface Props {
-    match: any
+    match: any,
+    history:any
 }
 
 interface State {
@@ -12,7 +14,7 @@ interface State {
     roomName: string,
     description: string,
     deviceNames: string[],
-    // status: string,
+    status: string,
     id: string,
 }
 
@@ -27,7 +29,7 @@ class ReportErrorDetail extends Component<Props, State> {
             roomName: '',
             description: '',
             deviceNames: [],
-            // status: '',
+            status: '',
             id: this.props.match.params.id,
         }
     }
@@ -71,7 +73,7 @@ class ReportErrorDetail extends Component<Props, State> {
                         fromUser: result.userId,
                         description: result.description,
                         deviceNames: deviceNames,
-                        // status: result.status,
+                        status: result.status,
                         title: "Report devices'error at room " + result.roomName,
                     })
                     // }
@@ -104,10 +106,11 @@ class ReportErrorDetail extends Component<Props, State> {
             body: JSON.stringify(reportErr)
         }).then(res => {
             if (res.status === 200) {
-                return res.json().then(result => { console.log(result) })
+                toast.success('Confirm report error request successfully.');
+                this.props.history.push('/');
             }
             else {
-                return res.json().then(result => { console.log(result.error) });
+                toast.error("Failed to Confirm report error request.")
             }
         }).catch(e => {
             console.log(e);
@@ -123,9 +126,10 @@ class ReportErrorDetail extends Component<Props, State> {
 
 
     render() {
-        const { title, fromUser, roomName, description, deviceNames } = this.state;
+        const { title, fromUser, roomName, description, deviceNames, status } = this.state;
         return (
             <div className="content">
+                 <ToastContainer />
                 <div className="container-fluid">
                     <div className="row">
                         <div className="col-md-12">
@@ -159,6 +163,15 @@ class ReportErrorDetail extends Component<Props, State> {
                                                 <div className="form-group label-floating is-empty">
                                                     <label className="control-label"></label>
                                                     <input type="text" className="form-control" value={roomName} readOnly />
+                                                    <span className="material-input"></span></div>
+                                            </div>
+                                        </div>
+                                        <div className="row">
+                                            <label className="col-sm-2 label-on-left">Status</label>
+                                            <div className="col-sm-10">
+                                                <div className="form-group label-floating is-empty">
+                                                    <label className="control-label"></label>
+                                                    <input type="text" className="form-control" value={status} readOnly />
                                                     <span className="material-input"></span></div>
                                             </div>
                                         </div>
