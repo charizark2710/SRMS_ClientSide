@@ -1267,6 +1267,7 @@ class UserHomePage extends Component<Props, State> {
                                                     <label className="label-control">Room Name</label>
                                                     <select className="form-control" name="cbbRoomToReport" title="Choose Room"
                                                         value={this.state.cbbRoomToReport} onChange={this.onHandleChangeReportErrorForm}>
+                                                        <option value=""> Please choose a room  </option>
                                                         {
                                                             this.state.allRooms && this.state.allRooms.map((room, index) => {
                                                                 return <option key={index} value={room}>Room {room} </option>

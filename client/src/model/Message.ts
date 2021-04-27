@@ -9,5 +9,5 @@ export default interface message {
     typeRequest:string,
     url?:string,
     isValid?:boolean,
-    actionNotiId?:string
+    userId?:string
 }

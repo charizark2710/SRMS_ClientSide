@@ -142,7 +142,7 @@ class BannedList extends Component<Props, State> {
                                     <div className="material-datatables">
                                         <MaterialTable
                                             title="Notifications"
-                                            onRowClick={(event, rowData) => this.onRedicrectToActionPage(rowData.url as string)}
+                                            onRowClick={(event, rowData) => this.onRedicrectToActionPage(rowData.url+'?notiId='+rowData.id)}
                                             columns={columns}
                                             data={this.state.requestList}
                                             options={

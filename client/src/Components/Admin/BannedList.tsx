@@ -34,7 +34,6 @@ class BannedList extends Component<Props, State> {
     componentDidMount() {
         this.getUnbannedList();
         this.getBannedList();
-
     }
 
 
