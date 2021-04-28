@@ -107,12 +107,14 @@ class BookRoomDetail extends Component<Props, State> {
         const tempMin = (now.getMinutes() + 1) === 60 ? '0' : (now.getMinutes() + 1).toString();
         const hours = tempH.length === 2 ? tempH : '0' + tempH;
         const min = tempMin.length === 2 ? tempMin : '0' + tempMin;
+        const tempSec = now.getSeconds().toString();
+        const sec = tempSec.length === 2 ? tempSec : '0' + tempSec;
         const tempM = (now.getMonth() + 1).toString();
         const tempD = now.getDate().toString();
         const year = now.getFullYear().toString();
         const month = tempM.length === 2 ? tempM : '0' + tempM;
         const date = tempD.length === 2 ? tempD : '0' + tempD;
-        const time = hours.concat(min, '00', '000');
+        const time = hours.concat(min, sec, '000');
         const fullDate = year.concat(month, date);
 
         let roomBooking = {

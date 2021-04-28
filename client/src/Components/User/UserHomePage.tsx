@@ -179,7 +179,7 @@ class UserHomePage extends Component<Props, State> {
         this.setState({ messageToUser: [] });
         const userEmail = user.email?.split("@")[0] || '';
         const tempMessage: any[] = [];
-        db.ref('notification'.concat('/', userEmail)).limitToFirst(30).on('child_added', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).limitToLast(30).on('child_added', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail.url) {
@@ -190,7 +190,7 @@ class UserHomePage extends Component<Props, State> {
                     this.setState({ messageToUser: tempMessage, countMessage: ++count })
             }
         });
-        db.ref('notification'.concat('/', userEmail)).limitToFirst(30).off('child_added', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).limitToLast(30).off('child_added', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail.url) {
@@ -201,7 +201,7 @@ class UserHomePage extends Component<Props, State> {
                     this.setState({ messageToUser: tempMessage, countMessage: ++count })
             }
         });
-        db.ref('notification'.concat('/', userEmail)).limitToFirst(30).on('child_changed', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).on('child_changed', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail.url) {
@@ -226,7 +226,7 @@ class UserHomePage extends Component<Props, State> {
                 this.setState({ messageToUser: newArr, countMessage: count < 0 ? 0 : --count });
             }
         });
-        db.ref('notification'.concat('/', userEmail)).limitToFirst(30).off('child_changed', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).off('child_changed', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail.url) {
@@ -252,7 +252,7 @@ class UserHomePage extends Component<Props, State> {
             }
         });
 
-        db.ref('notification'.concat('/', userEmail)).limitToFirst(30).on('child_removed', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).on('child_removed', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail) {
@@ -265,7 +265,7 @@ class UserHomePage extends Component<Props, State> {
             }
         });
 
-        db.ref('notification'.concat('/', userEmail)).limitToFirst(30).off('child_removed', (snap: any) => {
+        db.ref('notification'.concat('/', userEmail)).off('child_removed', (snap: any) => {
             const mail: message = snap.val();
             let count = this.state.countMessage;
             if (mail) {
