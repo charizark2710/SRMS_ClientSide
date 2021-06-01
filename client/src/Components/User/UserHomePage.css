@@ -1,0 +1,155 @@
+.userLoginName{
+    color: #ff9800 !important;
+}
+.menu-user-homepage{
+    margin-right: -10% !important;
+}
+.menu-user-homepage-header{
+    margin-left: -10% !important;
+}
+.title-fontfamily{
+    font-family: 'Courier New', Courier, monospace;
+}
+.notiNumber{
+   margin-right: 62%;
+}
+.bgCard{
+    background-color: rgba(255, 255, 255, 0.9);
+}
+.dialogWidth{
+   width: 70%;
+}
+.changeroom-dialogWidth{
+    width: auto;
+}
+.text-orange{
+    color: rgb(37, 33, 66);
+    font-weight: bold;
+}
+.textSpan{
+    font-weight: 800; 
+    font-size: 25px;
+}
+.textGetStarted{
+    padding-bottom: 5%;
+}
+.ruleFormat{
+    font-weight: 800;
+     font-size: 25px;
+}
+.pdBottom{
+    padding-bottom: 5%;
+}
+.dialogWidth80{
+    width: 80%
+}
+.mgTop3{
+    margin-top: -3%;
+}
+.width100{
+    width:800px;
+}
+.mainColor{
+    color: #ff9800;
+}
+.pdAll{
+    padding: 3px 5px 3px 5px;
+}
+.btnMarginNegetive{
+    margin-right: -520%;
+}
+.pdBottom5{
+    padding-bottom: 1%;
+}
+.validate-loadEmptyRoom{
+    font-size: smaller;
+    color: #ff9800;
+}
+.reportError-dialogWidth{
+    width: 40%;
+}
+.select-room-height{
+    max-height: 250px;
+    overflow-y: auto;
+}
+/* 
+.change-room-bg{
+    background-color: #ff9800;
+    text-align: center;
+    border-radius: 10px 0px 0px 10px;
+    padding: 10%;
+}
+.change-room-height{
+    height: 50px;
+} */
+.change-room-number{
+    padding: 10px;
+    background-color: #ff9800;
+    text-align: center !important;
+    font-size: xx-large;
+    font-weight: bold;
+    border-radius: 8px 8px 0px 0px;
+}
+.card-width-change-room{
+    margin-right: 3%;
+    margin-bottom: -12px;
+    width: 44%;
+    text-align: center !important;
+}
+.scroll-change-room{
+    overflow-y: auto;
+}
+.scroll-change-room:hover{
+    cursor: pointer;
+}
+.fix-size-change-room-modal{
+    height: 400px;
+    
+}
+
+.resize-datetime-change-room{
+    font-size: smaller !important;
+}
+.mg-20{
+    margin-left: 10%;
+}
+.modal-center {
+    position: absolute;
+    float: left;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .btn-action-container-flex{
+    display: flex;
+  }
+.btn-edit-color{
+    color: orange;
+}
+.btn-delete-color{
+    color: red;
+}
+.btn-delete-color-disable{
+    color:gray
+}
+.alert-bg{
+    background-color: #dff0d8 !important;
+    border-color: #d6e9c6;
+    border-radius: 0px;
+    color: #3c763d !important;
+    padding: 10px;
+}
+.calendar-dialog-width{
+    width: 70%;
+}
+.fc-col-header{
+    width: 100% !important
+}
+
+.calendar-user-width{
+    width:850px;
+    margin-left: -6.7% !important;
+}
+.custom-ul-calendar{
+    width: 750px;
+}

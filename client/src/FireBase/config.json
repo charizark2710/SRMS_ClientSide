@@ -1,9 +1,9 @@
 {
-    "api_key": "AIzaSyCvCl0UhE0hDCDsCb2P-pSTg5YDR1ZdQjo",
-    "auth_domain": "quickstart-1594476482074.firebaseapp.com",
-    "database_url": "https://quickstart-1594476482074-default-rtdb.firebaseio.com",
-    "project_id": "quickstart-1594476482074",
-    "storage_bucket": "quickstart-1594476482074.appspot.com",
-    "messaging_sender_id": "501157955175",
-    "app_id": "1:501157955175:web:3ab58b108029f1148fb6c2"
+    "api_key": "AIzaSyA9YL43stkgX6qDReZTRqjiiJ_uiXmuM9k",
+    "auth_domain": "learning-5071c.firebaseapp.com",
+    "database_url": "https://learning-5071c.firebaseio.com",
+    "project_id": "learning-5071c",
+    "storage_bucket": "learning-5071c.appspot.com",
+    "messaging_sender_id": "779866741740",
+    "app_id": "1:779866741740:web:de8158ed8c7e3ceb873ec9"
 }

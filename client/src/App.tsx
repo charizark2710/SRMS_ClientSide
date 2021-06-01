@@ -1,22 +1,88 @@
-import React from 'react';
-import logo from './logo.svg';
+import { Component } from 'react';
 import './App.css';
-import ReactDOM from 'react-dom';
-import Login from './Login'
+import Login from './Components/Login/Login'
+import testML from './TensorFlow/testML'
+import UserHomePage from './Components/User/UserHomePage'
+import AdminHomePage from './Components/Admin/AdminHomePage'
+import NotFound from './Components/Error/Notfound';
 
 import {
-  BrowserRouter as Router,
   Switch,
   Route,
-  Link
 } from "react-router-dom";
 
-function App() {
-  return (
-    <div className="App">
-        <Route path='/login' component={Login}></Route>
-    </div>
-  );
+interface Props {
 }
 
+interface State {
+  role?: string,
+  isDone: boolean,
+}
+
+
+class App extends Component<Props, State>{
+  constructor(prop: Props) {
+    super(prop);
+    if (!this.state)
+      this.state = { role: undefined, isDone: false, };
+  }
+
+  componentDidMount() {
+    fetch('http://localhost:5000', {
+      credentials: 'include',
+    }).then(async res => {
+      if (res.ok) {
+        const result = await res.json();
+        const crole = result.role;
+        this.setState({ role: crole, isDone: true });
+      } else {
+        this.setState({ isDone: true });
+      }
+    }).catch(e => {
+      window.history.pushState('', '', '/');
+      location.reload();
+      throw new Error(e);
+    })
+  }
+
+  updateRole = (role: string) => {
+    this.setState({ role: role });
+  }
+
+  render() {
+    if (this.state.isDone) {
+      if (this.state.role && this.state.role === 'admin') {
+        return (
+          <Switch>
+            <Route path="/" render={({ match, history }) => (
+              <AdminHomePage match={match} history={history} />)} />
+            <Route path='/testML' component={testML}></Route>
+            <Route component={NotFound}></Route>
+          </Switch>
+        );
+      } else if (this.state.role && this.state.role !== 'admin') {
+        return (
+          <Switch>
+            <Route path='/' component={UserHomePage}>
+            </Route>
+            <Route path='/testML' component={testML}></Route>
+            <Route component={NotFound}></Route>
+          </Switch>
+        );
+      } else {
+        return (
+          <Switch>
+            <Route path='/' exact component={Login}>
+              <Login updateRole={this.updateRole}></Login>
+            </Route>
+            <Route path='/testML' component={testML}></Route>
+            <Route component={NotFound}></Route>
+          </Switch>
+        );
+      }
+    } else {
+      return null;
+    }
+  }
+}
 export default App;

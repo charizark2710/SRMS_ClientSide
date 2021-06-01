@@ -1,0 +1,85 @@
+.bg-panelbody{
+    background-color: rgb(245, 238, 223);
+}
+.height-img-70{
+    height: 70px;
+}
+.text-align-right-for-link{
+    text-align: left;
+}
+.fc-col-header-cell-cushion, .fc-daygrid-day-number {
+    color: #999999 !important;
+}
+.fc .fc-button-primary{
+    background-color: #ff9800 !important;
+    border-color: #ff9800 !important
+}
+
+.banned-width-100{
+    width: 100%;
+}
+.banned-width-40{
+    width: 40%;
+}
+.banned-width-30{
+    width: 30%;
+}
+.banned-width-20{
+    width: 20%;
+}
+.banned-width-10{
+    width: 10%;
+}
+.reportErr-mt-20{
+    margin-top: 20px;
+}
+.reportDevice-pd{
+    padding: 3px 5px 3px 5px;
+}
+.banned-pb-5{
+    padding-bottom: 5%;
+}
+.card-roomDevice-color{
+    background-color: rgba(255, 99, 71, 0.2)
+}
+.MuiDataGrid-root{
+    font-size: 13px !important;
+    
+}
+.MuiTypography-body2 {
+    font-size: 13px !important;
+}
+
+.import-room-height-500{
+    height: 500px;
+}
+
+.invalid-noti-bg{
+    background-color: rgb(221, 214, 214);
+}
+.admin-menu-height{
+    overflow-y: auto;
+    max-height: 650px;
+}
+#container {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    padding: 10px;
+    width: 800px;
+    height: 800px;
+    background-color: #fff;
+  }
+.select-changeroom-height{
+    max-height: 250px;
+    overflow-y: auto;
+}
+.btn-search-report{
+    margin-top: 33px;
+}
+.report-center{
+    margin-left: 25%;
+}
+.total-colspan-2{
+    column-span: all;
+}
